@@ -1,0 +1,47 @@
+# Prerequisites
+build*
+*.d
+install
+*.root
+*.png
+*.pdf
+*.log
+*.dat
+
+# podio generated code files
+edm4hep/edm4hep
+edm4hep/src
+
+# CI subfolders
+podio/
+tricktrack/
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app

@@ -1,5 +1,5 @@
-#include "DelphesEDM4HepConverter.h"
-#include "delphesHelpers.h" // getAllParticleIds
+#include "k4simdelphes/DelphesEDM4HepConverter.h"
+#include "k4simdelphes/delphesHelpers.h" // getAllParticleIds
 
 #include "edm4hep/ReconstructedParticleCollection.h"
 #include "edm4hep/MCParticleCollection.h"
@@ -14,6 +14,8 @@
 #include <unordered_map>
 #include <iostream>
 #include <iterator>
+
+namespace k4simdelphes {
 
 template<size_t N>
 void sortBranchesProcessingOrder(std::vector<BranchSettings>& branches,
@@ -449,4 +451,6 @@ edm4hep::Track convertTrack(Candidate const* cand, const double magFieldBz)
   track.addToTrackStates(trackState);
 
   return track;
+}
+
 }
