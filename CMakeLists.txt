@@ -1,47 +1,75 @@
+cmake_minimum_required(VERSION 3.3)
+
+project(K4SIMDELPHES)
+
+#--- Declare options -----------------------------------------------------------
+
+option(BUILD_PYTHIA_READER "Build the EDM4hep plugin for DD4hep" ON)
+option(BUILD_EVTGEN_READER "Build the DELPHES plugin for DD4hep" ON)
+option(BUILD_HEPMC_READER "Build the DELPHES plugin for DD4hep" ON)
+option(BUILD_FRAMEWORK "Build the DELPHES plugin for DD4hep" OFF)
+option(K4SIMDELPHES_DOCUMENTATION "Whether or not to create doxygen doc target." OFF)
+option(ENABLE_CPACK "Whether or not to use cpack config" OFF)
+
+# project version
+SET( ${PROJECT_NAME}_VERSION_MAJOR 0 )
+SET( ${PROJECT_NAME}_VERSION_MINOR 1 )
+SET( ${PROJECT_NAME}_VERSION_PATCH 0 )
+
+SET( ${PROJECT_NAME}_VERSION  "${${PROJECT_NAME}_VERSION_MAJOR}.${${PROJECT_NAME}_VERSION_MINOR}.${${PROJECT_NAME}_VERSION_PATCH}" )
 
 
+set(CMAKE_CXX_STANDARD 17 CACHE STRING "")
 
+if(NOT CMAKE_CXX_STANDARD MATCHES "14|17")
+  message(FATAL_ERROR "Unsupported C++ standard: ${CMAKE_CXX_STANDARD}")
+endif()
 
-find_package(Delphes)
+message (STATUS "C++ standard: ${CMAKE_CXX_STANDARD}")
 
-add_library(DelphesEDM4HepConverter SHARED DelphesEDM4HepConverter.cc)
-target_include_directories(DelphesEDM4HepConverter SYSTEM PUBLIC ${DELPHES_INCLUDE_DIRS})
-target_link_libraries(DelphesEDM4HepConverter edm4hep ${DELPHES_LIBRARY} podio::podioRootIO ROOT::MathCore ROOT::EG ROOT::Physics)
-set_target_properties(DelphesEDM4HepConverter PROPERTIES PUBLIC_HEADER "DelphesEDM4HepConverter.h;Delphes.h")
-install(TARGETS DelphesEDM4HepConverter 
-        EXPORT EDM4HEPTargets
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        PUBLIC_HEADER DESTINATION include/edm4hep
-        COMPONENT dev)
+#--- add version files ---------------------------------------------------------
 
-# build all executables and put them into bin/
-add_executable(DelphesROOT_EDM4HEP DelphesROOT_EDM4HEP.cpp Delphes.cc)
-target_link_libraries(DelphesROOT_EDM4HEP DelphesEDM4HepConverter ROOT::Physics)
-install(TARGETS DelphesROOT_EDM4HEP DESTINATION bin)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/K4SIMDELPHESVersion.h
+               ${CMAKE_CURRENT_BINARY_DIR}/K4SIMDELPHESVersion.h )
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/K4SIMDELPHESVersion.h
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/k4simdelphes )
 
-# build all executables and put them into bin/
-add_executable(DelphesHepMC_EDM4HEP DelphesHepMC_EDM4HEP.cpp Delphes.cc)
-target_link_libraries(DelphesHepMC_EDM4HEP DelphesEDM4HepConverter)
-install(TARGETS DelphesHepMC_EDM4HEP DESTINATION bin)
+# - Use GNU-style hierarchy for installing build products
+include(GNUInstallDirs)
 
-# build all executables and put them into bin/
-add_executable(DelphesSTDHEP_EDM4HEP DelphesSTDHEP_EDM4HEP.cpp Delphes.cc)
-target_link_libraries(DelphesSTDHEP_EDM4HEP DelphesEDM4HepConverter)
-install(TARGETS DelphesSTDHEP_EDM4HEP DESTINATION bin)
+#--- add CMake infrastructure --------------------------------------------------
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+include(cmake/K4SIMDELPHESCreateConfig.cmake)
 
-find_package(Pythia8)
-if(Pythia8_FOUND)
-  add_executable(DelphesPythia8_EDM4HEP DelphesPythia8_EDM4HEP.cpp Delphes.cc)
-  target_include_directories(DelphesPythia8_EDM4HEP PRIVATE ${PYTHIA8_INCLUDE_DIRS})
-  target_link_libraries(DelphesPythia8_EDM4HEP DelphesEDM4HepConverter ${PYTHIA8_LIBRARIES} ${DELPHES_LIBRARY})
-  install(TARGETS DelphesPythia8_EDM4HEP DESTINATION bin)
-  find_package(EvtGen)
-  
-  add_executable(DelphesPythia8EvtGen_EDM4HEP DelphesPythia8EvtGen_EDM4HEP.cpp Delphes.cc)
-  target_include_directories(DelphesPythia8EvtGen_EDM4HEP PRIVATE ${PYTHIA8_INCLUDE_DIRS} ${EVTGEN_INCLUDE_DIR})
-  target_link_libraries(DelphesPythia8EvtGen_EDM4HEP DelphesEDM4HepConverter ${PYTHIA8_LIBRARIES} ${DELPHES_LIBRARY} ${EVTGEN_LIBRARIES})
-  install(TARGETS DelphesPythia8EvtGen_EDM4HEP DESTINATION bin)
+#--- add license files ---------------------------------------------------------
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE
+              DESTINATION ${CMAKE_INSTALL_DOCDIR})
 
+#--- enable unit testing capabilities ------------------------------------------
+include(CTest)
+
+#--- enable CPack --------------------------------------------------------------
+if(ENABLE_CPACK)
+  include(cmake/K4SIMDELPHESCPack.cmake)
+endif()
+
+#--- target for Doxygen documentation ------------------------------------------
+if(K4SIMDELPHES_DOCUMENTATION)
+  include(cmake/K4SIMDELPHESDoxygen.cmake)
 endif()
 
 
+#--- Non-optional Dependencies ------------------------------------------
+
+find_package(Delphes)
+find_package(EDM4HEP)
+
+add_subdirectory(converter)
+add_subdirectory(standalone)
+if(BUILD_FRAMEWORK)
+  add_subdirectory(framework)
+endif()
+
+
+#--- create uninstall target ---------------------------------------------------
+include(cmake/K4SIMDELPHESUninstall.cmake)

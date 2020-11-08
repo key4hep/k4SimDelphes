@@ -21,6 +21,7 @@
 #include <array>
 #include <unordered_map>
 
+namespace k4simdelphes {
 
 /**
  * The settings steering the output of the DelphesEDM4HepConverter. Default
@@ -188,5 +189,7 @@ void DelphesEDM4HepConverter::registerCollection(std::string_view name) {
   CollectionT* col = new CollectionT();
   m_collections.emplace(name, col);
 }
+
+} //namespace k4simdelphes
 
 #endif

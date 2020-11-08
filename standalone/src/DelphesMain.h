@@ -1,4 +1,4 @@
-#include "DelphesEDM4HepConverter.h"
+#include "k4simdelphes/DelphesEDM4HepConverter.h"
 #include "DelphesInputReader.h"
 
 #include "TObjArray.h"
@@ -10,6 +10,8 @@
 #include <signal.h> // SIGINT
 #include <memory>
 #include <iomanip>
+
+using namespace k4simdelphes;
 
 // gracefully handle ctrl+c
 static bool interrupted = false;
