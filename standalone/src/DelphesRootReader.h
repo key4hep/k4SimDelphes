@@ -3,7 +3,7 @@
 
 
 #include "DelphesInputReader.h"
-#include "delphesHelpers.h"
+#include "k4simdelphes/delphesHelpers.h"
 
 #include "TObjArray.h"
 #include "TChain.h"
