@@ -1,4 +1,5 @@
 # Prerequisites
+*.swp
 build*
 *.d
 install
