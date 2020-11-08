@@ -91,8 +91,8 @@ class DelphesPythia8Reader: public DelphesInputReader {
         reader = new DelphesLHEFReader;
         reader->SetInputFile(inputFile);
 
-        branchEventLHEF = treeWriter->NewBranch("EventLHEF", LHEFEvent::Class());
-        branchWeightLHEF = treeWriter->NewBranch("WeightLHEF", LHEFWeight::Class());
+        //branchEventLHEF = treeWriter->NewBranch("EventLHEF", LHEFEvent::Class());
+        //branchWeightLHEF = treeWriter->NewBranch("WeightLHEF", LHEFWeight::Class());
 
         allParticleOutputArrayLHEF = modularDelphes->ExportArray("allParticlesLHEF");
         stableParticleOutputArrayLHEF = modularDelphes->ExportArray("stableParticlesLHEF");
