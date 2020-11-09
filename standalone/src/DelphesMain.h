@@ -23,9 +23,10 @@ void SignalHandler(int /*sig*/) {
 
 int doit(int argc, char* argv[], DelphesInputReader& inputReader) {
     Delphes* modularDelphes = new Delphes("Delphes");
-    std::string outputfile;
-    if (!inputReader.init(modularDelphes, argc, argv, outputfile)) {
-        return 1;
+    const auto outputfile = inputReader.init(modularDelphes, argc, argv);
+    if (outputfile.empty()) {
+      std::cerr << inputReader.getUsage() << std::endl;
+      return 1;
     }
     signal(SIGINT, SignalHandler);
 

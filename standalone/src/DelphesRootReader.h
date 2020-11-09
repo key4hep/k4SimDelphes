@@ -23,17 +23,12 @@
 class DelphesRootReader: public DelphesInputReader {
   public:
   inline DelphesRootReader() {};
-  inline bool init(Delphes* modularDelphes, int argc, char *argv[], std::string& outputfile) {
+  inline std::string init(Delphes* modularDelphes, int argc, char *argv[]) override {
     if (argc < 5) {
-      std::cout << "Usage: " << m_appName << " config_file output_config_file output_file input_file(s)\n"
-                << "config_file - configuration file in Tcl format,\n"
-                << "output_config_file - configuration file steering the content of the edm4hep output in Tcl format,\n"
-                << "output_file - output file in ROOT format\n"
-                << "input_file(s) - input file(s) in ROOT format" << std::endl;
-      return false;
+      return "";
     }
 
-    outputfile = argv[3];
+    std::string outputfile = argv[3];
 
     m_chain = new TChain("Delphes");
 
@@ -46,19 +41,26 @@ class DelphesRootReader: public DelphesInputReader {
     m_branchParticle = m_treeReader->UseBranch("Particle");
     m_branchHepMCEvent = m_treeReader->UseBranch("Event");
 
+    return outputfile;
+  }
 
+  inline int getNumberOfEvents() const override {return m_numberOfEvents;}
+  inline bool finished() const override {return m_entry >= m_numberOfEvents;}
 
-    return true;
+  inline std::string getUsage() const override {
+    std::stringstream sstr;
+    sstr << "Usage: " << m_appName << " config_file output_config_file output_file input_file(s)\n"
+         << "config_file - configuration file in Tcl format,\n"
+         << "output_config_file - configuration file steering the content of the edm4hep output in Tcl format,\n"
+         << "output_file - output file in ROOT format\n"
+         << "input_file(s) - input file(s) in ROOT format\n";
+    return sstr.str();
+  }
 
-    };
-  inline int getNumberOfEvents() {return m_numberOfEvents;}
-  inline bool finished() {return m_entry >= m_numberOfEvents;}
-
-  inline std::string getUsage() {return m_appName;};
-
-  inline bool readEvent(Delphes* modularDelphes, TObjArray* allParticleOutputArray,
-  TObjArray* stableParticleOutputArray, TObjArray* partonOutputArray) {
-
+  inline bool readEvent(Delphes* modularDelphes,
+                        TObjArray* allParticleOutputArray,
+                        TObjArray* stableParticleOutputArray,
+                        TObjArray* partonOutputArray) override {
 
       m_treeReader->ReadEntry(m_entry);
       for(Int_t j = 0; j < m_branchParticle->GetEntriesFast(); j++) {
@@ -88,8 +90,7 @@ class DelphesRootReader: public DelphesInputReader {
     };
 
 private:
-  const std::string m_appName = "DelphesROOT";
-  const std::string m_usage;
+  static constexpr const char* m_appName = "DelphesROOT";
   int m_numberOfEvents;
   int m_entry = 0;
   TChain* m_chain;

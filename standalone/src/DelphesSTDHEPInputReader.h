@@ -29,19 +29,16 @@ using std::endl;
 using std::cout;
 
 class DelphesSTDHEPInputReader: public DelphesInputReader {
-  public:
-  inline DelphesSTDHEPInputReader() {};
-  inline bool init(Delphes* modularDelphes, int argc, char *argv[], std::string& outputfile) {
+public:
+  DelphesSTDHEPInputReader() {};
+
+  std::string init(Delphes* modularDelphes, int argc, char *argv[]) override {
     if (argc < 4) {
-      std::cout << "Usage: " << m_appName << " config_file output_config_file output_file [input_file(s)]\n"
-                << "config_file - configuration file in Tcl format,\n"
-                << "output_config_file - configuration file steering the content of the edm4hep output in Tcl format,\n"
-                << "output_file - output file in ROOT format,\n"
-                << "input_file(s) - input file(s) in STDHEP format,\n"
-                << "with no input_file, or when input_file is -, read standard input."<< std::endl;
-      return false;
+      return "";
     }
-    outputfile = argv[3];
+
+
+    std::string outputfile = argv[3];
 
     int i = 4;
 
@@ -79,15 +76,27 @@ class DelphesSTDHEPInputReader: public DelphesInputReader {
       // TODO: multiple input files
       reader->SetInputFile(inputFile);
 
-    return true;
+    return outputfile;
 
     };
-  inline int getNumberOfEvents() {return m_numberOfEvents;}
 
-  inline std::string getUsage() {return m_appName;};
+  inline int getNumberOfEvents() const override {return m_numberOfEvents;}
 
-  inline bool readEvent(Delphes* modularDelphes, TObjArray* allParticleOutputArray,
-  TObjArray* stableParticleOutputArray, TObjArray* partonOutputArray) {
+  inline std::string getUsage() const override {
+    std::stringstream sstr;
+    sstr << "Usage: " << m_appName << " config_file output_config_file output_file [input_file(s)]\n"
+         << "config_file - configuration file in Tcl format,\n"
+         << "output_config_file - configuration file steering the content of the edm4hep output in Tcl format,\n"
+         << "output_file - output file in ROOT format,\n"
+         << "input_file(s) - input file(s) in STDHEP format,\n"
+         << "with no input_file, or when input_file is -, read standard input.\n";
+    return sstr.str();
+  };
+
+  inline bool readEvent(Delphes* modularDelphes,
+                        TObjArray* allParticleOutputArray,
+                        TObjArray* stableParticleOutputArray,
+                        TObjArray* partonOutputArray) override {
       reader->Clear();
       readStopWatch.Start();
       auto factory = modularDelphes->GetFactory();
@@ -100,13 +109,12 @@ class DelphesSTDHEPInputReader: public DelphesInputReader {
       }
       m_finished = true; // ?
       return false;
-    };
+    }
 
-    inline bool finished() {return m_finished;};
+  inline bool finished() const override {return m_finished;}
 
 private:
-  const std::string m_appName = "DelphesHepMC";
-  const std::string m_usage;
+  static constexpr const char* m_appName = "DelphesHepMC";
   int m_numberOfEvents;
   int m_entry = 0;
   bool m_finished = false;
