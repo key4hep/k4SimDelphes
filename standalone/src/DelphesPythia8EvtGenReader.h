@@ -37,19 +37,11 @@ class DelphesPythia8EvtGenReader: public DelphesInputReader {
       }
     };
 
-  inline bool init(Delphes* modularDelphes, int argc, char *argv[], std::string& outputfile) {
+  std::string init(Delphes* modularDelphes, int argc, char *argv[]) override {
     if (argc!=8) {
-      std::cout << "Usage: " << m_appName << "config_file output_config_file pythia_card output_file DECAY.DEC evt.pdl user.dec\n"
-                << "config_file - configuration file in Tcl format,\n"
-                << "output_config_file - configuration file steering the content of the edm4hep output in Tcl format,\n"
-                << "pythia_card - Pythia8 configuration file,\n"
-                << "output_file - output file in ROOT format,\n" 
-	        << "DECAY.DEC - EvtGen full decay file,\n"
-                << "evt.pdl - EvtGen particle list,\n"
-	        << "user.dec - EvtGen user decay file." << std::endl;
-      return false;
+      return "";
     }
-    outputfile = argv[4];
+    std::string outputfile = argv[4];
     // Initialize Pythia
     pythia = new Pythia8::Pythia;
 
@@ -121,15 +113,26 @@ class DelphesPythia8EvtGenReader: public DelphesInputReader {
     evtgen->readDecayFile(argv[7]);
     pythia->init();
 
-    return true;
+    return outputfile;
 
   };
-  inline int getNumberOfEvents() {return m_numberOfEvents;}
+  int getNumberOfEvents() const override {return m_numberOfEvents;}
 
-  inline std::string getUsage() {return m_appName;};
+  std::string getUsage() const override {
+    std::stringstream sstr;
+    sstr << "Usage: " << m_appName << "config_file output_config_file pythia_card output_file DECAY.DEC evt.pdl user.dec\n"
+         << "config_file - configuration file in Tcl format,\n"
+         << "output_config_file - configuration file steering the content of the edm4hep output in Tcl format,\n"
+         << "pythia_card - Pythia8 configuration file,\n"
+         << "output_file - output file in ROOT format,\n"
+         << "DECAY.DEC - EvtGen full decay file,\n"
+         << "evt.pdl - EvtGen particle list,\n"
+         << "user.dec - EvtGen user decay file.\n";
+    return sstr.str();
+  };
 
-  inline bool readEvent(Delphes* modularDelphes, TObjArray* allParticleOutputArray,
-  TObjArray* stableParticleOutputArray, TObjArray* partonOutputArray) {
+  bool readEvent(Delphes* modularDelphes, TObjArray* allParticleOutputArray,
+  TObjArray* stableParticleOutputArray, TObjArray* partonOutputArray) override {
 
     auto factory = modularDelphes->GetFactory();
       while(reader && reader->ReadBlock(factory, allParticleOutputArrayLHEF, stableParticleOutputArrayLHEF, partonOutputArrayLHEF) && !reader->EventReady()) ;
@@ -168,10 +171,10 @@ class DelphesPythia8EvtGenReader: public DelphesInputReader {
     return true;
     };
 
-  inline bool finished() {return m_entry >= m_numberOfEvents;};
+  inline bool finished() const override {return m_entry >= m_numberOfEvents;};
 
 private:
-  const std::string m_appName = "DelphesPythia8EvtGen";
+  static constexpr const char* m_appName = "DelphesPythia8EvtGen";
   const std::string m_usage;
   int m_numberOfEvents;
   int m_entry = 0;
