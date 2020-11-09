@@ -10,6 +10,8 @@
 #include "edm4hep/RecoParticleRefCollection.h"
 #include "edm4hep/ParticleIDCollection.h"
 
+#include "classes/DelphesClasses.h"
+
 #include <string_view>
 #include <algorithm>
 #include <unordered_map>
@@ -22,7 +24,7 @@ template<size_t N>
 void sortBranchesProcessingOrder(std::vector<BranchSettings>& branches,
                                  std::array<std::string_view, N> const& processingOrder);
 
-edm4hep::Track convertTrack(Candidate const* cand, const double magFieldBz);
+edm4hep::Track convertTrack(Track const* cand, const double magFieldBz);
 
 /**
  * Simple helper function to make it easier to refactor later
@@ -33,17 +35,14 @@ inline bool contains(Container const& container, typename Container::value_type 
   return std::find(container.cbegin(), container.cend(), value) != container.cend();
 }
 
-DelphesEDM4HepConverter::DelphesEDM4HepConverter(ExRootConfParam /*const*/& branches,
+DelphesEDM4HepConverter::DelphesEDM4HepConverter(const std::vector<BranchSettings>& branches,
                                                  OutputSettings const& outputSettings, double magFieldBz) :
   m_magneticFieldBz(magFieldBz),
   m_recoCollName(outputSettings.RecoParticleCollectionName),
   m_particleIDName(outputSettings.ParticleIDCollectionName),
   m_mcRecoAssocCollName(outputSettings.MCRecoAssociationCollectionName)
 {
-  for (int b = 0; b < branches.GetSize(); b += 3) {
-    BranchSettings branch{branches[b].GetString(),
-                          branches[b + 1].GetString(),
-                          branches[b + 2].GetString()};
+  for (const auto& branch : branches) {
     if (contains(PROCESSING_ORDER, branch.className)) {
       m_branches.push_back(branch);
     }
@@ -52,71 +51,74 @@ DelphesEDM4HepConverter::DelphesEDM4HepConverter(ExRootConfParam /*const*/& bran
 
   sortBranchesProcessingOrder(m_branches, PROCESSING_ORDER);
 
-  std::unordered_map<std::string, ProcessFunction> refProcessFunctions = {
+
+  const std::unordered_map<std::string, ProcessFunction> refProcessFunctions = {
     {"Photon", &DelphesEDM4HepConverter::processPhotons},
-    {"Muon", &DelphesEDM4HepConverter::processMuonsElectrons},
-    {"Electron", &DelphesEDM4HepConverter::processMuonsElectrons}};
+    {"Muon", &DelphesEDM4HepConverter::processMuons},
+    {"Electron", &DelphesEDM4HepConverter::processElectrons}};
 
   for (const auto& branch : m_branches) {
     if (contains(outputSettings.GenParticleCollections, branch.name.c_str())) {
-      registerCollection<edm4hep::MCParticleCollection>(branch.name);
+      createCollection<edm4hep::MCParticleCollection>(branch.name);
       m_processFunctions.emplace(branch.name, &DelphesEDM4HepConverter::processParticles);
     }
 
     if (contains(outputSettings.ReconstructedParticleCollections, branch.name.c_str()) &&
         contains(RECO_TRACK_OUTPUT, branch.className.c_str())) {
       registerGlobalCollections();
-      registerCollection<edm4hep::TrackCollection>(branch.name);
+      createCollection<edm4hep::TrackCollection>(branch.name);
       m_processFunctions.emplace(branch.name, &DelphesEDM4HepConverter::processTracks);
     }
 
     if (contains(outputSettings.ReconstructedParticleCollections, branch.name.c_str()) &&
         contains(RECO_CLUSTER_OUTPUT, branch.className.c_str())) {
       registerGlobalCollections();
-      registerCollection<edm4hep::ClusterCollection>(branch.name);
+      createCollection<edm4hep::ClusterCollection>(branch.name);
       m_processFunctions.emplace(branch.name, &DelphesEDM4HepConverter::processClusters);
     }
 
     if (contains(outputSettings.JetCollections, branch.name.c_str())) {
-      registerCollection<edm4hep::ReconstructedParticleCollection>(branch.name);
+      createCollection<edm4hep::ReconstructedParticleCollection>(branch.name);
       m_processFunctions.emplace(branch.name, &DelphesEDM4HepConverter::processJets);
     }
 
     if (contains(outputSettings.MuonCollections, branch.name.c_str()) ||
         contains(outputSettings.ElectronCollections, branch.name.c_str()) ||
         contains(outputSettings.PhotonCollections, branch.name.c_str())) {
-      registerCollection<edm4hep::RecoParticleRefCollection>(branch.name);
-      m_processFunctions.emplace(branch.name, refProcessFunctions[branch.className]);
+      createCollection<edm4hep::RecoParticleRefCollection>(branch.name);
+      m_processFunctions.emplace(branch.name, refProcessFunctions.at(branch.className));
     }
 
     if (contains(outputSettings.MissingETCollections, branch.name.c_str())) {
-      registerCollection<edm4hep::ReconstructedParticleCollection>(branch.name);
+      createCollection<edm4hep::ReconstructedParticleCollection>(branch.name);
       m_processFunctions.emplace(branch.name, &DelphesEDM4HepConverter::processMissingET);
     }
 
     if (contains(outputSettings.ScalarHTCollections, branch.name.c_str())) {
-      registerCollection<edm4hep::ParticleIDCollection>(branch.name);
+      createCollection<edm4hep::ParticleIDCollection>(branch.name);
       m_processFunctions.emplace(branch.name, &DelphesEDM4HepConverter::processScalarHT);
     }
   }
 }
 
-void DelphesEDM4HepConverter::process(Delphes *modularDelphes) {
+void DelphesEDM4HepConverter::process(TTree* delphesTree) {
   // beginning of processing: clear previous event from containers
   for (auto& coll : m_collections) {
    coll.second->clear();
   }
 
   for (const auto& branch : m_branches) {
-    const auto* delphesCollection = modularDelphes->ImportArray(branch.input.c_str());
-    // at this point is not guaranteed that all entries in branch (which follow
+    // at this point it is not guaranteed that all entries in branch (which follow
     // the input from the delphes card) are also present in the processing
     // functions. Checking this here, basically allows us to skip these checks
     // in all called processing functions, since whatever is accessed there will
     // also be in the collection map, since that is filled with the same keys as
     // the processing function map
     const auto processFuncIt = m_processFunctions.find(branch.name);
-    if (processFuncIt != m_processFunctions.end()) {
+    // Also check whether the desired input is actually in the branch
+    auto* rootBranch = delphesTree->GetBranch(branch.name.c_str());
+    if (processFuncIt != m_processFunctions.end() && rootBranch) {
+      auto* delphesCollection = *(TClonesArray**) rootBranch->GetAddress();
       (this->*processFuncIt->second)(delphesCollection, branch.name);
     }
   }
@@ -127,23 +129,17 @@ void DelphesEDM4HepConverter::process(Delphes *modularDelphes) {
   m_recoParticleGenIds.clear();
 }
 
-void DelphesEDM4HepConverter::processParticles(const TObjArray* delphesCollection, std::string_view const branch)
+void DelphesEDM4HepConverter::processParticles(const TClonesArray* delphesCollection, std::string_view const branch)
 {
   auto* collection = static_cast<edm4hep::MCParticleCollection*>(m_collections[branch]);
-  for (int iCand = 0; iCand < delphesCollection->GetEntriesFast(); ++iCand) {
-    auto* delphesCand = static_cast<Candidate*>(delphesCollection->At(iCand));
+  for (int iCand = 0; iCand < delphesCollection->GetEntries(); ++iCand) {
+    auto* delphesCand = static_cast<GenParticle*>(delphesCollection->At(iCand));
 
     auto cand = collection->create();
     cand.setCharge(delphesCand->Charge);
     cand.setMass(delphesCand->Mass);
-    cand.setMomentum({
-      (float) delphesCand->Momentum.Px(),
-      (float) delphesCand->Momentum.Py(),
-      (float) delphesCand->Momentum.Pz()
-    });
-    cand.setVertex({(float) delphesCand->Position.X(),
-        (float) delphesCand->Position.Y(),
-        (float) delphesCand->Position.Z()});
+    cand.setMomentum({delphesCand->Px, delphesCand->Py, delphesCand->Pz});
+    cand.setVertex({delphesCand->X, delphesCand->Y, delphesCand->Z});
     cand.setPDG(delphesCand->PID); // delphes uses whatever hepevt.idhep provides
     cand.setGeneratorStatus(delphesCand->Status);
 
@@ -153,8 +149,8 @@ void DelphesEDM4HepConverter::processParticles(const TObjArray* delphesCollectio
   }
 
   // mother-daughter relations
-  for (int iCand = 0; iCand < delphesCollection->GetEntriesFast(); ++iCand) {
-    auto* delphesCand = static_cast<Candidate*>(delphesCollection->At(iCand));
+  for (int iCand = 0; iCand < delphesCollection->GetEntries(); ++iCand) {
+    auto* delphesCand = static_cast<GenParticle*>(delphesCollection->At(iCand));
     auto cand = collection->at(iCand);
 
     if (delphesCand->M1 > -1) {
@@ -171,15 +167,15 @@ void DelphesEDM4HepConverter::processParticles(const TObjArray* delphesCollectio
 
 }
 
-void DelphesEDM4HepConverter::processTracks(const TObjArray* delphesCollection, std::string_view const branch)
+void DelphesEDM4HepConverter::processTracks(const TClonesArray* delphesCollection, std::string_view const branch)
 {
   auto* particleCollection = static_cast<edm4hep::ReconstructedParticleCollection*>(m_collections[m_recoCollName]);
   auto* trackCollection = static_cast<edm4hep::TrackCollection*>(m_collections[branch]);
   auto* mcRecoRelations = static_cast<edm4hep::MCRecoParticleAssociationCollection*>(m_collections[m_mcRecoAssocCollName]);
   auto* idCollection = static_cast<edm4hep::ParticleIDCollection*>(m_collections[m_particleIDName]);
 
-  for (auto iCand = 0; iCand < delphesCollection->GetEntriesFast(); ++iCand) {
-    auto* delphesCand = static_cast<Candidate*>(delphesCollection->At(iCand));
+  for (auto iCand = 0; iCand < delphesCollection->GetEntries(); ++iCand) {
+    auto* delphesCand = static_cast<Track*>(delphesCollection->At(iCand));
 
     auto track = convertTrack(delphesCand, m_magneticFieldBz);
     trackCollection->push_back(track);
@@ -188,18 +184,17 @@ void DelphesEDM4HepConverter::processTracks(const TObjArray* delphesCollection, 
 
     auto cand = particleCollection->create();
     cand.setCharge(delphesCand->Charge);
-    cand.setEnergy(delphesCand->Momentum.E());
-    cand.setMomentum({(float) delphesCand->Momentum.Px(),
-                      (float) delphesCand->Momentum.Py(),
-                      (float) delphesCand->Momentum.Pz()});
-    cand.setMass(delphesCand->Mass);
+    const auto momentum = delphesCand->P4();
+    cand.setEnergy(momentum.E());
+    cand.setMomentum({(float) momentum.Px(), (float) momentum.Py(), (float) momentum.Pz()});
+    // cand.setMass(delphesCand->Mass);
 
     cand.addToTracks(track);
 
-    id.addToParameters(delphesCand->IsolationVar);
+    // id.addToParameters(delphesCand->IsolationVar);
     cand.addToParticleIDs(id);
 
-    UInt_t genId = static_cast<Candidate*>(delphesCand->GetCandidates()->At(0))->GetUniqueID();
+    UInt_t genId = delphesCand->Particle.GetUniqueID();
     if (const auto genIt = m_genParticleIds.find(genId); genIt != m_genParticleIds.end()) {
       auto relation = mcRecoRelations->create();
       relation.setSim(genIt->second);
@@ -210,20 +205,23 @@ void DelphesEDM4HepConverter::processTracks(const TObjArray* delphesCollection, 
   }
 }
 
-void DelphesEDM4HepConverter::processClusters(const TObjArray* delphesCollection, std::string_view const branch)
+void DelphesEDM4HepConverter::processClusters(const TClonesArray* delphesCollection, std::string_view const branch)
 {
   auto* particleCollection = static_cast<edm4hep::ReconstructedParticleCollection*>(m_collections[m_recoCollName]);
   auto* clusterCollection = static_cast<edm4hep::ClusterCollection*>(m_collections[branch]);
   auto* mcRecoRelations = static_cast<edm4hep::MCRecoParticleAssociationCollection*>(m_collections[m_mcRecoAssocCollName]);
 
-  for (auto iCand = 0; iCand < delphesCollection->GetEntriesFast(); ++iCand) {
-    auto* delphesCand = static_cast<Candidate*>(delphesCollection->At(iCand));
+  for (auto iCand = 0; iCand < delphesCollection->GetEntries(); ++iCand) {
+    auto* delphesCand = static_cast<Tower*>(delphesCollection->At(iCand));
 
     auto cluster = clusterCollection->create();
-    cluster.setEnergy(delphesCand->Momentum.E());
-    cluster.setPosition({(float) delphesCand->Position.X(),
-                         (float) delphesCand->Position.Y(),
-                         (float) delphesCand->Position.Z()});
+    cluster.setEnergy(delphesCand->E);
+    // TODO: how to determine position from a Tower instead of a Candidate? Does
+    // it make sense define this for a cluster? Can we get enough info from
+    // Delphes?
+    // cluster.setPosition({(float) delphesCand->Position.X(),
+    //                      (float) delphesCand->Position.Y(),
+    //                      (float) delphesCand->Position.Z()});
     // TODO: time? (could be stored in a CalorimeterHit)
     // TODO: mc relations? would definitely need a CalorimeterHit for that
     //
@@ -232,11 +230,11 @@ void DelphesEDM4HepConverter::processClusters(const TObjArray* delphesCollection
     // that would probably make the matching that is done below much harder
 
     auto cand = particleCollection->create();
-    cand.setCharge(delphesCand->Charge);
-    cand.setMomentum({(float) delphesCand->Momentum.Px(),
-                      (float) delphesCand->Momentum.Py(),
-                      (float) delphesCand->Momentum.Pz()});
-    cand.setEnergy(delphesCand->Momentum.E());
+    const auto momentum = delphesCand->P4(); // NOTE: assuming massless here!
+    // TODO: fill this when it is available later, when when we link the references?
+    // cand.setCharge(delphesCand->Charge);
+    cand.setMomentum({(float) momentum.Px(), (float) momentum.Py(), (float) momentum.Pz()});
+    cand.setEnergy(delphesCand->E);
 
     cand.addToClusters(cluster);
 
@@ -253,33 +251,33 @@ void DelphesEDM4HepConverter::processClusters(const TObjArray* delphesCollection
   }
 }
 
-void DelphesEDM4HepConverter::processJets(const TObjArray* delphesCollection, std::string_view const branch)
+void DelphesEDM4HepConverter::processJets(const TClonesArray* delphesCollection, std::string_view const branch)
 {
   auto* jetCollection = static_cast<edm4hep::ReconstructedParticleCollection*>(m_collections[branch]);
   auto* idCollection = static_cast<edm4hep::ParticleIDCollection*>(m_collections[m_particleIDName]);
 
-  for (auto iCand = 0; iCand < delphesCollection->GetEntriesFast(); ++iCand) {
-    auto* delphesCand = static_cast<Candidate*>(delphesCollection->At(iCand));
+  for (auto iCand = 0; iCand < delphesCollection->GetEntries(); ++iCand) {
+    auto* delphesCand = static_cast<Jet*>(delphesCollection->At(iCand));
     auto jet = jetCollection->create();
     auto id = idCollection->create();
 
     // NOTE: Filling the jet with the information delievered by Delphes, which
     // is not necessarily the same as the sum of its constituents (filled below)
     jet.setCharge(delphesCand->Charge);
-    jet.setEnergy(delphesCand->Momentum.E());
-    jet.setMomentum({(float) delphesCand->Momentum.Px(),
-                     (float) delphesCand->Momentum.Py(),
-                     (float) delphesCand->Momentum.Pz()});
-    jet.setEnergy(delphesCand->Momentum.E());
+    jet.setMass(delphesCand->Mass);
+    const auto momentum = delphesCand->P4();
+    jet.setEnergy(momentum.E());
+    jet.setMomentum({(float) momentum.Px(), (float) momentum.Py(), (float) momentum.Pz()});
 
-    id.addToParameters(delphesCand->IsolationVar);
+    // id.addToParameters(delphesCand->IsolationVar);
     id.addToParameters(delphesCand->BTag);
     id.addToParameters(delphesCand->TauTag);
     jet.addToParticleIDs(id);
 
-    const auto* constituents = delphesCand->GetCandidates();
-    for (auto iConst = 0; iConst < constituents->GetEntriesFast(); ++iConst) {
-      auto* constituent = static_cast<Candidate*>(constituents->At(iConst));
+    const auto& constituents = delphesCand->Constituents;
+    for (auto iConst = 0; iConst < constituents.GetEntries(); ++iConst) {
+      // TODO: Can we do better than Candidate here?
+      auto* constituent = static_cast<Candidate*>(constituents.At(iConst));
 
       const auto genIds = getAllParticleIDs(constituent);
       for (const auto genId : genIds) {
@@ -297,12 +295,12 @@ void DelphesEDM4HepConverter::processJets(const TObjArray* delphesCollection, st
   }
 }
 
-void DelphesEDM4HepConverter::processPhotons(const TObjArray* delphesCollection, std::string_view const branch)
+void DelphesEDM4HepConverter::processPhotons(const TClonesArray* delphesCollection, std::string_view const branch)
 {
   auto* collection = static_cast<edm4hep::RecoParticleRefCollection*>(m_collections[branch]);
 
-  for (auto iCand = 0; iCand < delphesCollection->GetEntriesFast(); ++iCand) {
-    auto* delphesCand = static_cast<Candidate*>(delphesCollection->At(iCand));
+  for (auto iCand = 0; iCand < delphesCollection->GetEntries(); ++iCand) {
+    auto* delphesCand = static_cast<Photon*>(delphesCollection->At(iCand));
     auto photonRef = collection->create();
 
     const auto genIds = getAllParticleIDs(delphesCand);
@@ -325,22 +323,23 @@ void DelphesEDM4HepConverter::processPhotons(const TObjArray* delphesCollection,
   }
 }
 
-void DelphesEDM4HepConverter::processMuonsElectrons(const TObjArray* delphesCollection, std::string_view const branch)
+template<typename DelphesT>
+void DelphesEDM4HepConverter::processMuonsElectrons(const TClonesArray* delphesCollection, std::string_view const branch, std::string_view const type)
 {
   auto* collection = static_cast<edm4hep::RecoParticleRefCollection*>(m_collections[branch]);
 
-  for (auto iCand = 0; iCand < delphesCollection->GetEntriesFast(); ++iCand) {
-    auto* delphesCand = static_cast<Candidate*>(delphesCollection->At(iCand));
+  for (auto iCand = 0; iCand < delphesCollection->GetEntries(); ++iCand) {
+    auto* delphesCand = static_cast<DelphesT*>(delphesCollection->At(iCand));
     auto particleRef = collection->create();
 
-    const auto genId = delphesCand->GetCandidates()->At(0)->GetUniqueID();
+    const auto genId = delphesCand->Particle.GetUniqueID();
     const auto [recoBegin, recoEnd] = m_recoParticleGenIds.equal_range(genId);
     if (std::distance(recoBegin, recoEnd) > 1) {
-      std::cerr << "**** WARNING: More than one reconstructed particle attached to the genParticle UniqueID " << genId << ", which is supposed to be a muon or an electron" << std::endl;
+      std::cerr << "**** WARNING: More than one reconstructed particle attached to the genParticle UniqueID " << genId << ", which is supposed to be a " << type << std::endl;
       continue;
     }
     if (recoBegin == m_recoParticleGenIds.end() && recoEnd == m_recoParticleGenIds.end()) {
-      std::cerr << "**** WARNING: Could not find a reconstructed particle attached to the genParticle UniqueID " << genId << ", which is supposed to be muon or an electron" << std::endl;
+      std::cerr << "**** WARNING: Could not find a reconstructed particle attached to the genParticle UniqueID " << genId << ", which is supposed to be a " << type << std::endl;
       continue;
     }
     particleRef.setParticle(recoBegin->second);
@@ -348,25 +347,25 @@ void DelphesEDM4HepConverter::processMuonsElectrons(const TObjArray* delphesColl
 
 }
 
-void DelphesEDM4HepConverter::processMissingET(const TObjArray* delphesCollection, std::string_view const branch)
+void DelphesEDM4HepConverter::processMissingET(const TClonesArray* delphesCollection, std::string_view const branch)
 {
   auto* collection = static_cast<edm4hep::ReconstructedParticleCollection*>(m_collections[branch]);
-  auto* delphesCand = static_cast<Candidate*>(delphesCollection->At(0));
+  auto* delphesCand = static_cast<MissingET*>(delphesCollection->At(0));
 
   auto cand = collection->create();
-  cand.setMomentum({(float) delphesCand->Momentum.Px(),
-                    (float) delphesCand->Momentum.Px(),
-                    (float) delphesCand->Momentum.Px()});
-  cand.setMass(delphesCand->Mass);
+  const auto momentum = delphesCand->P4(); // NOTE: assuming massless here!
+  cand.setMomentum({(float) momentum.Px(), (float) momentum.Py(), (float) momentum.Pz()});
+  cand.setEnergy(momentum.E());
+  // cand.setMass(delphesCand->Mass);
 }
 
-void DelphesEDM4HepConverter::processScalarHT(const TObjArray* delphesCollection, std::string_view const branch)
+void DelphesEDM4HepConverter::processScalarHT(const TClonesArray* delphesCollection, std::string_view const branch)
 {
   auto* collection = static_cast<edm4hep::ParticleIDCollection*>(m_collections[branch]);
-  auto* delphesCand = static_cast<Candidate*>(delphesCollection->At(0));
+  auto* delphesCand = static_cast<ScalarHT*>(delphesCollection->At(0));
 
   auto cand = collection->create();
-  cand.addToParameters(delphesCand->Momentum.Pt());
+  cand.addToParameters(delphesCand->HT);
 }
 
 
@@ -375,13 +374,13 @@ void DelphesEDM4HepConverter::registerGlobalCollections()
 {
   // Make sure that these are only registered once
   if (m_collections.find(m_recoCollName) == m_collections.end()) {
-    registerCollection<edm4hep::ReconstructedParticleCollection>(m_recoCollName);
+    createCollection<edm4hep::ReconstructedParticleCollection>(m_recoCollName);
   }
   if (m_collections.find(m_mcRecoAssocCollName) == m_collections.end()) {
-    registerCollection<edm4hep::MCRecoParticleAssociationCollection>(m_mcRecoAssocCollName);
+    createCollection<edm4hep::MCRecoParticleAssociationCollection>(m_mcRecoAssocCollName);
   }
   if (m_collections.find(m_particleIDName) == m_collections.end()) {
-    registerCollection<edm4hep::ParticleIDCollection>(m_particleIDName);
+    createCollection<edm4hep::ParticleIDCollection>(m_particleIDName);
   }
 }
 
@@ -409,7 +408,7 @@ void sortBranchesProcessingOrder(std::vector<BranchSettings>& branches,
 }
 
 
-edm4hep::Track convertTrack(Candidate const* cand, const double magFieldBz)
+edm4hep::Track convertTrack(Track const* cand, const double magFieldBz)
 {
   edm4hep::Track track;
   // Delphes does not really provide any information that would go into the
