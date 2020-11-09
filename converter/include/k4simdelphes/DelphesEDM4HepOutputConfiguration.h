@@ -178,6 +178,12 @@ OutputSettings getEDM4hepOutputSettings(ExRootConfReader* confReader)
   return settings;
 }
 
+OutputSettings getEDM4hepOutputSettings(const char* confFile) {
+  ExRootConfReader confReader{};
+  confReader.ReadFile(confFile);
+  return getEDM4hepOutputSettings(&confReader);
+}
+
 
 }
 

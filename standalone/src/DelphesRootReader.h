@@ -17,13 +17,13 @@
 
 #include "ExRootAnalysis/ExRootTreeBranch.h"
 #include "ExRootAnalysis/ExRootTreeReader.h"
+#include "ExRootTreeWriter.h" // use local copy
 
 #include <iostream>
 
 class DelphesRootReader: public DelphesInputReader {
   public:
-  inline DelphesRootReader() {};
-  inline std::string init(Delphes* modularDelphes, int argc, char *argv[]) override {
+  std::string init(Delphes* modularDelphes, int argc, char *argv[]) override {
     if (argc < 5) {
       return "";
     }
@@ -41,13 +41,18 @@ class DelphesRootReader: public DelphesInputReader {
     m_branchParticle = m_treeReader->UseBranch("Particle");
     m_branchHepMCEvent = m_treeReader->UseBranch("Event");
 
+    m_treeWriter = new ExRootTreeWriter(nullptr, "Delphes");
+    m_converterTree = std::make_unique<TTree>("ConverterTree", "Analysis");
+    m_treeWriter->SetTree(m_converterTree.get());
+    modularDelphes->SetTreeWriter(m_treeWriter);
+
     return outputfile;
   }
 
-  inline int getNumberOfEvents() const override {return m_numberOfEvents;}
-  inline bool finished() const override {return m_entry >= m_numberOfEvents;}
+  int getNumberOfEvents() const override {return m_numberOfEvents;}
+  bool finished() const override {return m_entry >= m_numberOfEvents;}
 
-  inline std::string getUsage() const override {
+  std::string getUsage() const override {
     std::stringstream sstr;
     sstr << "Usage: " << m_appName << " config_file output_config_file output_file input_file(s)\n"
          << "config_file - configuration file in Tcl format,\n"
@@ -57,17 +62,18 @@ class DelphesRootReader: public DelphesInputReader {
     return sstr.str();
   }
 
-  inline bool readEvent(Delphes* modularDelphes,
-                        TObjArray* allParticleOutputArray,
-                        TObjArray* stableParticleOutputArray,
-                        TObjArray* partonOutputArray) override {
+  bool readEvent(Delphes* modularDelphes,
+                 TObjArray* allParticleOutputArray,
+                 TObjArray* stableParticleOutputArray,
+                 TObjArray* partonOutputArray) override {
 
+      m_treeWriter->Clear();
       m_treeReader->ReadEntry(m_entry);
       for(Int_t j = 0; j < m_branchParticle->GetEntriesFast(); j++) {
         gen = (GenParticle *)m_branchParticle->At(j);
         candidate = modularDelphes->GetFactory()->NewCandidate();
         candidate->Momentum = gen->P4();
-        candidate->Position.SetXYZT(gen->X, gen->Y, gen->Z, gen->T * 1.0E3 * c_light);
+        candidate->Position.SetXYZT(gen->X, gen->Y, gen->Z, gen->T * 1.0E3 * k4simdelphes::c_light);
         candidate->PID = gen->PID;
         candidate->Status = gen->Status;
         candidate->M1 = gen->M1;
@@ -89,6 +95,8 @@ class DelphesRootReader: public DelphesInputReader {
     return finished();
     };
 
+  TTree* converterTree() override { return m_treeWriter->GetTree(); }
+
 private:
   static constexpr const char* m_appName = "DelphesROOT";
   int m_numberOfEvents;
@@ -97,6 +105,8 @@ private:
   ExRootTreeReader* m_treeReader =  nullptr;
   TClonesArray* m_branchParticle;
   TClonesArray* m_branchHepMCEvent;
+  ExRootTreeWriter* m_treeWriter{nullptr};
+  std::unique_ptr<TTree> m_converterTree{nullptr};
 
   GenParticle *gen;
   Candidate *candidate;

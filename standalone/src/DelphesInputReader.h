@@ -1,6 +1,8 @@
 #ifndef DELPHESEDM4HEP_DELPHESINPUTREADER
 #define DELPHESEDM4HEP_DELPHESINPUTREADER
 
+#include "TTree.h"
+
 #include <string>
 
 class TObjArray;
@@ -23,6 +25,8 @@ public:
                          TObjArray* allParticleOutputArray,
                          TObjArray* stableParticleOutputArray,
                          TObjArray* partonOutputArray) = 0;
+
+  virtual TTree* converterTree() = 0;
 
 };
 

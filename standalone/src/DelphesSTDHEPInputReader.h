@@ -11,24 +11,19 @@
 #include "modules/Delphes.h"
 
 #include "ExRootAnalysis/ExRootTreeBranch.h"
-#include "ExRootAnalysis/ExRootTreeReader.h"
+#include "ExRootTreeWriter.h" // use local copy
 
 #include "TObjArray.h"
-#include "TChain.h"
+#include "TTree.h"
 #include "TClonesArray.h"
 #include "TStopwatch.h"
 
 #include <iostream>
-
+#include <memory>
 
 //// TODO: handle case of more than one input file
 
-using std::stringstream;
-using std::runtime_error;
-using std::endl;
-using std::cout;
-
-class DelphesSTDHEPInputReader: public DelphesInputReader {
+class DelphesSTDHEPInputReader : public DelphesInputReader {
 public:
   DelphesSTDHEPInputReader() {};
 
@@ -42,47 +37,55 @@ public:
 
     int i = 4;
 
-    branchEvent = new ExRootTreeBranch("Event", LHEFEvent::Class());
-    reader = new DelphesSTDHEPReader;
+    m_branchEvent = std::make_unique<ExRootTreeBranch>("Event", LHEFEvent::Class());
+    m_reader = std::make_unique<DelphesSTDHEPReader>();
+
+    Long64_t length = 0;
 
       if(i == argc || strncmp(argv[i], "-", 2) == 0)
       {
-        cout << "** Reading standard input" << endl;
-        inputFile = stdin;
+        std::cout << "** Reading standard input" << std::endl;
+        m_inputFile = stdin;
         length = -1;
       }
       else
       {
-        cout << "** Reading " << argv[i] << endl;
-        inputFile = fopen(argv[i], "r");
+        std::cout << "** Reading " << argv[i] << std::endl;
+        m_inputFile = fopen(argv[i], "r");
 
-        if(inputFile == NULL)
+        if(m_inputFile == NULL)
         {
+          std::stringstream message;
           message << "can't open " << argv[i];
-          throw runtime_error(message.str());
+          throw std::runtime_error(message.str());
         }
 
-        fseek(inputFile, 0L, SEEK_END);
-        length = ftello(inputFile);
-        fseek(inputFile, 0L, SEEK_SET);
+        fseek(m_inputFile, 0L, SEEK_END);
+        length = ftello(m_inputFile);
+        fseek(m_inputFile, 0L, SEEK_SET);
 
         if(length <= 0)
         {
-          fclose(inputFile);
+          fclose(m_inputFile);
           ++i;
           //continue;
         }
       }
       // TODO: multiple input files
-      reader->SetInputFile(inputFile);
+      m_reader->SetInputFile(m_inputFile);
+
+    m_treeWriter = new ExRootTreeWriter(nullptr, "Delphes");
+    m_converterTree = std::make_unique<TTree>("ConverterTree", "Analysis");
+    m_treeWriter->SetTree(m_converterTree.get());
+    modularDelphes->SetTreeWriter(m_treeWriter);
 
     return outputfile;
 
     };
 
-  inline int getNumberOfEvents() const override {return m_numberOfEvents;}
+  int getNumberOfEvents() const override {return m_numberOfEvents;}
 
-  inline std::string getUsage() const override {
+  std::string getUsage() const override {
     std::stringstream sstr;
     sstr << "Usage: " << m_appName << " config_file output_config_file output_file [input_file(s)]\n"
          << "config_file - configuration file in Tcl format,\n"
@@ -93,17 +96,19 @@ public:
     return sstr.str();
   };
 
-  inline bool readEvent(Delphes* modularDelphes,
-                        TObjArray* allParticleOutputArray,
-                        TObjArray* stableParticleOutputArray,
-                        TObjArray* partonOutputArray) override {
-      reader->Clear();
-      readStopWatch.Start();
+  bool readEvent(Delphes* modularDelphes,
+                 TObjArray* allParticleOutputArray,
+                 TObjArray* stableParticleOutputArray,
+                 TObjArray* partonOutputArray) override {
+      m_reader->Clear();
+      m_treeWriter->Clear();
+      m_readStopWatch.Start();
       auto factory = modularDelphes->GetFactory();
-      while(reader->ReadBlock(factory, allParticleOutputArray, stableParticleOutputArray, partonOutputArray)) {
-        if (reader->EventReady()) {
-          readStopWatch.Stop();
-          reader->AnalyzeEvent(branchEvent, eventCounter, &readStopWatch, &procStopWatch);
+      while(m_reader->ReadBlock(factory, allParticleOutputArray, stableParticleOutputArray, partonOutputArray)) {
+        if (m_reader->EventReady()) {
+          m_readStopWatch.Stop();
+          m_eventCounter++;
+          m_reader->AnalyzeEvent(m_branchEvent.get(), m_eventCounter, &m_readStopWatch, &m_procStopWatch);
           return true;
         }
       }
@@ -111,32 +116,26 @@ public:
       return false;
     }
 
-  inline bool finished() const override {return m_finished;}
+  bool finished() const override {return m_finished;}
+
+  TTree* converterTree() override { return m_treeWriter->GetTree(); }
 
 private:
   static constexpr const char* m_appName = "DelphesHepMC";
   int m_numberOfEvents;
   int m_entry = 0;
   bool m_finished = false;
-  TChain* m_chain;
-  ExRootTreeReader* m_treeReader =  nullptr;
-  TClonesArray* m_branchParticle;
-  TClonesArray* m_branchHepMCEvent;
+  ExRootTreeWriter* m_treeReader = nullptr;
 
+  FILE *m_inputFile = 0;
+  TStopwatch m_readStopWatch, m_procStopWatch;
+  ExRootTreeWriter *m_treeWriter{nullptr};
+  std::unique_ptr<TTree> m_converterTree{nullptr};
+  std::unique_ptr<ExRootTreeBranch> m_branchEvent{nullptr};
 
-  std::stringstream message;
-  FILE *inputFile = 0;
-  TFile *outputFile = 0;
-  TStopwatch readStopWatch, procStopWatch;
-  ExRootTreeWriter *treeWriter = 0;
-  ExRootTreeBranch *branchEvent = 0;
-  ExRootConfReader *confReader = 0;
-  Delphes *modularDelphes = 0;
-  DelphesFactory *factory = 0;
-  TObjArray *stableParticleOutputArray = 0, *allParticleOutputArray = 0, *partonOutputArray = 0;
-  DelphesSTDHEPReader *reader = 0;
-  Int_t i, maxEvents, skipEvents;
-  Long64_t length, eventCounter;
+  std::unique_ptr<DelphesSTDHEPReader> m_reader{nullptr};
+
+  Long64_t m_eventCounter;
 
 };
 

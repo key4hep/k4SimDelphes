@@ -14,90 +14,88 @@
 #include "TDatabasePDG.h"
 
 #include "classes/DelphesClasses.h"
+#include "classes/DelphesFactory.h"
 #include "classes/DelphesStream.h"
 #include "classes/DelphesLHEFReader.h"
 #include "modules/Delphes.h"
-#include "ExRootAnalysis/ExRootTreeWriter.h"
+#include "ExRootTreeWriter.h" // use local copy
+#include "ExRootAnalysis/ExRootTreeBranch.h"
 
 #include "Pythia.h"
 #include "Pythia8Plugins/CombineMatchingInput.h"
 
 #include <iostream>
-
-//---------------------------------------------------------------------------
-
+#include <memory>
 
 class DelphesPythia8Reader: public DelphesInputReader {
-  public:
-  inline DelphesPythia8Reader() {};
+public:
+  DelphesPythia8Reader() {};
 
-  inline ~DelphesPythia8Reader() {
-      if (pythia) {
-        delete pythia;
-      }
-    };
+  ~DelphesPythia8Reader() {}
 
   std::string init(Delphes* modularDelphes, int argc, char *argv[]) override {
     if (argc != 5) {
       return "";
     }
     std::string outputfile = argv[4];
+
+    // simply pass the nullptr here for the TFile argument, we will in any case
+    // define a different TTree that the TreeWriter will use internally
+    m_treeWriter = new ExRootTreeWriter(nullptr, "Delphes");
+    m_converterTree = std::make_unique<TTree>("ConverterTree", "Analysis");
+    m_treeWriter->SetTree(m_converterTree.get());
+    modularDelphes->SetTreeWriter(m_treeWriter);
+
     // Initialize Pythia
-    pythia = new Pythia8::Pythia;
+    m_pythia = std::make_unique<Pythia8::Pythia>();
 
     // jet matching
 #if PYTHIA_VERSION_INTEGER < 8300
-    matching = combined->getHook(*pythia);
-    if(!matching)
-    {
+    m_matching = combined->getHook(*m_pythia);
+    if(!m_matching) {
       throw std::runtime_error("can't do matching");
     }
-    pythia->setUserHooksPtr(matching);
+    m_pythia->setUserHooksPtr(m_matching);
 #endif
 
-    if(pythia == NULL)
-    {
+    if (!m_pythia) {
       throw std::runtime_error("can't create Pythia instance");
     }
 
     // Read in commands from configuration file
-
-    std::stringstream message;
-    std::string pythia8configname(argv[3]);
-    if(!pythia->readFile(pythia8configname))
+    const std::string pythia8configname(argv[3]);
+    if(!m_pythia->readFile(pythia8configname))
     {
+      std::stringstream message;
       message << "can't read Pythia8 configuration file " << pythia8configname << std::endl;
       throw std::runtime_error(message.str());
     }
 
     // Extract settings to be used in the main program
-    numberOfEvents = pythia->mode("Main:numberOfEvents");
-
-    m_numberOfEvents = pythia->mode("Main:numberOfEvents");
-    timesAllowErrors = pythia->mode("Main:timesAllowErrors");
-    spareFlag1 = pythia->flag("Main:spareFlag1");
-    spareMode1 = pythia->mode("Main:spareMode1");
-    spareParm1 = pythia->parm("Main:spareParm1");
-    spareParm2 = pythia->parm("Main:spareParm2");
+    m_numberOfEvents = m_pythia->mode("Main:numberOfEvents");
+    m_timesAllowErrors = m_pythia->mode("Main:timesAllowErrors");
+    m_spareFlag1 = m_pythia->flag("Main:spareFlag1");
+    m_spareMode1 = m_pythia->mode("Main:spareMode1");
+    m_spareParm1 = m_pythia->parm("Main:m_spareParm1");
+    m_spareParm2 = m_pythia->parm("Main:m_spareParm2");
 
     // Check if particle gun
-    if(!spareFlag1) {
-      inputFile = fopen(pythia->word("Beams:LHEF").c_str(), "r");
-      if(inputFile) {
+    if(!m_spareFlag1) {
+      m_inputFile = fopen(m_pythia->word("Beams:LHEF").c_str(), "r");
+      if(m_inputFile) {
         reader = new DelphesLHEFReader;
-        reader->SetInputFile(inputFile);
+        reader->SetInputFile(m_inputFile);
 
-        // todo: add these to edm4hep output?
-        //branchEventLHEF = treeWriter->NewBranch("EventLHEF", LHEFEvent::Class());
-        //branchWeightLHEF = treeWriter->NewBranch("WeightLHEF", LHEFWeight::Class());
+        m_brancheEventLHEF = m_treeWriter->NewBranch("EventLHEF", LHEFEvent::Class());
+        m_branchWeightLHEF = m_treeWriter->NewBranch("WeightLHEF", LHEFWeight::Class());
 
-        allParticleOutputArrayLHEF = modularDelphes->ExportArray("allParticlesLHEF");
-        stableParticleOutputArrayLHEF = modularDelphes->ExportArray("stableParticlesLHEF");
-        partonOutputArrayLHEF = modularDelphes->ExportArray("partonsLHEF");
+        m_allParticleOutputArrayLHEF = modularDelphes->ExportArray("allParticlesLHEF");
+        m_stableParticleOutputArrayLHEF = modularDelphes->ExportArray("stableParticlesLHEF");
+        m_partonOutputArrayLHEF = modularDelphes->ExportArray("partonsLHEF");
       }
     }
 
-    pythia->init();
+    m_pythia->init();
 
     return outputfile;
   }
@@ -119,69 +117,70 @@ class DelphesPythia8Reader: public DelphesInputReader {
                         TObjArray* stableParticleOutputArray,
                         TObjArray* partonOutputArray) override {
 
+    m_treeWriter->Clear();
     auto factory = modularDelphes->GetFactory();
-      while(reader && reader->ReadBlock(factory, allParticleOutputArrayLHEF, stableParticleOutputArrayLHEF, partonOutputArrayLHEF) && !reader->EventReady()) ;
+    while(reader && reader->ReadBlock(factory, m_allParticleOutputArrayLHEF, m_stableParticleOutputArrayLHEF, m_partonOutputArrayLHEF) && !reader->EventReady()) ;
 
-      if(spareFlag1) {
-        if((spareMode1 >= 1 && spareMode1 <= 5) || spareMode1 == 21) {
-          fillPartons(spareMode1, spareParm1, spareParm2, pythia->event, pythia->particleData, pythia->rndm);
+      if(m_spareFlag1) {
+        if((m_spareMode1 >= 1 && m_spareMode1 <= 5) || m_spareMode1 == 21) {
+          fillPartons(m_spareMode1, m_spareParm1, m_spareParm2, m_pythia->event, m_pythia->particleData, m_pythia->rndm);
         } else {
-          fillParticle(spareMode1, spareParm1, spareParm2, pythia->event, pythia->particleData, pythia->rndm);
+          fillParticle(m_spareMode1, m_spareParm1, m_spareParm2, m_pythia->event, m_pythia->particleData, m_pythia->rndm);
         }
       }
 
-      if(!pythia->next()) {
+      if(!m_pythia->next()) {
         // If failure because reached end of file then exit event loop
-        if(pythia->info.atEndOfFile()) {
+        if(m_pythia->info.atEndOfFile()) {
           std::cerr << "Aborted since reached end of Les Houches Event File" << std::endl;
           return false;
         }
         // First few failures write off as "acceptable" errors, then quit
-        if(++errorCounter > timesAllowErrors) {
+        if(++m_errorCounter > m_timesAllowErrors) {
           std::cerr << "Event generation aborted prematurely, owing to error!" << std::endl;
           return false;
         }
         modularDelphes->Clear();
         reader->Clear();
       }
-      
-      readStopWatch.Stop();
-      procStopWatch.Start();
-      ConvertInput(eventCounter, pythia, branchEvent, factory,
+      m_readStopWatch.Stop();
+      m_procStopWatch.Start();
+      ConvertInput(m_eventCounter, m_pythia.get(), m_branchEvent.get(), factory,
         allParticleOutputArray, stableParticleOutputArray, partonOutputArray,
-        &readStopWatch, &procStopWatch);
-      ++m_entry;
+        &m_readStopWatch, &m_procStopWatch);
+      ++m_eventCounter;
     return true;
     };
 
-  inline bool finished() const override {return m_entry >= m_numberOfEvents;};
+  inline bool finished() const override {return m_eventCounter >= m_numberOfEvents;};
+
+  TTree* converterTree() override { return m_treeWriter->GetTree(); }
 
 private:
   static constexpr const char* m_appName = "DelphesPythia8";
-  int m_numberOfEvents;
-  int m_entry = 0;
-  Pythia8::Pythia* pythia{nullptr};
-  FILE *inputFile = 0;
-  TFile *outputFile = 0;
-  TStopwatch readStopWatch, procStopWatch;
-  ExRootTreeWriter *treeWriter = 0;
-  ExRootTreeBranch *branchEvent = 0;
-  ExRootTreeBranch *branchEventLHEF = 0, *branchWeightLHEF = 0;
-  ExRootConfReader *confReader = 0;
-  TObjArray *stableParticleOutputArrayLHEF = 0, *allParticleOutputArrayLHEF = 0, *partonOutputArrayLHEF = 0;
+  std::unique_ptr<Pythia8::Pythia> m_pythia{nullptr};
+
+  FILE *m_inputFile = 0;
+  TStopwatch m_readStopWatch, m_procStopWatch;
+  ExRootTreeWriter* m_treeWriter{nullptr};
+  std::unique_ptr<ExRootTreeBranch> m_branchEvent{nullptr};
+  std::unique_ptr<TTree> m_converterTree{nullptr};
+
+  ExRootTreeBranch *m_brancheEventLHEF = 0, *m_branchWeightLHEF = 0;
+  TObjArray *m_stableParticleOutputArrayLHEF = 0, *m_allParticleOutputArrayLHEF = 0, *m_partonOutputArrayLHEF = 0;
   DelphesLHEFReader *reader = 0;
-  Long64_t eventCounter, errorCounter;
-  Long64_t numberOfEvents, timesAllowErrors;
-  Bool_t spareFlag1;
-  Int_t spareMode1;
-  Double_t spareParm1, spareParm2;
+  Long64_t m_eventCounter{0}, m_errorCounter{0};
+  Long64_t m_numberOfEvents, m_timesAllowErrors;
+  Bool_t m_spareFlag1;
+  Int_t m_spareMode1;
+  Double_t m_spareParm1, m_spareParm2;
 
   TClonesArray* m_branchParticle;
   TClonesArray* m_branchHepMCEvent;
 
   // for matching
   Pythia8::CombineMatchingInput *combined = 0;
-  Pythia8::UserHooks *matching = 0;
+  Pythia8::UserHooks *m_matching = 0;
 };
 
 
