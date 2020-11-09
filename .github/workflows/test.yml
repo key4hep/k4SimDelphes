@@ -8,7 +8,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        SETUP: ['/cvmfs/sw.hsf.org/key4hep/setup.sh', '/cvmfs/sft.cern.ch/lcg/views/LCG_97a_FCC_4/x86_64-centos7-gcc8-opt/setup.sh']
+        SETUP: ['/cvmfs/sw.hsf.org/key4hep/setup.sh', 'init_lcg_97a_FCC_4.sh']
     steps:
     - uses: actions/checkout@v2
     - name: Install CVMFS
