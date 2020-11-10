@@ -5,19 +5,20 @@
 
 #include "TRefArray.h"
 
-#include <set>
+#include <vector>
 
 // TODO: If CLHEP ever gets part of edm4hep, take this from there.
 static constexpr double c_light = 2.99792458e+8;
 
-// TODO: check whether the set is necessary or if this could also be a vector
-// since all the IDs are already deduplicated
+// In this case we simply collect all the IDs from the delphesCand which are
+// already deduplicated
 template<typename DelphesT>
-std::set<UInt_t> getAllParticleIDs(DelphesT* delphesCand) {
+std::vector<UInt_t> getAllParticleIDs(DelphesT* delphesCand) {
   const auto& refArray = delphesCand->Particles;
-  std::set<UInt_t> relatedParticles;
+  std::vector<UInt_t> relatedParticles;
+  relatedParticles.reserve(refArray.GetEntries());
   for (int i = 0; i < refArray.GetEntries(); ++i) {
-    relatedParticles.insert(refArray.At(i)->GetUniqueID());
+    relatedParticles.push_back(refArray.At(i)->GetUniqueID());
   }
 
   return relatedParticles;
