@@ -20,6 +20,25 @@
 
 namespace k4simdelphes {
 
+/**
+ * Order in which the different delphes output classes will be processed.
+ * Everything not defined here will not be processed.
+ *
+ * NOTE: not a configuration parameter. this has to be done in this order to
+ * ensure that products required by later stages are producd early enough
+ */
+constexpr std::array<std::string_view, 9> PROCESSING_ORDER = {
+  "GenParticle",
+  "Track",
+  "Tower",
+  "Jet",
+  "Muon",
+  "Electron",
+  "Photon",
+  "MissingET",
+  "SclalarHT"
+};
+
 template<size_t N>
 void sortBranchesProcessingOrder(std::vector<BranchSettings>& branches,
                                  std::array<std::string_view, N> const& processingOrder);

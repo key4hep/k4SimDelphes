@@ -36,27 +36,6 @@ constexpr std::array<std::string_view, 1> RECO_TRACK_OUTPUT = {"Track"};
  */
 constexpr std::array<std::string_view, 1> RECO_CLUSTER_OUTPUT = {"Tower"};
 
-
-/**
- * Order in which the different delphes output classes will be processed.
- * Everything not defined here will not be processed.
- *
- * NOTE: not a configuration parameter. this has to be done in this order to
- * ensure that products required by later stages are producd early enough
- */
-constexpr std::array<std::string_view, 9> PROCESSING_ORDER = {
-  "GenParticle",
-  "Track",
-  "Tower",
-  "Jet",
-  "Muon",
-  "Electron",
-  "Photon",
-  "MissingET",
-  "SclalarHT"
-};
-
-
 struct BranchSettings {
   std::string input;
   std::string name;
