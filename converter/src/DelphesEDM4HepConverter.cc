@@ -20,6 +20,14 @@
 
 namespace k4simdelphes {
 
+// TODO: Take these from HepPDT / HepMC?
+constexpr double M_PIPLUS = 0.13957039; // GeV (PDG 2020)
+constexpr double M_MU = 0.1056583745; // GeV (PDG 2020)
+constexpr double M_ELECTRON = 0.5109989461e-3; // GeV (PDG 2020)
+
+// TODO: Make configurable?
+constexpr double trackMass = M_PIPLUS;
+
 /**
  * Order in which the different delphes output classes will be processed.
  * Everything not defined here will not be processed.
@@ -206,7 +214,9 @@ void DelphesEDM4HepConverter::processTracks(const TClonesArray* delphesCollectio
     const auto momentum = delphesCand->P4();
     cand.setEnergy(momentum.E());
     cand.setMomentum({(float) momentum.Px(), (float) momentum.Py(), (float) momentum.Pz()});
-    // cand.setMass(delphesCand->Mass);
+    // At this point indiscriminantly set the mass for each track. If this is a
+    // muon or an electron, the mass will be set to the appropriate value later.
+    cand.setMass(trackMass);
 
     cand.addToTracks(track);
 
@@ -236,7 +246,7 @@ void DelphesEDM4HepConverter::processClusters(const TClonesArray* delphesCollect
     auto cluster = clusterCollection->create();
     cluster.setEnergy(delphesCand->E);
     // TODO: how to determine position from a Tower instead of a Candidate? Does
-    // it make sense define this for a cluster? Can we get enough info from
+    // it make sense to define this for a cluster? Can we get enough info from
     // Delphes?
     // cluster.setPosition({(float) delphesCand->Position.X(),
     //                      (float) delphesCand->Position.Y(),
@@ -361,6 +371,14 @@ void DelphesEDM4HepConverter::processMuonsElectrons(const TClonesArray* delphesC
       std::cerr << "**** WARNING: Could not find a reconstructed particle attached to the genParticle UniqueID " << genId << ", which is supposed to be a " << type << std::endl;
       continue;
     }
+
+    // Update the mass of the reconstructed particle we point to
+    if constexpr(std::is_same_v<DelphesT, Muon>) {
+      recoBegin->second.setMass(M_MU);
+    } else if constexpr (std::is_same_v<DelphesT, Electron>) {
+      recoBegin->second.setMass(M_ELECTRON);
+    }
+
     particleRef.setParticle(recoBegin->second);
   }
 
