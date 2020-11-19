@@ -12,11 +12,10 @@
 
 #include "classes/DelphesClasses.h"
 
-#include <string_view>
 #include <algorithm>
-#include <unordered_map>
 #include <iostream>
 #include <iterator>
+#include <set>
 
 namespace k4simdelphes {
 
@@ -39,10 +38,10 @@ constexpr std::array<std::string_view, 9> PROCESSING_ORDER = {
   "GenParticle",
   "Track",
   "Tower",
-  "Jet",
   "Muon",
   "Electron",
   "Photon",
+  "Jet",
   "MissingET",
   "SclalarHT"
 };
@@ -303,11 +302,14 @@ void DelphesEDM4HepConverter::processJets(const TClonesArray* delphesCollection,
     id.addToParameters(delphesCand->TauTag);
     jet.addToParticleIDs(id);
 
+    // Avoid double counting reconstructed particles that have a relation to
+    // more than one generated particle in delphes
+    std::set<edm4hep::ReconstructedParticle> uniqueRecos;
+
     const auto& constituents = delphesCand->Constituents;
     for (auto iConst = 0; iConst < constituents.GetEntries(); ++iConst) {
       // TODO: Can we do better than Candidate here?
       auto* constituent = static_cast<Candidate*>(constituents.At(iConst));
-
       const auto genIds = getAllParticleIDs(constituent);
       for (const auto genId : genIds) {
         const auto [recoBegin, recoEnd] = m_recoParticleGenIds.equal_range(genId);
@@ -317,9 +319,13 @@ void DelphesEDM4HepConverter::processJets(const TClonesArray* delphesCollection,
         }
 
         for (auto it = recoBegin; it != recoEnd; ++it) {
-          jet.addToParticles(it->second);
+          uniqueRecos.insert(it->second);
         }
       }
+    }
+
+    for (const auto& reco : uniqueRecos) {
+      jet.addToParticles(reco);
     }
   }
 }
