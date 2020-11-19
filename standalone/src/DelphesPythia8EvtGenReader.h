@@ -95,6 +95,7 @@ class DelphesPythia8EvtGenReader: public DelphesInputReader {
         reader = new DelphesLHEFReader;
         reader->SetInputFile(inputFile);
 
+        // todo: add these to the edm4hep output?
         //branchEventLHEF = treeWriter->NewBranch("EventLHEF", LHEFEvent::Class());
         //branchWeightLHEF = treeWriter->NewBranch("WeightLHEF", LHEFWeight::Class());
 
@@ -181,7 +182,6 @@ private:
   TStopwatch readStopWatch, procStopWatch;
   ExRootTreeWriter *treeWriter = 0;
   ExRootTreeBranch *branchEvent = 0;
-  ExRootTreeBranch *branchEventLHEF = 0, *branchWeightLHEF = 0;
   ExRootConfReader *confReader = 0;
   TObjArray *stableParticleOutputArrayLHEF = 0, *allParticleOutputArrayLHEF = 0, *partonOutputArrayLHEF = 0;
   DelphesLHEFReader *reader = 0;

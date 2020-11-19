@@ -91,6 +91,7 @@ class DelphesPythia8Reader: public DelphesInputReader {
         reader = new DelphesLHEFReader;
         reader->SetInputFile(inputFile);
 
+        // todo: add these to edm4hep output?
         //branchEventLHEF = treeWriter->NewBranch("EventLHEF", LHEFEvent::Class());
         //branchWeightLHEF = treeWriter->NewBranch("WeightLHEF", LHEFWeight::Class());
 
