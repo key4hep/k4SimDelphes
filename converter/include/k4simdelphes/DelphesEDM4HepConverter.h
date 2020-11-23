@@ -23,6 +23,7 @@
 // Delphes output classes
 class Muon;
 class Electron;
+class Photon;
 
 namespace k4simdelphes {
 
@@ -59,22 +60,23 @@ private:
   void processTracks(const TClonesArray* delphesCollection, std::string_view const branch);
   void processClusters(const TClonesArray* delphesCollection, std::string_view const branch);
   void processJets(const TClonesArray* delphesCollection, std::string_view const branch);
-  void processPhotons(const TClonesArray* delphesCollection, std::string_view const branch);
+  void processPhotons(const TClonesArray* delphesCollection, std::string_view const branch) {
+    fillReferenceCollection<Photon>(delphesCollection, branch, "photon");
+  }
 
   void processMissingET(const TClonesArray* delphesCollection, std::string_view const branch);
   void processScalarHT(const TClonesArray* delphesCollection, std::string_view const branch);
 
   void processMuons(const TClonesArray* delphesCollection, std::string_view const branch) {
-    processMuonsElectrons<Muon>(delphesCollection, branch, "muon");
+    fillReferenceCollection<Muon>(delphesCollection, branch, "muon");
   }
   void processElectrons(const TClonesArray* delphesCollection, std::string_view const branch) {
-    processMuonsElectrons<Electron>(delphesCollection, branch, "electron");
+    fillReferenceCollection<Electron>(delphesCollection, branch, "electron");
   }
 
-  // Muon and Electron are almost the same in Delphes, but the class layout is
-  // not exactly the same so we have to inject the desired type via a template here
   template<typename DelphesT>
-  void processMuonsElectrons(const TClonesArray* delphesCollection, std::string_view const branch, std::string_view type);
+  void fillReferenceCollection(const TClonesArray* delphesCollection, std::string_view const branch,
+                               const std::string_view type);
 
   void registerGlobalCollections();
 
