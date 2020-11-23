@@ -12,7 +12,6 @@
 
 #include "classes/DelphesClasses.h"
 
-#include <algorithm>
 #include <iostream>
 #include <iterator>
 #include <set>
@@ -330,65 +329,60 @@ void DelphesEDM4HepConverter::processJets(const TClonesArray* delphesCollection,
   }
 }
 
-void DelphesEDM4HepConverter::processPhotons(const TClonesArray* delphesCollection, std::string_view const branch)
-{
-  auto* collection = static_cast<edm4hep::RecoParticleRefCollection*>(m_collections[branch]);
-
-  for (auto iCand = 0; iCand < delphesCollection->GetEntries(); ++iCand) {
-    auto* delphesCand = static_cast<Photon*>(delphesCollection->At(iCand));
-    auto photonRef = collection->create();
-
-    const auto genIds = getAllParticleIDs(delphesCand);
-    if (genIds.empty() || genIds.size() > 1) {
-      std::cerr << "**** WARNING: Delphes algorithm did not return a unique generated particle for a photon" << std::endl;
-      continue;
-    }
-
-    const auto genId = *genIds.begin();
-    const auto [recoBegin, recoEnd] = m_recoParticleGenIds.equal_range(genId);
-    if (std::distance(recoBegin, recoEnd) > 1) {
-      std::cerr << "**** WARNING: More than one reconstructed particle attached to the genParticle UniqueID " << genId << ", which is supposed to be a photon" << std::endl;
-      continue;
-    }
-    if (recoBegin == m_recoParticleGenIds.end() && recoEnd == m_recoParticleGenIds.end()) {
-      std::cerr << "**** WARNING: Could not find a reconstructed particle attached to the genParticle UniqueID " << genId << ", which is supposed to be a photon" << std::endl;
-      continue;
-    }
-    photonRef.setParticle(recoBegin->second);
-  }
-}
-
 template<typename DelphesT>
-void DelphesEDM4HepConverter::processMuonsElectrons(const TClonesArray* delphesCollection, std::string_view const branch, std::string_view const type)
+void DelphesEDM4HepConverter::fillReferenceCollection(const TClonesArray* delphesCollection, std::string_view const branch, std::string_view const type)
 {
   auto* collection = static_cast<edm4hep::RecoParticleRefCollection*>(m_collections[branch]);
 
   for (auto iCand = 0; iCand < delphesCollection->GetEntries(); ++iCand) {
     auto* delphesCand = static_cast<DelphesT*>(delphesCollection->At(iCand));
-    auto particleRef = collection->create();
+    auto recoRef = collection->create();
 
-    const auto genId = delphesCand->Particle.GetUniqueID();
-    const auto [recoBegin, recoEnd] = m_recoParticleGenIds.equal_range(genId);
-    if (std::distance(recoBegin, recoEnd) > 1) {
-      std::cerr << "**** WARNING: More than one reconstructed particle attached to the genParticle UniqueID " << genId << ", which is supposed to be a " << type << std::endl;
-      continue;
-    }
-    if (recoBegin == m_recoParticleGenIds.end() && recoEnd == m_recoParticleGenIds.end()) {
-      std::cerr << "**** WARNING: Could not find a reconstructed particle attached to the genParticle UniqueID " << genId << ", which is supposed to be a " << type << std::endl;
-      continue;
+    const auto genIds = getAllParticleIDs(delphesCand);
+    if (genIds.empty()) {
+      // Does this ever happen?
+      std::cerr << "**** WARNING: delphesCand (" << type << ") does not have an associated generated particle" << std::endl;
     }
 
-    // Update the mass of the reconstructed particle we point to
-    if constexpr(std::is_same_v<DelphesT, Muon>) {
-      recoBegin->second.setMass(M_MU);
-    } else if constexpr (std::is_same_v<DelphesT, Electron>) {
-      recoBegin->second.setMass(M_ELECTRON);
+    // Here we have to do some work to actually match the Delphes candidate to
+    // the correct edm4hep::ReconstructedParticle because the possibility exists
+    // that more than one ReconstructedParticle point to the same UniqueID. Here
+    // we are NOT interested in the physics interpretation of such a case, but
+    // only want to identify the correct ReconstructedParticle to which we
+    // should point. To do the matching we compare the 4-momenta of the stored
+    // edm4hep::ReconstructedParticle associated to the GenParticle UniqueID and
+    // take the FIRST good match. Since the delphes candidate originates from
+    // either a Track or a Tower, there should always be exactly one such good
+    // match.
+    // NOTE: slightly "old-school" implementation syntax-wise to be able to
+    // easily break out of the nested loops in one go
+    bool matchedReco = false;
+    for (auto genIdIt = genIds.cbegin(); !matchedReco && genIdIt != genIds.cend(); ++genIdIt) {
+      const auto [recoBegin, recoEnd] = m_recoParticleGenIds.equal_range(*genIdIt);
+      for (auto it = recoBegin; !matchedReco && it != recoEnd; ++it) {
+        if (equalP4(getP4(it->second), delphesCand->P4())) {
+          recoRef.setParticle(it->second);
+          matchedReco = true;
+
+          // if we have an electron or muon we update the mass as well here
+          if constexpr (std::is_same_v<DelphesT, Muon>) {
+            it->second.setMass(M_MU);
+          } else if constexpr (std::is_same_v<DelphesT, Electron>) {
+            it->second.setMass(M_ELECTRON);
+          }
+        }
+      }
     }
 
-    particleRef.setParticle(recoBegin->second);
+    if (!matchedReco) {
+      // Does this ever happen?
+      std::cerr << "**** WARNING: No matching ReconstructedParticle was found for a Delphes " << type << std::endl;
+    }
   }
 
 }
+
+
 
 void DelphesEDM4HepConverter::processMissingET(const TClonesArray* delphesCollection, std::string_view const branch)
 {
