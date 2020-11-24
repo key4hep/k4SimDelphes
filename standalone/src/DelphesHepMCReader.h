@@ -34,8 +34,7 @@ class DelphesHepMCInputReader: public DelphesInputReader {
 
     int i = 4;
 
-    m_branchEvent = new ExRootTreeBranch("Event", HepMCEvent::Class());
-    m_branchWeight = new ExRootTreeBranch("Weight", Weight::Class());
+
     m_reader = new DelphesHepMCReader;
 
     Long64_t length = 0;
@@ -77,6 +76,9 @@ class DelphesHepMCInputReader: public DelphesInputReader {
     m_converterTree->SetDirectory(nullptr);
     m_treeWriter->SetTree(m_converterTree.get());
     modularDelphes->SetTreeWriter(m_treeWriter);
+
+    m_branchEvent = m_treeWriter->NewBranch("Event", HepMCEvent::Class());
+    m_branchWeight = m_treeWriter->NewBranch("Weight", Weight::Class());
 
     return outputfile;
 
