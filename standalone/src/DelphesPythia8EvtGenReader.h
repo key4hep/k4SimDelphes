@@ -74,6 +74,8 @@ class DelphesPythia8EvtGenReader: public DelphesInputReader {
 
     m_treeWriter = new ExRootTreeWriter(nullptr, "Delphes");
     m_converterTree = std::make_unique<TTree>("ConverterTree", "Analysis");
+    // avoid having any connection with a TFile that might be opened later
+    m_converterTree->SetDirectory(nullptr);
     m_treeWriter->SetTree(m_converterTree.get());
     modularDelphes->SetTreeWriter(m_treeWriter);
 
