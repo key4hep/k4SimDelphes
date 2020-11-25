@@ -19,6 +19,8 @@
 #include <string_view>
 #include <array>
 #include <unordered_map>
+#include <optional>
+
 
 // Delphes output classes
 class Muon;
@@ -82,6 +84,11 @@ private:
 
   template<typename CollectionT>
   void createCollection(std::string_view const name);
+
+  // cannot mark DelphesT as const, because for Candidate* the GetCandidates()
+  // method is not marked as const.
+  template<typename DelphesT>
+  std::optional<edm4hep::ReconstructedParticle> getMatchingReco(/*const*/ DelphesT* delphesCand) const;
 
   using ProcessFunction = void (DelphesEDM4HepConverter::*)(const TClonesArray*, std::string_view const);
 
