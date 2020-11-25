@@ -7,6 +7,7 @@
 #include "Math/Vector4D.h"
 
 #include <vector>
+#include <set>
 
 namespace k4simdelphes {
 // TODO: If CLHEP ever gets part of edm4hep, take this from there.

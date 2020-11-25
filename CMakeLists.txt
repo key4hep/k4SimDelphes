@@ -70,6 +70,10 @@ if(BUILD_FRAMEWORK)
   add_subdirectory(framework)
 endif()
 
+if(BUILD_TESTING)
+  add_subdirectory(tests)
+endif()
+
 
 #--- create uninstall target ---------------------------------------------------
 include(cmake/K4SIMDELPHESUninstall.cmake)
