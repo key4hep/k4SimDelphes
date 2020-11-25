@@ -307,30 +307,15 @@ void DelphesEDM4HepConverter::processJets(const TClonesArray* delphesCollection,
     id.addToParameters(delphesCand->TauTag);
     jet.addToParticleIDs(id);
 
-    // Avoid double counting reconstructed particles that have a relation to
-    // more than one generated particle in delphes
-    std::set<edm4hep::ReconstructedParticle> uniqueRecos;
-
     const auto& constituents = delphesCand->Constituents;
     for (auto iConst = 0; iConst < constituents.GetEntries(); ++iConst) {
       // TODO: Can we do better than Candidate here?
       auto* constituent = static_cast<Candidate*>(constituents.At(iConst));
-      const auto genIds = getAllParticleIDs(constituent);
-      for (const auto genId : genIds) {
-        const auto [recoBegin, recoEnd] = m_recoParticleGenIds.equal_range(genId);
-
-        if (recoBegin == m_recoParticleGenIds.end() && recoEnd == m_recoParticleGenIds.end()) {
-          std::cerr << "**** WARNING: No reconstructed particles were found for genParticle UniqueID " << genId << ", which is a jet constituent" << std::endl;
-        }
-
-        for (auto it = recoBegin; it != recoEnd; ++it) {
-          uniqueRecos.insert(it->second);
-        }
+      if (auto matchedReco = getMatchingReco(constituent)) {
+        jet.addToParticles(*matchedReco);
+      } else {
+        std::cerr << "**** WARNING: No matching ReconstructedParticle was found for a Jet constituent" << std::endl;
       }
-    }
-
-    for (const auto& reco : uniqueRecos) {
-      jet.addToParticles(reco);
     }
   }
 }
@@ -344,50 +329,22 @@ void DelphesEDM4HepConverter::fillReferenceCollection(const TClonesArray* delphe
     auto* delphesCand = static_cast<DelphesT*>(delphesCollection->At(iCand));
     auto recoRef = collection->create();
 
-    const auto genIds = getAllParticleIDs(delphesCand);
-    if (genIds.empty()) {
-      // Does this ever happen?
-      std::cerr << "**** WARNING: delphesCand (" << type << ") does not have an associated generated particle" << std::endl;
-    }
-
-    // Here we have to do some work to actually match the Delphes candidate to
-    // the correct edm4hep::ReconstructedParticle because the possibility exists
-    // that more than one ReconstructedParticle point to the same UniqueID. Here
-    // we are NOT interested in the physics interpretation of such a case, but
-    // only want to identify the correct ReconstructedParticle to which we
-    // should point. To do the matching we compare the 4-momenta of the stored
-    // edm4hep::ReconstructedParticle associated to the GenParticle UniqueID and
-    // take the FIRST good match. Since the delphes candidate originates from
-    // either a Track or a Tower, there should always be exactly one such good
-    // match.
-    // NOTE: slightly "old-school" implementation syntax-wise to be able to
-    // easily break out of the nested loops in one go
-    bool matchedReco = false;
-    for (auto genIdIt = genIds.cbegin(); !matchedReco && genIdIt != genIds.cend(); ++genIdIt) {
-      const auto [recoBegin, recoEnd] = m_recoParticleGenIds.equal_range(*genIdIt);
-      for (auto it = recoBegin; !matchedReco && it != recoEnd; ++it) {
-        if (equalP4(getP4(it->second), delphesCand->P4())) {
-          recoRef.setParticle(it->second);
-          matchedReco = true;
-
-          // if we have an electron or muon we update the mass as well here
-          if constexpr (std::is_same_v<DelphesT, Muon>) {
-            it->second.setMass(M_MU);
-          } else if constexpr (std::is_same_v<DelphesT, Electron>) {
-            it->second.setMass(M_ELECTRON);
-          }
-        }
+    if (auto matchedReco = getMatchingReco(delphesCand)) {
+      recoRef.setParticle(*matchedReco);
+      // if we have an electron or muon we update the mass as well here
+      if constexpr (std::is_same_v<DelphesT, Muon>) {
+        matchedReco->setMass(M_MU);
+      } else if constexpr (std::is_same_v<DelphesT, Electron>) {
+        matchedReco->setMass(M_ELECTRON);
       }
-    }
 
-    if (!matchedReco) {
-      // Does this ever happen?
+    } else {
       std::cerr << "**** WARNING: No matching ReconstructedParticle was found for a Delphes " << type << std::endl;
+
     }
   }
 
 }
-
 
 
 void DelphesEDM4HepConverter::processMissingET(const TClonesArray* delphesCollection, std::string_view const branch)
@@ -411,6 +368,40 @@ void DelphesEDM4HepConverter::processScalarHT(const TClonesArray* delphesCollect
   cand.addToParameters(delphesCand->HT);
 }
 
+
+template<typename DelphesT>
+std::optional<edm4hep::ReconstructedParticle> DelphesEDM4HepConverter::getMatchingReco(DelphesT* delphesCand) const
+{
+  // Here we have to do some work to actually match the Delphes candidate to
+  // the correct edm4hep::ReconstructedParticle because the possibility exists
+  // that more than one ReconstructedParticle point to the same UniqueID. Here
+  // we are NOT interested in the physics interpretation of such a case, but
+  // only want to identify the correct ReconstructedParticle to which we
+  // should point. To do the matching we compare the 4-momenta of the stored
+  // edm4hep::ReconstructedParticle associated to the GenParticle UniqueID and
+  // take the FIRST good match. Since the delphes candidate originates from
+  // either a Track or a Tower, there should always be exactly one such good
+  // match.
+  for (const auto genId : getAllParticleIDs(delphesCand)) {
+    const auto [recoBegin, recoEnd] = m_recoParticleGenIds.equal_range(genId);
+    for (auto it = recoBegin; it != recoEnd; ++it) {
+      // Handling slightly different member names for delphes depending on
+      // whether we are still working with Candidates or the actual output
+      // classes already
+      if constexpr(std::is_same_v<DelphesT, Candidate>) {
+        if (equalP4(getP4(it->second), delphesCand->Momentum)) {
+          return it->second;
+        }
+      } else {
+        if (equalP4(getP4(it->second), delphesCand->P4())) {
+          return it->second;
+        }
+      }
+    }
+  }
+
+  return {};
+}
 
 
 void DelphesEDM4HepConverter::registerGlobalCollections()
