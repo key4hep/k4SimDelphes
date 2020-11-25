@@ -181,12 +181,18 @@ void DelphesEDM4HepConverter::processParticles(const TClonesArray* delphesCollec
     if (delphesCand->M1 > -1) {
       auto mother = collection->at(delphesCand->M1);
       cand.addToParents(mother);
-      mother.addToDaughters(cand);
     }
     if (delphesCand->M2 > -1) {
       auto mother = collection->at(delphesCand->M2);
       cand.addToParents(mother);
-      mother.addToDaughters(cand);
+    }
+    if (delphesCand->D1 > -1) {
+      auto daughter = collection->at(delphesCand->D1);
+      cand.addToDaughters(daughter);
+    }
+    if (delphesCand->D2 > -1) {
+      auto daughter = collection->at(delphesCand->D2);
+      cand.addToDaughters(daughter);
     }
   }
 
