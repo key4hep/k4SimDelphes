@@ -20,6 +20,8 @@
 
 #include <iostream>
 #include <memory>
+#include <sstream>
+#include <string>
 
 //// TODO: handle case of more than one input file
 
