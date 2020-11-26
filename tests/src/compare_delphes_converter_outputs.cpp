@@ -266,6 +266,17 @@ void compareJets(const TClonesArray* delphesColl,
   }
 }
 
+void compareMET(const TClonesArray* delphesColl,
+                const edm4hep::ReconstructedParticleCollection& edm4hepColl) {
+  const auto delphesMET = static_cast<MissingET*>(delphesColl->At(0));
+  const auto edm4hepMET = edm4hepColl[0];
+  if (!compareKinematics(delphesMET, edm4hepMET)) {
+    std::cerr << "MET differs between delphes and edm4hep output" << std::endl;
+    std::exit(1);
+  }
+}
+
+
 
 int main(int argc, char* argv[]) {
   // do the necessary setup work for podio and delphes first
@@ -286,6 +297,7 @@ int main(int argc, char* argv[]) {
   auto* ecalClusters = treeReader->UseBranch("EFlowPhoton");
   auto* hcalClusters = treeReader->UseBranch("EFlowNeutralHadron");
   auto* delphesJetColl = treeReader->UseBranch("Jet");
+  auto* delphesMET = treeReader->UseBranch("MissingET");
 
   // now start comparing the contents of the files
   const auto nEntries = treeReader->GetEntries();
@@ -333,6 +345,9 @@ int main(int argc, char* argv[]) {
     compareCollectionsBasic(delphesJetColl, jetColl, "Jet");
     compareJets(delphesJetColl, jetColl, "Jet");
 
+    auto& metColl = store.get<edm4hep::ReconstructedParticleCollection>("MissingET");
+    compareCollectionsBasic(delphesMET, metColl, "MissingET");
+    compareMET(delphesMET, metColl);
 
     store.clear();
     reader.endOfEvent();
