@@ -12,6 +12,9 @@
 #include "TTree.h"
 #include "TClonesArray.h"
 
+//Delphes
+#include "modules/Delphes.h"
+
 #include <vector>
 #include <string>
 #include <string_view>
@@ -26,6 +29,7 @@ class Electron;
 class Photon;
 
 namespace k4SimDelphes {
+
 
 /**
  * Classes that will be stored as reconstructed particle with an attached track
@@ -43,10 +47,24 @@ struct BranchSettings {
   std::string className;
 };
 
+std::vector<BranchSettings> getBranchSettings(ExRootConfParam /*const&*/treeConf) {
+  std::vector<k4SimDelphes::BranchSettings> branches;
+  for (int b = 0; b < treeConf.GetSize(); b += 3) {
+    k4SimDelphes::BranchSettings branch{treeConf[b].GetString(),
+                                        treeConf[b + 1].GetString(),
+                                        treeConf[b + 2].GetString()};
+    branches.push_back(branch);
+  }
+  return branches;
+}
+
 class OutputSettings;
 
 class DelphesEDM4HepConverter {
 public:
+
+  DelphesEDM4HepConverter(std::string filename_delphescard);
+
   DelphesEDM4HepConverter(const std::vector<BranchSettings>& branches,
                           OutputSettings const& outputSettings, double magFieldBz);
 
@@ -54,7 +72,6 @@ public:
 
   inline std::unordered_map<std::string_view, podio::CollectionBase*> getCollections() { return m_collections; }
 
-private:
 
   void processParticles(const TClonesArray* delphesCollection, std::string_view const branch);
   void processTracks(const TClonesArray* delphesCollection, std::string_view const branch);
@@ -73,6 +90,8 @@ private:
   void processElectrons(const TClonesArray* delphesCollection, std::string_view const branch) {
     fillReferenceCollection<Electron>(delphesCollection, branch, "electron");
   }
+
+private:
 
   template<typename DelphesT>
   void fillReferenceCollection(const TClonesArray* delphesCollection, std::string_view const branch,
