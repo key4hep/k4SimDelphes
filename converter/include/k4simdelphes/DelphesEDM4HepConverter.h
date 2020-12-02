@@ -2,8 +2,6 @@
 #define DELPHESEDM4HEP_DELPHESEDM4HEP_CONVERTER_H__
 
 // podio
-#include "podio/EventStore.h"
-#include "podio/ROOTWriter.h"
 #include "podio/CollectionBase.h"
 
 // edm4hep
