@@ -1,6 +1,6 @@
-#include "k4simdelphes/DelphesEDM4HepConverter.h"
-#include "k4simdelphes/delphesHelpers.h" // getAllParticleIds
-#include "k4simdelphes/DelphesEDM4HepOutputConfiguration.h"
+#include "k4SimDelphes/DelphesEDM4HepConverter.h"
+#include "k4SimDelphes/delphesHelpers.h" // getAllParticleIds
+#include "k4SimDelphes/DelphesEDM4HepOutputConfiguration.h"
 
 #include "edm4hep/ReconstructedParticleCollection.h"
 #include "edm4hep/MCParticleCollection.h"
@@ -16,7 +16,7 @@
 #include <iterator>
 #include <set>
 
-namespace k4simdelphes {
+namespace k4SimDelphes {
 
 // TODO: Take these from HepPDT / HepMC?
 constexpr double M_PIPLUS = 0.13957039; // GeV (PDG 2020)

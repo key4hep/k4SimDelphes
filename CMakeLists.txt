@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.3)
 
-project(K4SIMDELPHES)
+project(k4SimDelphes)
 
 #--- Declare options -----------------------------------------------------------
 
@@ -29,17 +29,17 @@ message (STATUS "C++ standard: ${CMAKE_CXX_STANDARD}")
 
 #--- add version files ---------------------------------------------------------
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/K4SIMDELPHESVersion.h
-               ${CMAKE_CURRENT_BINARY_DIR}/K4SIMDELPHESVersion.h )
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/K4SIMDELPHESVersion.h
-  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/k4simdelphes )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/k4SimDelphesVersion.h
+               ${CMAKE_CURRENT_BINARY_DIR}/k4SimDelphesVersion.h )
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/k4SimDelphesVersion.h
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/k4SimDelphes )
 
 # - Use GNU-style hierarchy for installing build products
 include(GNUInstallDirs)
 
 #--- add CMake infrastructure --------------------------------------------------
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-include(cmake/K4SIMDELPHESCreateConfig.cmake)
+include(cmake/k4SimDelphesCreateConfig.cmake)
 
 #--- add license files ---------------------------------------------------------
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE
@@ -50,12 +50,12 @@ include(CTest)
 
 #--- enable CPack --------------------------------------------------------------
 if(ENABLE_CPACK)
-  include(cmake/K4SIMDELPHESCPack.cmake)
+  include(cmake/k4SimDelphesCPack.cmake)
 endif()
 
 #--- target for Doxygen documentation ------------------------------------------
 if(K4SIMDELPHES_DOCUMENTATION)
-  include(cmake/K4SIMDELPHESDoxygen.cmake)
+  include(cmake/k4SimDelphesDoxygen.cmake)
 endif()
 
 
@@ -76,4 +76,4 @@ endif()
 
 
 #--- create uninstall target ---------------------------------------------------
-include(cmake/K4SIMDELPHESUninstall.cmake)
+include(cmake/k4SimDelphesUninstall.cmake)

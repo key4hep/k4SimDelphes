@@ -25,7 +25,7 @@ class Muon;
 class Electron;
 class Photon;
 
-namespace k4simdelphes {
+namespace k4SimDelphes {
 
 /**
  * Classes that will be stored as reconstructed particle with an attached track
@@ -114,6 +114,6 @@ void DelphesEDM4HepConverter::createCollection(std::string_view name) {
   m_collections.emplace(name, col);
 }
 
-} //namespace k4simdelphes
+} //namespace k4SimDelphes
 
 #endif

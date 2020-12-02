@@ -1,6 +1,6 @@
 #include "DelphesInputReader.h"
-#include "k4simdelphes/DelphesEDM4HepOutputConfiguration.h"
-#include "k4simdelphes/DelphesEDM4HepConverter.h"
+#include "k4SimDelphes/DelphesEDM4HepOutputConfiguration.h"
+#include "k4SimDelphes/DelphesEDM4HepConverter.h"
 
 #include "podio/EventStore.h"
 #include "podio/ROOTWriter.h"
@@ -19,10 +19,10 @@ void SignalHandler(int /*si*/) {
   interrupted = true;
 }
 
-std::vector<k4simdelphes::BranchSettings> getBranchSettings(ExRootConfParam /*const&*/treeConf) {
-  std::vector<k4simdelphes::BranchSettings> branches;
+std::vector<k4SimDelphes::BranchSettings> getBranchSettings(ExRootConfParam /*const&*/treeConf) {
+  std::vector<k4SimDelphes::BranchSettings> branches;
   for (int b = 0; b < treeConf.GetSize(); b += 3) {
-    k4simdelphes::BranchSettings branch{treeConf[b].GetString(),
+    k4SimDelphes::BranchSettings branch{treeConf[b].GetString(),
                                         treeConf[b + 1].GetString(),
                                         treeConf[b + 2].GetString()};
     branches.push_back(branch);
@@ -32,7 +32,7 @@ std::vector<k4simdelphes::BranchSettings> getBranchSettings(ExRootConfParam /*co
 
 template<typename WriterT=podio::ROOTWriter>
 int doit(int argc, char* argv[], DelphesInputReader& inputReader) {
-  using namespace k4simdelphes;
+  using namespace k4SimDelphes;
 
   // We can't make this a unique_ptr because it interferes with whatever ROOT is
   // doing under the hood to clean up
