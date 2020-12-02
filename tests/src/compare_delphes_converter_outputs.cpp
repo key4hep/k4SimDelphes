@@ -1,4 +1,4 @@
-#include "k4simdelphes/delphesHelpers.h"
+#include "k4SimDelphes/delphesHelpers.h"
 
 #include "edm4hep/MCParticleCollection.h"
 #include "edm4hep/ReconstructedParticleCollection.h"
@@ -27,7 +27,7 @@
  */
 template<typename DelphesT, typename EDM4HepT>
 bool compareKinematics(const DelphesT* delphesCand, const EDM4HepT& edm4hepCand) {
-  using namespace k4simdelphes;
+  using namespace k4SimDelphes;
   if (!equalP4(delphesCand->P4(), getP4(edm4hepCand))) {
     return false;
   }

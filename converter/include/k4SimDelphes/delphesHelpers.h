@@ -9,7 +9,7 @@
 #include <vector>
 #include <set>
 
-namespace k4simdelphes {
+namespace k4SimDelphes {
 // TODO: If CLHEP ever gets part of edm4hep, take this from there.
 static constexpr double c_light = 2.99792458e+8;
 
@@ -103,6 +103,6 @@ std::set<UInt_t> getAllParticleIDs(Candidate* candidate) {
 }
 
 
-} // namespace k4simdelphes
+} // namespace k4SimDelphes
 
 #endif

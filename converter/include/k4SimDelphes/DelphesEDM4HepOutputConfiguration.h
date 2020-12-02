@@ -8,7 +8,7 @@
 #include <ostream>
 #include <iomanip>
 
-namespace k4simdelphes {
+namespace k4SimDelphes {
    /**
  * The settings steering the output of the DelphesEDM4HepConverter. Default
  * values correspond to the ones found in delphes example cards.

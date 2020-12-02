@@ -8,9 +8,9 @@ target_include_directories(DelphesEDM4HepConverter
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
   )
 target_link_libraries(DelphesEDM4HepConverter EDM4HEP::edm4hep ${DELPHES_LIBRARY} podio::podio ROOT::MathCore ROOT::EG ROOT::Physics)
-set_target_properties(DelphesEDM4HepConverter PROPERTIES PUBLIC_HEADER "include/k4simdelphes/DelphesEDM4HepConverter.h")
+set_target_properties(DelphesEDM4HepConverter PROPERTIES PUBLIC_HEADER "include/k4SimDelphes/DelphesEDM4HepConverter.h")
 install(TARGETS DelphesEDM4HepConverter 
-        EXPORT K4SIMDELPHESTargets
+        EXPORT k4SimDelphesTargets
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        PUBLIC_HEADER DESTINATION include/k4simdelphes
+        PUBLIC_HEADER DESTINATION include/k4SimDelphes
         COMPONENT dev)
