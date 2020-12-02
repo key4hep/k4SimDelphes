@@ -1,3 +1,6 @@
+
+add_subdirectory(unittests)
+
 add_executable(compare_delphes_converter_outputs src/compare_delphes_converter_outputs.cpp)
 target_include_directories(compare_delphes_converter_outputs
   PRIVATE

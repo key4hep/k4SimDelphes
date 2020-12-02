@@ -19,16 +19,6 @@ void SignalHandler(int /*si*/) {
   interrupted = true;
 }
 
-std::vector<k4SimDelphes::BranchSettings> getBranchSettings(ExRootConfParam /*const&*/treeConf) {
-  std::vector<k4SimDelphes::BranchSettings> branches;
-  for (int b = 0; b < treeConf.GetSize(); b += 3) {
-    k4SimDelphes::BranchSettings branch{treeConf[b].GetString(),
-                                        treeConf[b + 1].GetString(),
-                                        treeConf[b + 2].GetString()};
-    branches.push_back(branch);
-  }
-  return branches;
-}
 
 template<typename WriterT=podio::ROOTWriter>
 int doit(int argc, char* argv[], DelphesInputReader& inputReader) {

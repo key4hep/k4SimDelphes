@@ -64,6 +64,17 @@ inline bool contains(Container const& container, typename Container::value_type 
   return std::find(container.cbegin(), container.cend(), value) != container.cend();
 }
 
+
+DelphesEDM4HepConverter::DelphesEDM4HepConverter(std::string filename_delphescard) {
+  auto confReader = std::make_unique<ExRootConfReader>();
+  confReader->ReadFile(filename_delphescard.c_str());
+  const auto branches = getBranchSettings(confReader->GetParam("TreeWriter::Branch"));
+  const auto edm4hepOutputSettings = OutputSettings();
+  DelphesEDM4HepConverter edm4hepConverter(branches,
+                                           edm4hepOutputSettings,
+                                           confReader->GetDouble("ParticlePropagator::Bz", 0));
+};
+
 DelphesEDM4HepConverter::DelphesEDM4HepConverter(const std::vector<BranchSettings>& branches,
                                                  OutputSettings const& outputSettings, double magFieldBz) :
   m_magneticFieldBz(magFieldBz),
