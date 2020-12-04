@@ -29,13 +29,15 @@ message (STATUS "C++ standard: ${CMAKE_CXX_STANDARD}")
 
 #--- add version files ---------------------------------------------------------
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/k4SimDelphesVersion.h
-               ${CMAKE_CURRENT_BINARY_DIR}/k4SimDelphesVersion.h )
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/k4SimDelphesVersion.h
-  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/k4SimDelphes )
 
 # - Use GNU-style hierarchy for installing build products
 include(GNUInstallDirs)
+
+configure_file(${CMAKE_SOURCE_DIR}/k4SimDelphesVersion.h
+               ${CMAKE_BINARY_DIR}/k4SimDelphesVersion.h )
+install(FILES ${CMAKE_BINARY_DIR}/k4SimDelphesVersion.h
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/k4SimDelphes )
+
 
 #--- add CMake infrastructure --------------------------------------------------
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
