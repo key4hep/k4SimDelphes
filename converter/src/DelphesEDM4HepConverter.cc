@@ -1,6 +1,6 @@
 #include "k4SimDelphes/DelphesEDM4HepConverter.h"
-#include "k4SimDelphes/delphesHelpers.h" // getAllParticleIds
 #include "k4SimDelphes/DelphesEDM4HepOutputConfiguration.h"
+#include "delphesHelpers.h" // getAllParticleIds
 
 #include "edm4hep/ReconstructedParticleCollection.h"
 #include "edm4hep/MCParticleCollection.h"
