@@ -3,7 +3,6 @@
 
 
 #include "DelphesInputReader.h"
-#include "k4SimDelphes/delphesHelpers.h"
 
 #include "TObjArray.h"
 #include "TChain.h"
@@ -20,6 +19,7 @@
 #include "ExRootTreeWriter.h" // use local copy
 
 #include <iostream>
+
 
 class DelphesRootReader: public DelphesInputReader {
   public:
@@ -75,7 +75,8 @@ class DelphesRootReader: public DelphesInputReader {
         gen = (GenParticle *)m_branchParticle->At(j);
         candidate = modularDelphes->GetFactory()->NewCandidate();
         candidate->Momentum = gen->P4();
-        candidate->Position.SetXYZT(gen->X, gen->Y, gen->Z, gen->T * 1.0E3 * k4SimDelphes::c_light);
+        constexpr double c_light = 2.99792458e+8;
+        candidate->Position.SetXYZT(gen->X, gen->Y, gen->Z, gen->T * 1.0E3 * c_light);
         candidate->PID = gen->PID;
         candidate->Status = gen->Status;
         candidate->M1 = gen->M1;

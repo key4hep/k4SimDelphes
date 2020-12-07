@@ -1,4 +1,4 @@
-#include "k4SimDelphes/delphesHelpers.h"
+#include "delphesHelpers.h"
 
 #include "edm4hep/MCParticleCollection.h"
 #include "edm4hep/ReconstructedParticleCollection.h"

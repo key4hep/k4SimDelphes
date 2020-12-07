@@ -2,6 +2,7 @@ add_executable(compare_delphes_converter_outputs src/compare_delphes_converter_o
 target_include_directories(compare_delphes_converter_outputs
   PRIVATE
   ${DELPHES_INCLUDE_DIRS}
+  ${CMAKE_SOURCE_DIR}/converter/src #for delphesHelpers
   ${CMAKE_SOURCE_DIR}/converter/include
   )
 target_link_libraries(compare_delphes_converter_outputs PRIVATE EDM4HEP::edm4hep ${DELPHES_LIBRARY} podio::podioRootIO ROOT::Physics)
