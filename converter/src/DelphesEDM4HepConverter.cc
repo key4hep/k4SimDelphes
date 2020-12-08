@@ -51,6 +51,10 @@ void sortBranchesProcessingOrder(std::vector<BranchSettings>& branches,
 
 edm4hep::Track convertTrack(Track const* cand, const double magFieldBz);
 
+void setMotherDaughterRelations(GenParticle const* delphesCand,
+                                edm4hep::MCParticle particle,
+                                edm4hep::MCParticleCollection& mcParticles);
+
 /**
  * Simple helper function to make it easier to refactor later
  */
@@ -174,29 +178,16 @@ void DelphesEDM4HepConverter::processParticles(const TClonesArray* delphesCollec
   }
 
   // mother-daughter relations
+  const auto nElements = collection->size();
   for (int iCand = 0; iCand < delphesCollection->GetEntries(); ++iCand) {
-    auto* delphesCand = static_cast<GenParticle*>(delphesCollection->At(iCand));
+    const auto* delphesCand = static_cast<GenParticle*>(delphesCollection->At(iCand));
     auto cand = collection->at(iCand);
 
-    if (delphesCand->M1 > -1) {
-      auto mother = collection->at(delphesCand->M1);
-      cand.addToParents(mother);
-    }
-    if (delphesCand->M2 > -1) {
-      auto mother = collection->at(delphesCand->M2);
-      cand.addToParents(mother);
-    }
-    if (delphesCand->D1 > -1) {
-      auto daughter = collection->at(delphesCand->D1);
-      cand.addToDaughters(daughter);
-    }
-    if (delphesCand->D2 > -1) {
-      auto daughter = collection->at(delphesCand->D2);
-      cand.addToDaughters(daughter);
-    }
+    setMotherDaughterRelations(delphesCand, cand, *collection);
   }
 
 }
+
 
 void DelphesEDM4HepConverter::processTracks(const TClonesArray* delphesCollection, std::string_view const branch)
 {
@@ -487,4 +478,73 @@ edm4hep::Track convertTrack(Track const* cand, const double magFieldBz)
   return track;
 }
 
+void setMotherDaughterRelations(GenParticle const* delphesCand,
+                                edm4hep::MCParticle particle,
+                                edm4hep::MCParticleCollection& mcParticles)
+{
+  // NOTE: it is in general probably not possible to handle all the different
+  // possibilities that are present in the different readers. So, for now we are
+  // going to follow the pythia documentation (with some additional sanity
+  // checks, to avoid some crashs, in case the input is buggy) in the hope that
+  // it will work for most inputs
+  // Pythia documentation: http://home.thep.lu.se/~torbjorn/pythia81html/ParticleProperties.html
+
+  // Mothers
+  // Only set parents if not accessing out of bounds
+  const auto safeSetParent = [&mcParticles, &particle] (int index) {
+    if (index < mcParticles.size()) {
+      particle.addToParents(mcParticles[index]);
+    }
+  };
+
+  // If M1 == -1, then this particle has no mother, so we only handle cases
+  // where there is at least one
+  if (delphesCand->M1 > -1) {
+    // case 3, only one mother
+    if (delphesCand->M2 == -1) {
+      safeSetParent(delphesCand->M1);
+    }
+    if (delphesCand->M2 > -1){
+      // case 6, two mothers
+      if (delphesCand->M2 < delphesCand->M1) {
+        safeSetParent(delphesCand->M1);
+        safeSetParent(delphesCand->M2);
+
+      } else {
+        //  cases 2, 5 (and 4 without checking the status), mothers in a range
+        for (auto iMother = delphesCand->M1; iMother <= delphesCand->M2; ++iMother) {
+          safeSetParent(iMother);
+        }
+      }
+    }
+  }
+
+  // Daughters
+  const auto safeSetDaughter = [&mcParticles, &particle] (int index) {
+    if (index < mcParticles.size()) {
+      particle.addToDaughters(mcParticles[index]);
+    }
+  };
+  
+  // again handle only the cases where there is at least one daughter
+  if (delphesCand->D1 > -1) {
+    // case 3
+    if (delphesCand->D2 == -1) {
+      safeSetDaughter(delphesCand->D1);
+    }
+    if (delphesCand->D2 > -1) {
+      // case 5
+      if (delphesCand->D2 < delphesCand->D1) {
+        safeSetDaughter(delphesCand->D1);
+        safeSetDaughter(delphesCand->D2);
+      } else {
+        // cases 2 and 4
+        for (auto iDaughter = delphesCand->D1; iDaughter <= delphesCand->D2; ++iDaughter) {
+          safeSetDaughter(iDaughter);
+        }
+      }
+    }
+  }
 }
+
+} // namespace k4SimDelphes
