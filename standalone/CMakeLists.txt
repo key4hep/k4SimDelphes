@@ -18,7 +18,7 @@ install(TARGETS DelphesSTDHEP_EDM4HEP DESTINATION bin)
 
 if(BUILD_PYTHIA_READER)
   find_package(Pythia8 REQUIRED)
-  add_executable(DelphesPythia8_EDM4HEP src/DelphesPythia8_EDM4HEP.cpp src/Delphes.cc)
+  add_executable(DelphesPythia8_EDM4HEP src/DelphesPythia8_EDM4HEP.cpp src/Delphes.cc src/ResonanceDecayFilterHook.cpp)
   target_include_directories(DelphesPythia8_EDM4HEP PRIVATE ${PYTHIA8_INCLUDE_DIRS})
   target_link_libraries(DelphesPythia8_EDM4HEP DelphesEDM4HepConverter ${PYTHIA8_LIBRARIES} ${DELPHES_LIBRARY})
   install(TARGETS DelphesPythia8_EDM4HEP DESTINATION bin)

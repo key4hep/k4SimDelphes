@@ -21,6 +21,10 @@
 
 #include "Pythia.h"
 #include "Pythia8Plugins/CombineMatchingInput.h"
+#include "Pythia8Plugins/PowhegHooks.h"
+#include "Pythia8Plugins/aMCatNLOHooks.h"
+#include "Pythia8Plugins/JetMatching.h"
+#include "ResonanceDecayFilterHook.h"
 
 #include <iostream>
 
@@ -49,6 +53,20 @@ class DelphesPythia8Reader: public DelphesInputReader {
     // Initialize Pythia
     pythia = new Pythia8::Pythia;
 
+
+  //add settings for resonance decay filter
+    pythia->settings.addFlag("ResonanceDecayFilter:filter", false);
+    pythia->settings.addFlag("ResonanceDecayFilter:exclusive", false);
+    pythia->settings.addFlag("ResonanceDecayFilter:eMuAsEquivalent", false);
+    pythia->settings.addFlag("ResonanceDecayFilter:eMuTauAsEquivalent", false);
+    pythia->settings.addFlag("ResonanceDecayFilter:allNuAsEquivalent", false);
+    pythia->settings.addFlag("ResonanceDecayFilter:udscAsEquivalent", false);
+    pythia->settings.addFlag("ResonanceDecayFilter:udscbAsEquivalent", false);
+    pythia->settings.addFlag("ResonanceDecayFilter:wzAsEquivalent", false);
+    pythia->settings.addMVec("ResonanceDecayFilter:mothers", std::vector<int>(), false, false, 0, 0);
+    pythia->settings.addMVec("ResonanceDecayFilter:daughters", std::vector<int>(), false, false, 0, 0);
+
+    /*
     // jet matching
 #if PYTHIA_VERSION_INTEGER < 8300
     matching = combined->getHook(*pythia);
@@ -58,6 +76,7 @@ class DelphesPythia8Reader: public DelphesInputReader {
     }
     pythia->setUserHooksPtr(matching);
 #endif
+    */
 
     if(pythia == NULL)
     {
@@ -83,6 +102,111 @@ class DelphesPythia8Reader: public DelphesInputReader {
     spareMode1 = pythia->mode("Main:spareMode1");
     spareParm1 = pythia->parm("Main:spareParm1");
     spareParm2 = pythia->parm("Main:spareParm2");
+
+    // Begin ME/PS Matching specific code
+    // Check if jet matching should be applied.
+    
+    m_doMePsMatching = pythia->settings.flag("JetMatching:merge");
+    // Check if internal merging should be applied.
+    m_doMePsMerging = !(pythia->settings.word("Merging:Process").compare("void") == 0);
+
+    // Currently, only one scheme at a time is allowed.
+    if (m_doMePsMerging && m_doMePsMatching) {
+      message << "Jet matching and merging cannot be used simultaneously! " << std::endl;
+      throw std::runtime_error(message.str());
+    }
+
+
+    // Allow to set the number of additional partons dynamically.
+    if (m_doMePsMerging) {
+      // Store merging scheme.
+      int scheme;
+      if (pythia->settings.flag("Merging:doUMEPSTree") || pythia->settings.flag("Merging:doUMEPSSubt")) {
+	scheme = 1;
+      } else if (pythia->settings.flag("Merging:doUNLOPSTree") ||
+		 pythia->settings.flag("Merging:doUNLOPSSubt") ||
+		 pythia->settings.flag("Merging:doUNLOPSLoop") ||
+		 pythia->settings.flag("Merging:doUNLOPSSubtNLO")) {
+	scheme = 2;
+      } else {
+	scheme = 0;
+      }
+      
+      m_setting = std::unique_ptr<Pythia8::amcnlo_unitarised_interface>(new Pythia8::amcnlo_unitarised_interface(scheme));
+#if PYTHIA_VERSION_INTEGER < 8300
+      pythia->setUserHooksPtr(m_setting.get());
+#else
+      pythia->setUserHooksPtr((Pythia8::UserHooksPtr) m_setting.get());
+#endif
+    }
+
+      // For jet matching, initialise the respective user hooks code.
+      if (m_doMePsMatching) {
+      m_matching = std::unique_ptr<Pythia8::JetMatchingMadgraph>(new Pythia8::JetMatchingMadgraph());
+      if (!m_matching) {
+      message << "Failed to initialise jet matching structures. " << std::endl;
+      throw std::runtime_error(message.str());
+    }
+#if PYTHIA_VERSION_INTEGER < 8300
+      pythia->setUserHooksPtr(m_matching.get());
+#else
+      pythia->setUserHooksPtr((Pythia8::UserHooksPtr) m_matching.get());
+#endif
+    }
+ 
+  // jet clustering needed for matching
+  m_slowJet = std::make_unique<Pythia8::SlowJet>(1, 0.4, 0, 4.4, 2, 2, nullptr, false);
+
+  // End ME/PS Matching specific code
+
+
+  // --  POWHEG settings
+  int vetoMode    = pythia->settings.mode("POWHEG:veto");
+  int MPIvetoMode = pythia->settings.mode("POWHEG:MPIveto");
+  m_doPowheg  = (vetoMode > 0 || MPIvetoMode > 0);
+
+  // Add in user hooks for shower vetoing
+  if (m_doPowheg) {
+  
+    // Counters for number of ISR/FSR emissions vetoed
+    m_nISRveto = 0, m_nFSRveto = 0;  
+    
+    // Set ISR and FSR to start at the kinematical limit
+    if (vetoMode > 0) {
+      pythia->readString("SpaceShower:pTmaxMatch = 2");
+      pythia->readString("TimeShower:pTmaxMatch = 2");
+    }
+
+    // Set MPI to start at the kinematical limit
+    if (MPIvetoMode > 0) {
+      pythia->readString("MultipartonInteractions:pTmaxMatch = 2");
+    }
+
+    
+    m_powhegHooks = new Pythia8::PowhegHooks();
+    #if PYTHIA_VERSION_INTEGER < 8300
+    pythia->addUserHooksPtr(m_powhegHooks);
+    #else
+    pythia->setUserHooksPtr((Pythia8::UserHooksPtr)m_powhegHooks);
+    #endif
+  }
+  bool resonanceDecayFilter = pythia->settings.flag("ResonanceDecayFilter:filter");
+  if (resonanceDecayFilter) {
+    m_resonanceDecayFilterHook = new ResonanceDecayFilterHook();
+    #if PYTHIA_VERSION_INTEGER < 8300
+    pythia->addUserHooksPtr(m_resonanceDecayFilterHook);
+    #else
+    pythia->addUserHooksPtr((Pythia8::UserHooksPtr)m_resonanceDecayFilterHook);
+    #endif
+  }
+
+
+
+
+
+
+
+
 
     // Check if particle gun
     if(!spareFlag1) {
@@ -137,7 +261,77 @@ class DelphesPythia8Reader: public DelphesInputReader {
         modularDelphes->Clear();
         reader->Clear();
       }
-      
+
+      /*
+      if (m_doMePsMatching || m_doMePsMerging) {
+
+	auto mePsMatchingVars = m_handleMePsMatchingVars.createAndPut();
+	int njetNow = 0;
+	std::vector<double> dijVec;
+	
+	// Construct input for jet algorithm.
+	Pythia8::Event jetInput;
+	jetInput.init("jet input", &(pythia->particleData));
+	jetInput.clear();
+	for (int i = 0; i < pythia->event.size(); ++i)
+	  if (pythia->event[i].isFinal() &&
+	      (pythia->event[i].colType() != 0 || pythia->event[i].isHadron()))
+	    jetInput.append(pythia->event[i]);
+	m_slowJet->setup(jetInput);
+	// Run jet algorithm.
+	std::vector<double> result;
+	while (m_slowJet->sizeAll() - m_slowJet->sizeJet() > 0) {
+	  result.push_back(sqrt(m_slowJet->dNext()));
+	  m_slowJet->doStep();
+	}
+	
+	// Reorder by decreasing multiplicity.
+	for (int i = int(result.size()) - 1; i >= 0; --i)
+	  dijVec.push_back(result[i]);
+	
+	// Now get the "number of partons" in the input event, so that
+	// we may tag this event accordingly when histogramming. Note
+	// that for MLM jet matching, this might not coincide with the
+	// actual number of partons in the input LH event, since some
+	// partons may be excluded from the matching.
+	
+	bool doShowerKt = pythia->settings.flag("JetMatching:doShowerKt");
+	if (m_doMePsMatching && !doShowerKt) njetNow = m_matching->nMEpartons().first;
+	else if (m_doMePsMatching && doShowerKt) {
+	  njetNow = m_matching->getProcessSubset().size();
+	} else if (m_doMePsMerging) {
+	  njetNow = pythia->settings.mode("Merging:nRequested");
+	  if (pythia->settings.flag("Merging:doUMEPSSubt") ||
+	      pythia->settings.flag("Merging:doUNLOPSSubt") ||
+	      pythia->settings.flag("Merging:doUNLOPSSubtNLO"))
+	    njetNow--;
+	}
+	
+	// Inclusive jet pTs as further validation plot.
+	std::vector<double> ptVec;
+	// Run jet algorithm.
+	m_slowJet->analyze(jetInput);
+	for (int i = 0; i < m_slowJet->sizeJet(); ++i)
+	  ptVec.push_back(m_slowJet->pT(i));
+	
+	auto var = mePsMatchingVars->create();
+	
+	// 0th entry = number of generated partons
+	var.value(njetNow);
+	
+	// odd  entries: d(ij) observables --- 1): d01, 3): d12, 5): d23, 7): d34
+	// even entries: pT(i) observables --- 2): pT1, 4): pT2, 6): pT3, 8): pT4
+	for (unsigned int i = 0; i < 4; ++i) {
+	  var = mePsMatchingVars->create();
+	  var.value(-999);
+	  if (dijVec.size() > i) var.value(log10(dijVec[i]));
+	  
+	  var = mePsMatchingVars->create();
+	  var.value(-999);
+	  if (ptVec.size() > i) var.value(ptVec[i]);
+	}
+      }
+      */
       readStopWatch.Stop();
       procStopWatch.Start();
       ConvertInput(eventCounter, pythia, branchEvent, factory,
@@ -176,6 +370,27 @@ private:
   // for matching
   Pythia8::CombineMatchingInput *combined = 0;
   Pythia8::UserHooks *matching = 0;
+  /// Pythia8 engine for jet clustering
+  std::unique_ptr<Pythia8::SlowJet> m_slowJet{nullptr};
+
+  // -- aMCatNLO
+  bool m_doMePsMatching{false};
+  bool m_doMePsMerging{false};
+  /// Pythia8 engine for ME/PS matching
+  std::unique_ptr<Pythia8::JetMatchingMadgraph> m_matching{nullptr};
+  /// Pythia8 engine for NLO ME/PS merging
+  std::unique_ptr<Pythia8::amcnlo_unitarised_interface> m_setting{nullptr};
+
+
+// Powheg
+  bool m_doPowheg{false};
+  unsigned long int m_nISRveto{0};
+  unsigned long int m_nFSRveto{0};    
+  /// Pythia8 engine for Powheg ME/PS merging
+  Pythia8::PowhegHooks* m_powhegHooks{nullptr};
+
+  ResonanceDecayFilterHook* m_resonanceDecayFilterHook{nullptr};
+
 };
 
 
