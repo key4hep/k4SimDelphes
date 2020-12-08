@@ -112,6 +112,34 @@ void compareCollectionsBasic(const TClonesArray* delphesColl, const podio::Colle
 }
 
 /**
+ * Get the expected parent / daughter indices
+ * See http://home.thep.lu.se/~torbjorn/pythia81html/ParticleProperties.html
+ * for a few more details about the different cases we check here
+ */
+std::vector<int> expectedDaughtersParents(int index1, int index2) {
+  // if the first index is -1, then we don't even look at the second one
+  if (index1 == -1) {
+    return {};
+  }
+  // if the first is not -1, but the second is, then we only have one parent/daughter
+  if (index2 == -1) {
+    return {index1};
+  }
+  // if the second one is > -1, we have to identify cases, where we have two parents/daughters
+  // or an arbitrary number > 1
+  if (index2 > -1) {
+    if (index2 < index1) {
+      return {index1, index2};
+    } else {
+      std::vector<int> indices;
+      for (int i = index1; i <= index2; ++i) indices.push_back(i);
+      return indices;
+    }
+  }
+  return {};
+}
+
+/**
  * Compare the elements of the MCParticle collections element-wise
  */
 void compareCollectionElements(const TClonesArray* delphesColl,
@@ -125,54 +153,42 @@ void compareCollectionElements(const TClonesArray* delphesColl,
       std::exit(1);
     }
 
-    const int nParents = (delphesCand->M1 > -1) + (delphesCand->M2 > -1);
-    if (nParents != edm4hepCand.getParents().size()) {
+    const auto expParents = expectedDaughtersParents(delphesCand->M1, delphesCand->M2);
+
+    if (expParents.size() != edm4hepCand.getParents().size()) {
       std::cerr << "Number of parents differs for particle " << i << " in collection \'"
-                << collName << "\': " << nParents << " vs " << edm4hepCand.getParents().size() << std::endl;
+                << collName << "\': " << expParents.size() << " vs " << edm4hepCand.getParents().size() << std::endl;
       std::exit(1);
     }
 
-    const int nDaughters = (delphesCand->D1 > -1) + (delphesCand->D2 > -1);
-    if (nDaughters != edm4hepCand.getDaughters().size()) {
+    const auto expDaughters = expectedDaughtersParents(delphesCand->D1, delphesCand->D2);
+
+    if (expDaughters.size() != edm4hepCand.getDaughters().size()) {
       std::cerr << "Number of daughters differs for particle " << i << " in collection \'"
-                << collName << "\': " << nDaughters << " vs " << edm4hepCand.getDaughters().size() << std::endl;
+                << collName << "\': " << expDaughters.size() << " vs " << edm4hepCand.getDaughters().size() << std::endl;
       std::exit(1);
     }
 
     // compare the parents
     int iParent = 0;
-    if (delphesCand->M1 > -1) {
-      if (!compareKinematics(static_cast<GenParticle*>(delphesColl->At(delphesCand->M1)),
+    for (const auto iM : expParents) {
+      if (!compareKinematics(static_cast<GenParticle*>(delphesColl->At(iM)),
                              edm4hepCand.getParents(iParent))) {
-        std::cerr << "Parents of particle " << i << " differ between delphes and edm4hep output" << std::endl;
+        std::cerr << "Parent " << iParent << " of particle " << i << " differs between delphes and edm4hep output" << std::endl;
         std::exit(1);
       }
       iParent++;
     }
-    if (delphesCand->M2 > -1) {
-      if (!compareKinematics(static_cast<GenParticle*>(delphesColl->At(delphesCand->M2)),
-                             edm4hepCand.getParents(iParent))) {
-        std::cerr << "Parents of particle " << i << " differ between delphes and edm4hep output" << std::endl;
-        std::exit(1);
-      }
-    }
-
+   
     // comapre the daughters
     int iDaughter = 0;
-    if (delphesCand->D1 > -1) {
-      if (!compareKinematics(static_cast<GenParticle*>(delphesColl->At(delphesCand->D1)),
+    for (const auto iD: expDaughters) {
+      if (!compareKinematics(static_cast<GenParticle*>(delphesColl->At(iD)),
                              edm4hepCand.getDaughters(iDaughter))) {
-        std::cerr << "Daughter of particle " << i << " differ between delphes and edm4hep output" << std::endl;
+        std::cerr << "Daughter " << iDaughter << " of particle " << i << " differs between delphes and edm4hep output" << std::endl;
         std::exit(1);
       }
       iDaughter++;
-    }
-    if (delphesCand->D2 > -1) {
-      if (!compareKinematics(static_cast<GenParticle*>(delphesColl->At(delphesCand->D2)),
-                             edm4hepCand.getDaughters(iDaughter))) {
-        std::cerr << "Daughter of particle " << i << " differ between delphes and edm4hep output" << std::endl;
-        std::exit(1);
-      }
     }
   }
 }
@@ -309,6 +325,8 @@ int main(int argc, char* argv[]) {
 
   for (int entry = 0; entry < nEntries; ++entry) {
     treeReader->ReadEntry(entry);
+
+    std::cout << "EVENT: " << entry << std::endl;
 
     auto& genParticleColl = store.get<edm4hep::MCParticleCollection>("Particle");
     compareCollectionsBasic(genParticleCollDelphes, genParticleColl, "Particle");
