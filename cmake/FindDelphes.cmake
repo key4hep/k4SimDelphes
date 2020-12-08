@@ -19,6 +19,11 @@ find_path(DELPHES_EXTERNALS_INCLUDE_DIR
            PATH_SUFFIXES include
 )
 
+# Necessary to run the tests
+find_path(DELPHES_BINARY_DIR
+          NAMES DelphesROOT
+          HINTS ${DELPHES_INCLUDE_DIR}/../bin
+)
 
 unset(searchpath)
 
@@ -31,4 +36,4 @@ include(FindPackageHandleStandardArgs)
 # if all listed variables are TRUE
 find_package_handle_standard_args(Delphes DEFAULT_MSG DELPHES_INCLUDE_DIR  DELPHES_EXTERNALS_INCLUDE_DIR DELPHES_LIBRARY)
 
-mark_as_advanced(DELPHES_INCLUDE_DIR DELPHES_EXTERNALS_INCLUDE_DIR DELPHES_LIBRARY)
+mark_as_advanced(DELPHES_INCLUDE_DIR DELPHES_EXTERNALS_INCLUDE_DIR DELPHES_LIBRARY DELPHES_BINARY_DIR)

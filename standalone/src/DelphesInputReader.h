@@ -1,6 +1,8 @@
 #ifndef DELPHESEDM4HEP_DELPHESINPUTREADER
 #define DELPHESEDM4HEP_DELPHESINPUTREADER
 
+#include "TTree.h"
+
 #include <string>
 
 class TObjArray;
@@ -9,15 +11,22 @@ class Delphes;
 class DelphesInputReader {
 public:
 
-  virtual bool init(Delphes* modularDelphes, int argc, char *argv[], std::string& outputfile) = 0;
+  /** Initialize the reader and return the output file name on success or an
+   * empty string in the failing case */
+  virtual std::string init(Delphes* modularDelphes, int argc, char *argv[]) = 0;
 
-  virtual std::string getUsage() = 0;
+  /** Usage message to be displayed if initialization is not successful */
+  virtual std::string getUsage() const = 0;
 
-  virtual int getNumberOfEvents() = 0;
-  virtual bool finished() = 0;
+  virtual int getNumberOfEvents() const = 0;
+  virtual bool finished() const = 0;
 
-  virtual bool readEvent(Delphes* modularDelphes, TObjArray* allParticleOutputArray,
-  TObjArray* stableParticleOutputArray, TObjArray* partonOutputArray) = 0;
+  virtual bool readEvent(Delphes* modularDelphes,
+                         TObjArray* allParticleOutputArray,
+                         TObjArray* stableParticleOutputArray,
+                         TObjArray* partonOutputArray) = 0;
+
+  virtual TTree* converterTree() = 0;
 
 };
 

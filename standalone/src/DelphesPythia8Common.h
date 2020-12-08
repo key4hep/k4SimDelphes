@@ -1,8 +1,6 @@
 #ifndef DELPHESEDM4HEP_DELPHESPYTHIA8COMMON
 #define DELPHESEDM4HEP_DELPHESPYTHIA8COMMON
 
-#include <iostream>
-
 #include "TObjArray.h"
 #include "TChain.h"
 #include "TClonesArray.h"
@@ -10,8 +8,9 @@
 #include "TStopwatch.h"
 #include "TDatabasePDG.h"
 
+#include "classes/DelphesClasses.h"
 #include "classes/DelphesFactory.h"
-#include "ExRootAnalysis/ExRootTreeWriter.h"
+#include "ExRootAnalysis/ExRootTreeBranch.h"
 
 #include "Pythia.h"
 #include "Pythia8Plugins/CombineMatchingInput.h"
