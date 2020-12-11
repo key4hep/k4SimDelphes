@@ -329,6 +329,11 @@ void DelphesEDM4HepConverter::fillReferenceCollection(const TClonesArray* delphe
         matchedReco->setMass(M_ELECTRON);
       }
 
+      // If we have a charge available, also set it
+      if constexpr (!std::is_same_v<DelphesT, Photon>) {
+        matchedReco->setCharge(delphesCand->Charge);
+      }
+
     } else {
       std::cerr << "**** WARNING: No matching ReconstructedParticle was found for a Delphes " << type << std::endl;
 
