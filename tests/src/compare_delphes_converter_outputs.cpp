@@ -208,6 +208,14 @@ void compareCollectionElements(const TClonesArray* delphesColl,
       std::cerr << "Delphes candidate " << i << " has different kinematics than edm4hep candidate in collection \'" << collName << "\'" << std::endl;
       std::exit(1);
     }
+
+    // Photons have no charge, so nothing to compare here
+    if constexpr (!std::is_same_v<DelphesT, Photon>) {
+      if (delphesCand->Charge != edm4hepCand.getCharge()) {
+        std::cerr << "Delphes candidate " << i << " has different charge than edm4hep candidate in collection \'" << collName << "\'" << std::endl;
+        std::exit(1);
+      }
+    }
   }
 }
 
@@ -237,6 +245,14 @@ void compareCollectionElements(const TClonesArray* delphesColl,
     if (!compareMCRelations(delphesCand, edm4hepCand, associations)) {
       std::cerr << "MC relations of candidate " << i << " are different between delphes and edm4hep output" << std::endl;
       std::exit(1);
+    }
+
+    // Towers / clusters have no charge, so nothing to compare here
+    if constexpr (!std::is_same_v<DelphesT, Tower>) {
+      if (delphesCand->Charge != edm4hepCand.getCharge()) {
+        std::cerr << "Delphes candidate " << i << " has different charge than edm4hep candidate in collection \'" << collName << "\'" << std::endl;
+        std::exit(1);
+      }
     }
   }
 }
