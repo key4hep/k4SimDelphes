@@ -57,16 +57,16 @@ public:
 
 
   //add settings for resonance decay filter
-    pythia->settings.addFlag("ResonanceDecayFilter:filter", false);
-    pythia->settings.addFlag("ResonanceDecayFilter:exclusive", false);
-    pythia->settings.addFlag("ResonanceDecayFilter:eMuAsEquivalent", false);
-    pythia->settings.addFlag("ResonanceDecayFilter:eMuTauAsEquivalent", false);
-    pythia->settings.addFlag("ResonanceDecayFilter:allNuAsEquivalent", false);
-    pythia->settings.addFlag("ResonanceDecayFilter:udscAsEquivalent", false);
-    pythia->settings.addFlag("ResonanceDecayFilter:udscbAsEquivalent", false);
-    pythia->settings.addFlag("ResonanceDecayFilter:wzAsEquivalent", false);
-    pythia->settings.addMVec("ResonanceDecayFilter:mothers", std::vector<int>(), false, false, 0, 0);
-    pythia->settings.addMVec("ResonanceDecayFilter:daughters", std::vector<int>(), false, false, 0, 0);
+    m_pythia->settings.addFlag("ResonanceDecayFilter:filter", false);
+    m_pythia->settings.addFlag("ResonanceDecayFilter:exclusive", false);
+    m_pythia->settings.addFlag("ResonanceDecayFilter:eMuAsEquivalent", false);
+    m_pythia->settings.addFlag("ResonanceDecayFilter:eMuTauAsEquivalent", false);
+    m_pythia->settings.addFlag("ResonanceDecayFilter:allNuAsEquivalent", false);
+    m_pythia->settings.addFlag("ResonanceDecayFilter:udscAsEquivalent", false);
+    m_pythia->settings.addFlag("ResonanceDecayFilter:udscbAsEquivalent", false);
+    m_pythia->settings.addFlag("ResonanceDecayFilter:wzAsEquivalent", false);
+    m_pythia->settings.addMVec("ResonanceDecayFilter:mothers", std::vector<int>(), false, false, 0, 0);
+    m_pythia->settings.addMVec("ResonanceDecayFilter:daughters", std::vector<int>(), false, false, 0, 0);
 
     /*
     // jet matching
@@ -103,12 +103,13 @@ public:
     // Begin ME/PS Matching specific code
     // Check if jet matching should be applied.
     
-    m_doMePsMatching = pythia->settings.flag("JetMatching:merge");
+    m_doMePsMatching = m_pythia->settings.flag("JetMatching:merge");
     // Check if internal merging should be applied.
-    m_doMePsMerging = !(pythia->settings.word("Merging:Process").compare("void") == 0);
+    m_doMePsMerging = !(m_pythia->settings.word("Merging:Process").compare("void") == 0);
 
     // Currently, only one scheme at a time is allowed.
     if (m_doMePsMerging && m_doMePsMatching) {
+      std::stringstream message;
       message << "Jet matching and merging cannot be used simultaneously! " << std::endl;
       throw std::runtime_error(message.str());
     }
@@ -118,12 +119,12 @@ public:
     if (m_doMePsMerging) {
       // Store merging scheme.
       int scheme;
-      if (pythia->settings.flag("Merging:doUMEPSTree") || pythia->settings.flag("Merging:doUMEPSSubt")) {
+      if (m_pythia->settings.flag("Merging:doUMEPSTree") || m_pythia->settings.flag("Merging:doUMEPSSubt")) {
 	scheme = 1;
-      } else if (pythia->settings.flag("Merging:doUNLOPSTree") ||
-		 pythia->settings.flag("Merging:doUNLOPSSubt") ||
-		 pythia->settings.flag("Merging:doUNLOPSLoop") ||
-		 pythia->settings.flag("Merging:doUNLOPSSubtNLO")) {
+      } else if (m_pythia->settings.flag("Merging:doUNLOPSTree") ||
+		 m_pythia->settings.flag("Merging:doUNLOPSSubt") ||
+		 m_pythia->settings.flag("Merging:doUNLOPSLoop") ||
+		 m_pythia->settings.flag("Merging:doUNLOPSSubtNLO")) {
 	scheme = 2;
       } else {
 	scheme = 0;
@@ -131,9 +132,9 @@ public:
       
       m_setting = std::unique_ptr<Pythia8::amcnlo_unitarised_interface>(new Pythia8::amcnlo_unitarised_interface(scheme));
 #if PYTHIA_VERSION_INTEGER < 8300
-      pythia->setUserHooksPtr(m_setting.get());
+      m_pythia->setUserHooksPtr(m_setting.get());
 #else
-      pythia->setUserHooksPtr((Pythia8::UserHooksPtr) m_setting.get());
+      m_pythia->setUserHooksPtr((Pythia8::UserHooksPtr) m_setting.get());
 #endif
     }
 
@@ -141,13 +142,14 @@ public:
       if (m_doMePsMatching) {
       m_matchingMG = std::unique_ptr<Pythia8::JetMatchingMadgraph>(new Pythia8::JetMatchingMadgraph());
       if (!m_matchingMG) {
-      message << "Failed to initialise jet matching structures. " << std::endl;
-      throw std::runtime_error(message.str());
-    }
+	std::stringstream message;
+	message << "Failed to initialise jet matching structures. " << std::endl;
+	throw std::runtime_error(message.str());
+      }
 #if PYTHIA_VERSION_INTEGER < 8300
-      pythia->setUserHooksPtr(m_matching.get());
+      m_pythia->setUserHooksPtr(m_matchingMG.get());
 #else
-      pythia->setUserHooksPtr((Pythia8::UserHooksPtr) m_matching.get());
+      m_pythia->setUserHooksPtr((Pythia8::UserHooksPtr) m_matchingMG.get());
 #endif
     }
  
@@ -158,8 +160,8 @@ public:
 
 
   // --  POWHEG settings
-  int vetoMode    = pythia->settings.mode("POWHEG:veto");
-  int MPIvetoMode = pythia->settings.mode("POWHEG:MPIveto");
+  int vetoMode    = m_pythia->settings.mode("POWHEG:veto");
+  int MPIvetoMode = m_pythia->settings.mode("POWHEG:MPIveto");
   m_doPowheg  = (vetoMode > 0 || MPIvetoMode > 0);
 
   // Add in user hooks for shower vetoing
@@ -170,30 +172,30 @@ public:
     
     // Set ISR and FSR to start at the kinematical limit
     if (vetoMode > 0) {
-      pythia->readString("SpaceShower:pTmaxMatch = 2");
-      pythia->readString("TimeShower:pTmaxMatch = 2");
+      m_pythia->readString("SpaceShower:pTmaxMatch = 2");
+      m_pythia->readString("TimeShower:pTmaxMatch = 2");
     }
 
     // Set MPI to start at the kinematical limit
     if (MPIvetoMode > 0) {
-      pythia->readString("MultipartonInteractions:pTmaxMatch = 2");
+      m_pythia->readString("MultipartonInteractions:pTmaxMatch = 2");
     }
 
     
     m_powhegHooks = new Pythia8::PowhegHooks();
     #if PYTHIA_VERSION_INTEGER < 8300
-    pythia->addUserHooksPtr(m_powhegHooks);
+    m_pythia->addUserHooksPtr(m_powhegHooks);
     #else
-    pythia->setUserHooksPtr((Pythia8::UserHooksPtr)m_powhegHooks);
+    m_pythia->setUserHooksPtr((Pythia8::UserHooksPtr)m_powhegHooks);
     #endif
   }
-  bool resonanceDecayFilter = pythia->settings.flag("ResonanceDecayFilter:filter");
+  bool resonanceDecayFilter = m_pythia->settings.flag("ResonanceDecayFilter:filter");
   if (resonanceDecayFilter) {
     m_resonanceDecayFilterHook = new ResonanceDecayFilterHook();
     #if PYTHIA_VERSION_INTEGER < 8300
-    pythia->addUserHooksPtr(m_resonanceDecayFilterHook);
+    m_pythia->addUserHooksPtr(m_resonanceDecayFilterHook);
     #else
-    pythia->addUserHooksPtr((Pythia8::UserHooksPtr)m_resonanceDecayFilterHook);
+    m_pythia->addUserHooksPtr((Pythia8::UserHooksPtr)m_resonanceDecayFilterHook);
     #endif
   }
 
