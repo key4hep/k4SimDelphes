@@ -382,6 +382,9 @@ std::optional<edm4hep::ReconstructedParticle> DelphesEDM4HepConverter::getMatchi
       if constexpr(std::is_same_v<DelphesT, Candidate>) {
         if (equalP4(getP4(it->second), delphesCand->Momentum)) {
           return it->second;
+        } else if (equalP4(getP4(it->second), delphesCand->Momentum, 1e-2, false)) {
+          // std::cout << "**** DEBUG: Kinematic matching successful after dropping energy matching and dropping momentum matching to percent level" << std::endl;
+          return it->second;
         }
       } else {
         if (equalP4(getP4(it->second), delphesCand->P4())) {

@@ -30,11 +30,13 @@ inline LorentzVectorT getP4(const T& particle) {
 
 /**
  * Compare two 4-momentum vectors to be within a relative tolerance in the
- * energy and all momentum components
+ * energy and all momentum components. The energy requirement can be dropped on
+ * demand.
  */
 template<typename LVectorT, typename LVectorU>
-inline bool equalP4(const LVectorT& p1, const LVectorU& p2, double tol=1e-3) {
-  if (std::abs(p1.E() - p2.E()) / p1.E() > tol) return false;
+inline bool equalP4(const LVectorT& p1, const LVectorU& p2, double tol=1e-3,
+                    bool checkEnergy=true) {
+  if (checkEnergy && std::abs(p1.E() - p2.E()) / p1.E() > tol) return false;
   if (std::abs((p1.Px() - p2.Px()) / p1.Px()) > tol) return false;
   if (std::abs((p1.Py() - p2.Py()) / p1.Py()) > tol) return false;
   if (std::abs((p1.Pz() - p2.Pz()) / p1.Pz()) > tol) return false;
