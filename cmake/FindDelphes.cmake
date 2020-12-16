@@ -31,9 +31,14 @@ set(DELPHES_INCLUDE_DIRS ${DELPHES_INCLUDE_DIR} ${DELPHES_EXTERNALS_INCLUDE_DIR}
 set(DELPHES_EXTERNALS_INCLUDE_DIRS ${DELPHES_EXTERNALS_INCLUDE_DIR})
 set(DELPHES_LIBRARIES ${DELPHES_LIBRARY})
 
+# Delphes does not offer an obvious version indicator, but we need to know
+# whether the TrackCovariance module is available or not. So here we simply
+# check whether the corresponding header is installed
+find_file(DELPHES_TRACK_COV_HEADER modules/TrackCovariance.h PATHS ${DELPHES_INCLUDE_DIRS} NO_DEFAULT_PATHS)
+
 include(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set DELPHES_FOUND to TRUE
 # if all listed variables are TRUE
 find_package_handle_standard_args(Delphes DEFAULT_MSG DELPHES_INCLUDE_DIR  DELPHES_EXTERNALS_INCLUDE_DIR DELPHES_LIBRARY)
 
-mark_as_advanced(DELPHES_INCLUDE_DIR DELPHES_EXTERNALS_INCLUDE_DIR DELPHES_LIBRARY DELPHES_BINARY_DIR)
+mark_as_advanced(DELPHES_INCLUDE_DIR DELPHES_EXTERNALS_INCLUDE_DIR DELPHES_LIBRARY DELPHES_BINARY_DIR DELPHES_TRACK_COV_HEADER)
