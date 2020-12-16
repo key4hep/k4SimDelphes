@@ -43,6 +43,9 @@ jobs:
     - name: Compile 
       run: |
         docker exec CI_container /bin/bash -c 'cd ./Package; source ${{ matrix.SETUP }}; cd build; ninja -k0;'
+    - name: Test
+      run: |
+        docker exec CI_container /bin/bash -c 'cd ./Package; source ${{ matrix.SETUP }}; cd build; ninja -k0 && ctest --output-on-failure;'
     - name: Install
       run: |
         docker exec CI_container /bin/bash -c 'cd ./Package; source ${{ matrix.SETUP }}; cd build;  ninja -k0 install;'

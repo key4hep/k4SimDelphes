@@ -8,6 +8,18 @@ target_include_directories(compare_delphes_converter_outputs
 target_link_libraries(compare_delphes_converter_outputs PRIVATE EDM4HEP::edm4hep ${DELPHES_LIBRARY} podio::podioRootIO ROOT::Physics)
 
 function(ADD_COMPARISON_TEST name converter)
+  # Check if we have the standalone Delphes application available for the
+  # desired input reader and only add the test if it is present
+  string(REPLACE "_EDM4HEP" "" DELPHES_EXE_NAME ${converter})
+  # Store the different possible executables in different cached variables to
+  # check each individually, but not repeatedly check for the same ones again
+  set(DELPHES_EXE "DELPHES_EXE_${DELPHES_EXE_NAME}")
+  find_program(${DELPHES_EXE} "${DELPHES_EXE_NAME}" PATHS ${DELPHES_BINARY_DIR} $ENV{PATH})
+  if(NOT ${DELPHES_EXE})
+    message(WARNING "Cannot find delphes executable ${DELPHES_EXE_NAME} which is necessary to produce comparison output for test ${name}. Not adding this test")
+    return()
+  endif()
+
   add_test(NAME ${name}
     COMMAND bash -x ${CMAKE_SOURCE_DIR}/tests/testDriver.sh ${converter} ${ARGN})
 
