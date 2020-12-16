@@ -36,5 +36,11 @@ set(DELPHES_CARD ${CMAKE_SOURCE_DIR}/tests/data/delphes_card_IDEA.tcl)
 set(OUTPUT_CONFIG ${CMAKE_SOURCE_DIR}/examples/edm4hep_output_config.tcl)
 
 if(BUILD_PYTHIA_READER)
-  ADD_COMPARISON_TEST(PythiaConverter DelphesPythia8_EDM4HEP ${DELPHES_CARD} ${OUTPUT_CONFIG} pythia_converter_output.root ${CMAKE_SOURCE_DIR}/examples/data/ee_Z_bbbar_ecm91GeV.cmd)
+  ADD_COMPARISON_TEST(PythiaConverter DelphesPythia8_EDM4HEP ${DELPHES_CARD} ${OUTPUT_CONFIG} pythia_converter_output_ee_Z_bbbar.root ${CMAKE_SOURCE_DIR}/examples/data/ee_Z_bbbar_ecm91GeV.cmd)
+
+  # Only run tests using the TrackCovariance if it is actually available
+  if (DELPHES_TRACK_COV_HEADER)
+    set(DELPHES_TRK_COV_CARD ${CMAKE_SOURCE_DIR}/tests/data/delphes_card_IDEAtrkCov.tcl)
+    ADD_COMPARISON_TEST(PythiaConverter_TrkCov DelphesPythia8_EDM4HEP ${DELPHES_TRK_COV_CARD} ${OUTPUT_CONFIG} pythia_converter_output_ee_Z_ccbar.root ${CMAKE_SOURCE_DIR}/examples/data/ee_Z_bbbar_ecm91GeV.cmd)
+  endif()
 endif()
