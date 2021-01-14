@@ -4,6 +4,8 @@ find_package(Gaudi)
 find_package(k4FWCore)
 find_package(EDM4HEP)
 
+add_subdirectory(k4SimDelphes)
+
 install(EXPORT ${PROJECT_NAME}Targets
   NAMESPACE ${PROJECT_NAME}::
   FILE "${PROJECT_NAME}Targets.cmake"
