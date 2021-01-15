@@ -13,10 +13,11 @@ namespace edm4hep {
 class MCParticleCollection;
 }
 
-/**
-
+/** @class k4SimDelphesAlg
+ *
+ *  Main Algorithm to run Delphes, getting MCParticle input, producing 
+ *  ReconstructedParticle output.
 **/
-
 class k4SimDelphesAlg : public GaudiAlgorithm {
 
 public:
@@ -27,8 +28,9 @@ public:
   virtual StatusCode finalize();
 
 private:
+  /// Input from Generator
   DataHandle<edm4hep::MCParticleCollection> m_InputMCParticles{"GenParticles", Gaudi::DataHandle::Reader, this};
-
+  /// Output from Delphes
   DataHandle<edm4hep::ReconstructedParticleCollection> m_OutputRecParticles{"RecParticlesDelphes", Gaudi::DataHandle::Writer, this};
 
    // Delphes detector card to be read in
