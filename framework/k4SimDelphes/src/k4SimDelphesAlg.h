@@ -7,6 +7,9 @@
 #include "edm4hep/MCParticleCollection.h"
 #include "edm4hep/ReconstructedParticleCollection.h"
 
+ #include "k4SimDelphes/DelphesEDM4HepConverter.h"
+
+
 #include "modules/Delphes.h"
 
 namespace edm4hep {
@@ -42,6 +45,7 @@ private:
 
 
   std::unique_ptr<Delphes> m_Delphes{nullptr};
+  std::unique_ptr<k4SimDelphes::DelphesEDM4HepConverter> m_edm4hepConverter{nullptr};
   TObjArray* m_allParticleOutputArray;
   TObjArray* m_stableParticleOutputArray;
   TObjArray* m_partonOutputArray;
