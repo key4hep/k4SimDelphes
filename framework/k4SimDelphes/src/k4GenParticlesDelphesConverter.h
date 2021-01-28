@@ -8,17 +8,28 @@
 
 
 
+
 class k4GenParticlesDelphesConverter {
 public:
-  void convertToDelphesArrays(const edm4hep::MCParticleCollection* edm_coll,
+
+  /// Map to store vertex to particle relations
+  typedef std::map<int, std::pair<int, int>> VertexParticleMap;
+
+  void convertToDelphesArrays(
+    const edm4hep::MCParticleCollection* edm_coll,
     DelphesFactory& factory,
     TObjArray& allParticleOutputArray,
     TObjArray& stableParticleOutputArray,
     TObjArray& partonOutputArray)
   {
-    auto candidate = factory.NewCandidate();
+
+    VertexParticleMap motherMap;
+    // Vertex ID -> first daughter particle, last daughter particle
+    VertexParticleMap daughterMap;
 
     for (auto&& edm_part: *edm_coll) {
+
+      auto candidate = factory.NewCandidate();
 
       candidate->PID = edm_part.getPDG();
       candidate->Status = edm_part.getGeneratorStatus();
@@ -33,7 +44,7 @@ public:
                                      edm_mom.y,
                                      edm_mom.z,
                                      std::sqrt(_P2 + _M2));
-      //candidate->Charge = pdgParticle ? int(pdgParticle->Charge() / 3.0) : -999;
+      candidate->Charge = edm_part.getCharge();
 
       // add candidate to delphes arrays
       allParticleOutputArray.Add(candidate);
@@ -44,7 +55,17 @@ public:
         partonOutputArray.Add(candidate);
       }
     }
-  }
+  setRelationIndices(allParticleOutputArray, daughterMap, motherMap);
+  };
+
+
+  /// Sets relations of particles
+  void setRelationIndices(TObjArray& allParticleOutputArray,
+                          const VertexParticleMap& daughterMap,
+                          const VertexParticleMap& motherMap) const {
+
+                          };
+
 };
 
 #endif
