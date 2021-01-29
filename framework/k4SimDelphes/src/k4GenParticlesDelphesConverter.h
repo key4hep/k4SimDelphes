@@ -11,10 +11,6 @@
 
 class k4GenParticlesDelphesConverter {
 public:
-
-  /// Map to store vertex to particle relations
-  typedef std::map<int, std::pair<int, int>> VertexParticleMap;
-
   void convertToDelphesArrays(
     const edm4hep::MCParticleCollection* edm_coll,
     DelphesFactory& factory,
@@ -22,17 +18,11 @@ public:
     TObjArray& stableParticleOutputArray,
     TObjArray& partonOutputArray)
   {
-
-    VertexParticleMap motherMap;
-    // Vertex ID -> first daughter particle, last daughter particle
-    VertexParticleMap daughterMap;
-
+    // loop over all input edm4hep particles
     for (auto&& edm_part: *edm_coll) {
-
+      // create the delphes particle to be filled from edm4hep
       auto candidate = factory.NewCandidate();
-
-      candidate->PID = edm_part.getPDG();
-      candidate->Status = edm_part.getGeneratorStatus();
+      // Setting Momentum with the help of some auxiliary variables
       auto _M = edm_part.getMass();
       candidate->Mass = _M;
       auto edm_mom = edm_part.getMomentum();
@@ -44,9 +34,17 @@ public:
                                      edm_mom.y,
                                      edm_mom.z,
                                      std::sqrt(_P2 + _M2));
+      // Setting Position
+      auto edm_pos = edm_part.getPosition();
+      candidate->Position.SetXYZT(edm_pos.x,
+                                  edm_pos.y,
+                                  edm_pos.z,
+                                  edm_part.getTime());
+      // Setting other members with a one-to-one correspondence
       candidate->Charge = edm_part.getCharge();
-
-      // add candidate to delphes arrays
+      candidate->PID = edm_part.getPDG();
+      candidate->Status = edm_part.getGeneratorStatus();
+      // candidate has all necessary infos, add it to delphes arrays
       allParticleOutputArray.Add(candidate);
       int pdgCode = TMath::Abs(candidate->PID);
       if (candidate->Status == 1) {
@@ -55,16 +53,10 @@ public:
         partonOutputArray.Add(candidate);
       }
     }
-  setRelationIndices(allParticleOutputArray, daughterMap, motherMap);
+    // no mother / daughter information is set in the Delphes GenParticles
+    // as it is not needed for running delphes, and still present in edm4hep.
   };
 
-
-  /// Sets relations of particles
-  void setRelationIndices(TObjArray& allParticleOutputArray,
-                          const VertexParticleMap& daughterMap,
-                          const VertexParticleMap& motherMap) const {
-
-                          };
 
 };
 
