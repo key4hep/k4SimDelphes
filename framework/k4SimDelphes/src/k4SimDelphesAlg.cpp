@@ -1,6 +1,6 @@
 #include "k4SimDelphesAlg.h"
 #include "k4SimDelphes/DelphesEDM4HepOutputConfiguration.h"
-#include "k4GenParticlesDelphesConverter.h"
+#include "k4SimDelphes/k4GenParticlesDelphesConverter.h"
 
 DECLARE_COMPONENT(k4SimDelphesAlg)
 
