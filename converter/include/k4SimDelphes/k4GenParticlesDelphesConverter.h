@@ -10,6 +10,8 @@
 
 // todo: move to converter and test
 
+namespace k4SimDelphes {
+
 class k4GenParticlesDelphesConverter {
 public:
   void convertToDelphesArrays(
@@ -60,5 +62,7 @@ public:
 
 
 };
+
+}
 
 #endif
