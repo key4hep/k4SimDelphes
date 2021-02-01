@@ -8,6 +8,7 @@
 
 
 
+// todo: move to converter and test
 
 class k4GenParticlesDelphesConverter {
 public:
@@ -35,7 +36,7 @@ public:
                                      edm_mom.z,
                                      std::sqrt(_P2 + _M2));
       // Setting Position
-      auto edm_pos = edm_part.getPosition();
+      auto edm_pos = edm_part.getVertex();
       candidate->Position.SetXYZT(edm_pos.x,
                                   edm_pos.y,
                                   edm_pos.z,
