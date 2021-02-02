@@ -78,8 +78,8 @@ public:
     m_timesAllowErrors = m_pythia->mode("Main:timesAllowErrors");
     m_spareFlag1 = m_pythia->flag("Main:spareFlag1");
     m_spareMode1 = m_pythia->mode("Main:spareMode1");
-    m_spareParm1 = m_pythia->parm("Main:m_spareParm1");
-    m_spareParm2 = m_pythia->parm("Main:m_spareParm2");
+    m_spareParm1 = m_pythia->parm("Main:spareParm1");
+    m_spareParm2 = m_pythia->parm("Main:spareParm2");
 
     // Check if particle gun
     if(!m_spareFlag1) {
