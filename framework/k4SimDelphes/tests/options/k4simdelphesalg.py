@@ -3,7 +3,7 @@ from GaudiKernel import SystemOfUnits as units
 
 from Configurables import ApplicationMgr
 app = ApplicationMgr()
-app.EvtMax = 100
+app.EvtMax = 3
 app.EvtSel = "NONE"
 
 from Configurables import k4DataSvc
