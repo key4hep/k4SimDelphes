@@ -45,10 +45,15 @@ private:
 
 
   std::unique_ptr<Delphes> m_Delphes{nullptr};
-  std::unique_ptr<k4SimDelphes::DelphesEDM4HepConverter> m_edm4hepConverter{nullptr};
-  TObjArray* m_allParticleOutputArray;
-  TObjArray* m_stableParticleOutputArray;
-  TObjArray* m_partonOutputArray;
+  //std::unique_ptr<k4SimDelphes::DelphesEDM4HepConverter> m_edm4hepConverter{nullptr};
+  k4SimDelphes::DelphesEDM4HepConverter* m_edm4hepConverter{nullptr};
+  TObjArray* m_allParticleOutputArray{nullptr};
+  TObjArray* m_stableParticleOutputArray{nullptr};
+  TObjArray* m_partonOutputArray{nullptr};
+
+  ExRootTreeWriter* m_treeWriter{nullptr};
+  TTree* m_converterTree{nullptr};
+  ExRootConfReader* m_confReader{nullptr};
 
 
 };
