@@ -40,15 +40,15 @@ if(BUILD_EVTGEN_READER)
     message("ERROR: Cannot build EVTGEN Reader. PYTHIA8300 or newer required. ")
   else()
     add_executable(DelphesPythia8EvtGen_EDM4HEP src/DelphesPythia8EvtGen_EDM4HEP.cpp)
-    add_executable(DelphesPythia8EvtGen_EDM4HEP_marcin src/DelphesPythia8EvtGen_EDM4HEP_marcin.cpp)
+    add_executable(DelphesPythia8EvtGen_EDM4HEP_k4Interface src/DelphesPythia8EvtGen_EDM4HEP_k4Interface.cpp)
 
     target_include_directories(DelphesPythia8EvtGen_EDM4HEP PRIVATE ${PYTHIA8_INCLUDE_DIRS} ${EVTGEN_INCLUDE_DIR})
     target_link_libraries(DelphesPythia8EvtGen_EDM4HEP DelphesEDM4HepConverter podio::podioRootIO ${PYTHIA8_LIBRARIES} ${DELPHES_LIBRARY} ${EVTGEN_LIBRARIES})
     install(TARGETS DelphesPythia8EvtGen_EDM4HEP DESTINATION bin)
 
-    target_include_directories(DelphesPythia8EvtGen_EDM4HEP_marcin PRIVATE ${PYTHIA8_INCLUDE_DIRS} ${EVTGEN_INCLUDE_DIR})
-    target_link_libraries(DelphesPythia8EvtGen_EDM4HEP_marcin PythiaEvtGen_Interface DelphesEDM4HepConverter podio::podioRootIO ${PYTHIA8_LIBRARIES} ${DELPHES_LIBRARY} ${EVTGEN_LIBRARIES})
-    install(TARGETS DelphesPythia8EvtGen_EDM4HEP_marcin DESTINATION bin)
+    target_include_directories(DelphesPythia8EvtGen_EDM4HEP_k4Interface PRIVATE ${PYTHIA8_INCLUDE_DIRS} ${EVTGEN_INCLUDE_DIR})
+    target_link_libraries(DelphesPythia8EvtGen_EDM4HEP_k4Interface PythiaEvtGen_Interface DelphesEDM4HepConverter podio::podioRootIO ${PYTHIA8_LIBRARIES} ${DELPHES_LIBRARY} ${EVTGEN_LIBRARIES})
+    install(TARGETS DelphesPythia8EvtGen_EDM4HEP_k4Interface DESTINATION bin)
 
 
 endif()
