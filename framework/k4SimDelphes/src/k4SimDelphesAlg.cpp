@@ -100,6 +100,7 @@ StatusCode k4SimDelphesAlg::execute() {
     }
   }
   m_Delphes->Clear();
+  delete m_edm4hepConverter;
   return StatusCode::SUCCESS;
 }
 
