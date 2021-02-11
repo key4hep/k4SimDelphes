@@ -15,9 +15,17 @@ gaudi_add_module(k4SimDelphesPlugins
                       ROOT::Hist
                 )
 
-
 #--- Testing
-add_test(NAME k4SimDelphesAlgBasicTest
-         WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
-         COMMAND ${CMAKE_BINARY_DIR}/run k4run tests/options/k4simdelphesalg.py)
 
+if(BUILD_TESTING)
+
+  find_package(k4Gen)
+
+  if(TARGET k4Gen::k4Gen)
+    add_test(NAME k4SimDelphesAlgBasicTest
+             WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/tests/options
+             COMMAND ${CMAKE_BINARY_DIR}/run k4run k4simdelphesalg.py)
+  else()
+    message(WARNING "k4Gen not found, disabling some test!")
+  endif()
+endif()
