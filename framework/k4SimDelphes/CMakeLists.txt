@@ -15,6 +15,8 @@ gaudi_add_module(k4SimDelphesPlugins
                       ROOT::Hist
                 )
 
+install(DIRECTORY examples DESTINATION share/${PROJECT_NAME})
+
 #--- Testing
 
 if(BUILD_TESTING)
