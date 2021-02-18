@@ -8,6 +8,7 @@ install
 *.pdf
 *.log
 *.dat
+spack*
 
 # podio generated code files
 edm4hep/edm4hep

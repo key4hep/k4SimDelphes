@@ -10,6 +10,7 @@ option(BUILD_HEPMC_READER "Build the DELPHES plugin for DD4hep" ON)
 option(BUILD_FRAMEWORK "Build the DELPHES plugin for DD4hep" OFF)
 option(K4SIMDELPHES_DOCUMENTATION "Whether or not to create doxygen doc target." OFF)
 option(ENABLE_CPACK "Whether or not to use cpack config" OFF)
+option(USE_EXTERNAL_CATCH2 "If off, build the catch2 unittest framework locally" OFF)
 
 # project version
 SET( ${PROJECT_NAME}_VERSION_MAJOR 0 )
@@ -32,6 +33,17 @@ message (STATUS "C++ standard: ${CMAKE_CXX_STANDARD}")
 
 # - Use GNU-style hierarchy for installing build products
 include(GNUInstallDirs)
+
+#--- setup build type (and default) if supported -------------------------------
+if (NOT CMAKE_CONFIGURATION_TYPES)
+  if (NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE RelWithDebInfo
+      CACHE STRING "Choose the type of build, options are: None|Release|MinSizeRel|Debug|RelWithDebInfo" FORCE)
+  else()
+    set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE}
+      CACHE STRING "Choose the type of build, options are: None|Release|MinSizeRel|Debug|RelWithDebInfo" FORCE)
+  endif()
+endif()
 
 configure_file(${CMAKE_SOURCE_DIR}/k4SimDelphesVersion.h
                ${CMAKE_BINARY_DIR}/k4SimDelphesVersion.h )
@@ -73,6 +85,7 @@ if(BUILD_FRAMEWORK)
 endif()
 
 if(BUILD_TESTING)
+  option(BUILD_UNITTESTS "Build the unittest for k4SimDelphes" ON)
   add_subdirectory(tests)
 endif()
 
