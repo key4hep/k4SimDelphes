@@ -143,7 +143,6 @@ DelphesEDM4HepConverter::DelphesEDM4HepConverter(const std::vector<BranchSetting
 }
 
 void DelphesEDM4HepConverter::process(TTree* delphesTree) {
-  std::cout << "in process" << std::endl;
   // beginning of processing: clear previous event from containers
   for (auto& coll : m_collections) {
    coll.second->clear();
@@ -499,27 +498,31 @@ edm4hep::Track convertTrack(Track const* cand, const double magFieldBz)
   //BEGIN CLEMENT
   //trackState.omega = -2.*cand->C;
   TMatrixDSym covaFB = cand->CovarianceMatrix();
-  covMatrix[0]  = covaFB(0,0);
-  covMatrix[1]  = covaFB(0,1);
-  covMatrix[2]  = covaFB(0,2);
-  covMatrix[3]  = covaFB(0,3);
-  covMatrix[4]  = covaFB(0,4);
+  double scale0 = 1.e3;
+  double scale1 = 1.;
+  double scale2 = 1.e-3;
+  double scale3 = 1.e3;
+  double scale4 = 1.;
 
-  covMatrix[5]  = covaFB(1,1);
-  covMatrix[6]  = covaFB(1,2);
-  covMatrix[7]  = covaFB(1,3);
-  covMatrix[8]  = covaFB(1,4);
+  covMatrix[0]  = covaFB(0,0) *scale0 * scale0;
+  covMatrix[1]  = covaFB(0,1) *scale0 * scale1;
+  covMatrix[2]  = covaFB(0,2) *scale0 * scale2;
+  covMatrix[3]  = covaFB(0,3) *scale0 * scale3;
+  covMatrix[4]  = covaFB(0,4) *scale0 * scale4;
 
-  covMatrix[9]  = covaFB(2,2);
-  covMatrix[10]  = covaFB(2,3);
-  covMatrix[11]  = covaFB(2,4);
+  covMatrix[5]  = covaFB(1,1) *scale1 * scale1;
+  covMatrix[6]  = covaFB(1,2) *scale1 * scale2;
+  covMatrix[7]  = covaFB(1,3) *scale1 * scale3;
+  covMatrix[8]  = covaFB(1,4) *scale1 * scale4;
 
-  covMatrix[12] = covaFB(3,3);
-  covMatrix[13] = covaFB(3,4);
+  covMatrix[9]  = covaFB(2,2) *scale2 * scale2;
+  covMatrix[10] = covaFB(2,3) *scale2 * scale3;
+  covMatrix[11] = covaFB(2,4) *scale2 * scale4;
 
-  covMatrix[14] = covaFB(4,4);
+  covMatrix[12] = covaFB(3,3) *scale3 * scale3;
+  covMatrix[13] = covaFB(3,4) *scale3 * scale4;
 
-  
+  covMatrix[14] = covaFB(4,4) *scale4 * scale4;
 
   //END CLEMENT
 
