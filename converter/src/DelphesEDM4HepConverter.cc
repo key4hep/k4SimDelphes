@@ -15,6 +15,7 @@
 #include <iostream>
 #include <iterator>
 #include <set>
+#include <TMatrixDSym.h>
 
 namespace k4SimDelphes {
 
@@ -142,6 +143,7 @@ DelphesEDM4HepConverter::DelphesEDM4HepConverter(const std::vector<BranchSetting
 }
 
 void DelphesEDM4HepConverter::process(TTree* delphesTree) {
+  std::cout << "in process" << std::endl;
   // beginning of processing: clear previous event from containers
   for (auto& coll : m_collections) {
    coll.second->clear();
@@ -491,6 +493,35 @@ edm4hep::Track convertTrack(Track const* cand, const double magFieldBz)
   covMatrix[9] = varOmega;
   covMatrix[12] = cand->ErrorDZ * cand->ErrorDZ;
   covMatrix[14] = cand->ErrorCtgTheta * cand->ErrorCtgTheta;
+
+
+  //std::cout << "omega before " << trackState.omega << "  omega after " <<  -2.*cand->C << std::endl;
+  //BEGIN CLEMENT
+  //trackState.omega = -2.*cand->C;
+  TMatrixDSym covaFB = cand->CovarianceMatrix();
+  covMatrix[0]  = covaFB(0,0);
+  covMatrix[1]  = covaFB(0,1);
+  covMatrix[2]  = covaFB(0,2);
+  covMatrix[3]  = covaFB(0,3);
+  covMatrix[4]  = covaFB(0,4);
+
+  covMatrix[5]  = covaFB(1,1);
+  covMatrix[6]  = covaFB(1,2);
+  covMatrix[7]  = covaFB(1,3);
+  covMatrix[8]  = covaFB(1,4);
+
+  covMatrix[9]  = covaFB(2,2);
+  covMatrix[10]  = covaFB(2,3);
+  covMatrix[11]  = covaFB(2,4);
+
+  covMatrix[12] = covaFB(3,3);
+  covMatrix[13] = covaFB(3,4);
+
+  covMatrix[14] = covaFB(4,4);
+
+  
+
+  //END CLEMENT
 
   track.addToTrackStates(trackState);
 
