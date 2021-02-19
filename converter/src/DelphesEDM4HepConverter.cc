@@ -482,22 +482,13 @@ edm4hep::Track convertTrack(Track const* cand, const double magFieldBz)
     varOmega = cand->ErrorPT * cand->ErrorPT / cand->PT / cand->PT * trackState.omega * trackState.omega;
   }
 
-  // fill the covariance matrix. Indices on the diagonal are 0, 5,
-  // 9, 12, and 14, corresponding to D0, phi, omega, Z0 and
-  // tan(lambda) respectively. Currently Delphes doesn't provide
-  // correlations
+  // fill the covariance matrix. There is a conversion of units
+  // because the covariance matrix in delphes is with the original units 
+  // from Franco Bedeschi's code so meter and GeV
   auto& covMatrix = trackState.covMatrix;
-  covMatrix[0] = cand->ErrorD0 * cand->ErrorD0;
-  covMatrix[5] = cand->ErrorPhi * cand->ErrorPhi;
-  covMatrix[9] = varOmega;
-  covMatrix[12] = cand->ErrorDZ * cand->ErrorDZ;
-  covMatrix[14] = cand->ErrorCtgTheta * cand->ErrorCtgTheta;
-
-
-  //std::cout << "omega before " << trackState.omega << "  omega after " <<  -2.*cand->C << std::endl;
-  //BEGIN CLEMENT
-  //trackState.omega = -2.*cand->C;
+  
   TMatrixDSym covaFB = cand->CovarianceMatrix();
+
   double scale0 = 1.e3;
   double scale1 = 1.;
   double scale2 = 1.e-3;
@@ -523,8 +514,6 @@ edm4hep::Track convertTrack(Track const* cand, const double magFieldBz)
   covMatrix[13] = covaFB(3,4) *scale3 * scale4;
 
   covMatrix[14] = covaFB(4,4) *scale4 * scale4;
-
-  //END CLEMENT
 
   track.addToTrackStates(trackState);
 
