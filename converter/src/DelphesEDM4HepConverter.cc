@@ -491,7 +491,8 @@ edm4hep::Track convertTrack(Track const* cand, const double magFieldBz)
 
   double scale0 = 1.e3;
   double scale1 = 1.;
-  double scale2 = 1.e-3;
+  //double scale2 = 1.e-3;
+  double scale2 = 2.* 1.e-3;    // CAREFUL: DELPHES USES THE HALF-CURVATURE
   double scale3 = 1.e3;
   double scale4 = 1.;
 
@@ -507,6 +508,8 @@ edm4hep::Track convertTrack(Track const* cand, const double magFieldBz)
   covMatrix[8]  = covaFB(1,4) *scale1 * scale4;
 
   covMatrix[9]  = covaFB(2,2) *scale2 * scale2;
+  covMatrix[9]  = covMatrix[9] * pow( 1e6, 2) ;   // TEMPORARY HACK  BECAUSE OF A  BUG in DELPHES !!
+
   covMatrix[10] = covaFB(2,3) *scale2 * scale3;
   covMatrix[11] = covaFB(2,4) *scale2 * scale4;
 
