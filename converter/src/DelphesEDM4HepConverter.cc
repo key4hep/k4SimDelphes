@@ -489,6 +489,7 @@ edm4hep::Track convertTrack(Track const* cand, const double magFieldBz)
   
   TMatrixDSym covaFB = cand->CovarianceMatrix();
 
+  //This is needed as Delphes stores the units in the orignal format, so GeV and meters
   double scale0 = 1.e3;
   double scale1 = 1.;
   //double scale2 = 1.e-3;
@@ -497,23 +498,23 @@ edm4hep::Track convertTrack(Track const* cand, const double magFieldBz)
   double scale4 = 1.;
 
   covMatrix[0]  = covaFB(0,0) *scale0 * scale0;
-  covMatrix[1]  = covaFB(0,1) *scale0 * scale1;
-  covMatrix[2]  = covaFB(0,2) *scale0 * scale2;
-  covMatrix[3]  = covaFB(0,3) *scale0 * scale3;
-  covMatrix[4]  = covaFB(0,4) *scale0 * scale4;
+  
+  covMatrix[1]  = covaFB(1,0) *scale1 * scale0;
+  covMatrix[2]  = covaFB(1,1) *scale1 * scale1;
 
-  covMatrix[5]  = covaFB(1,1) *scale1 * scale1;
-  covMatrix[6]  = covaFB(1,2) *scale1 * scale2;
-  covMatrix[7]  = covaFB(1,3) *scale1 * scale3;
-  covMatrix[8]  = covaFB(1,4) *scale1 * scale4;
-
-  covMatrix[9]  = covaFB(2,2) *scale2 * scale2;
-  covMatrix[10] = covaFB(2,3) *scale2 * scale3;
-  covMatrix[11] = covaFB(2,4) *scale2 * scale4;
-
-  covMatrix[12] = covaFB(3,3) *scale3 * scale3;
-  covMatrix[13] = covaFB(3,4) *scale3 * scale4;
-
+  covMatrix[3]  = covaFB(2,0) *scale2 * scale0;
+  covMatrix[4]  = covaFB(2,1) *scale2 * scale1;
+  covMatrix[5]  = covaFB(2,2) *scale2 * scale2;
+  
+  covMatrix[6]  = covaFB(3,0) *scale3 * scale0;
+  covMatrix[7]  = covaFB(3,1) *scale3 * scale1;
+  covMatrix[8]  = covaFB(3,2) *scale3 * scale2;
+  covMatrix[9]  = covaFB(3,3) *scale3 * scale3;
+  
+  covMatrix[10] = covaFB(4,0) *scale4 * scale0;
+  covMatrix[11] = covaFB(4,1) *scale4 * scale1;
+  covMatrix[12] = covaFB(4,2) *scale4 * scale2;
+  covMatrix[13] = covaFB(4,3) *scale4 * scale3;
   covMatrix[14] = covaFB(4,4) *scale4 * scale4;
 
   track.addToTrackStates(trackState);
