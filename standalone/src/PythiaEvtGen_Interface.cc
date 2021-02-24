@@ -56,9 +56,7 @@ PythiaEvtGen_Interface::PythiaEvtGen_Interface(Pythia8::Pythia *p, std::string p
 //=============================================================================
 PythiaEvtGen_Interface::~PythiaEvtGen_Interface()
 {
-  delete pythia;
   delete evtgen;
-  delete signal_map;
 
 }
 void PythiaEvtGen_Interface::add_decays(std::string decayfile, int motherID, std::string name)
@@ -119,10 +117,11 @@ bool PythiaEvtGen_Interface::check_Signal_Appereance()
   unsigned NOfSignal=motherIDs.size();
   NOfSignal_list = std::vector(NOfSignal, 0);
   //signal_map= new int[NOfSignal][10];// here we assume we won't have more then 10 signal candidates
-
-  signal_map= new int*[NOfSignal];
+  signal_map = std::vector<std::vector<int>>(NOfSignal);// resetting this vector//;(NOfSignal);
+  //signal_map= new int*[NOfSignal];
   for(int i = 0; i < NOfSignal; ++i) {
-    signal_map[i] = new int[10]; // here we assume we won't have more then 10 signal candidates      
+    //    signal_map[i] = new int[10]; // here we assume we won't have more then 10 signal candidates      
+    signal_map[i] = std::vector<int>(10);
   }
   
   if(debug) std::cout<<"Looking for "<<NOfSignal<<" signal candidates"<<std::endl;
