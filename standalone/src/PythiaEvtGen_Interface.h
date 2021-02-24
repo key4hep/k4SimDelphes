@@ -65,7 +65,9 @@ private:
   int init_seed;
  
   std::string pdl;
-  int **signal_map;
+  //int **signal_map;
+  std::vector<std::vector<int>> signal_map;
+
   std::vector<int> NOfSignal_list;
 
   bool debug;

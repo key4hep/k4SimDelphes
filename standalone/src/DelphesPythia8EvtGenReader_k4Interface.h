@@ -1,5 +1,5 @@
-#ifndef DELPHESEDM4HEP_DELPHESPYTHIA8EVTGENREADER_MARCIN
-#define DELPHESEDM4HEP_DELPHESPYTHIA8EVTGENREADER_MARCIN
+#ifndef DELPHESEDM4HEP_DELPHESPYTHIA8EVTGENREADER_K4INTERFACE
+#define DELPHESEDM4HEP_DELPHESPYTHIA8EVTGENREADER_K4INTERFACE
 
 #include <iostream>
 
@@ -33,7 +33,7 @@
 //---------------------------------------------------------------------------
 
 
-class DelphesPythia8EvtGenReader: public DelphesInputReader {
+class DelphesPythia8EvtGenReader_k4Interface: public DelphesInputReader {
   public:
 
   std::string init(Delphes* modularDelphes, int argc, char *argv[]) override {
