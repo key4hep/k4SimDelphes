@@ -5,7 +5,7 @@ find_package(Pythia8 REQUIRED)
 add_library(PythiaEvtGen_Interface SHARED src/PythiaEvtGen_Interface.cc)
 target_include_directories(PythiaEvtGen_Interface PRIVATE ${PYTHIA8_INCLUDE_DIRS} ${EVTGEN_INCLUDE_DIR})
 target_link_libraries(PythiaEvtGen_Interface ${PYTHIA8_LIBRARIES} ${EVTGEN_LIBRARIES})
-
+install(TARGETS PythiaEvtGen_Interface DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 
 # build executable and put it into bin/
@@ -53,4 +53,3 @@ if(BUILD_EVTGEN_READER)
 
 endif()
 endif()
-
