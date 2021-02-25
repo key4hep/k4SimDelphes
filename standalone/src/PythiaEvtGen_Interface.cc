@@ -213,6 +213,7 @@ void PythiaEvtGen_Interface::decay()
   if(IsSignal == false) // repeat hadronization
     {
       if(debug) std::cout<<"We don't have an event:"<<std::endl;
+
       do
 	{
 	  pythia->event=savedEvent;
@@ -221,10 +222,12 @@ void PythiaEvtGen_Interface::decay()
 	      if(debug)
 		{
 		  std::cout<<"We are regenerating whole decay"<<std::endl;
-		  pythia->next();
-		  pythia->event.list();
 
 		}
+	      pythia->next();
+	      pythia->event.list();
+
+		  
 	    }
 	  pythia->forceHadronLevel(false);
 	}
