@@ -225,7 +225,7 @@ void PythiaEvtGen_Interface::decay()
 
 		}
 	      pythia->next();
-	      pythia->event.list();
+	      if(debug) pythia->event.list();
 
 		  
 	    }
