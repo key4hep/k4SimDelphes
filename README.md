@@ -6,7 +6,7 @@ process.
 ## Configuration
 
 The `DelphesEDM4HepConverter` takes an
-[`OutputSetting`](DelphesEDM4HepConverter.h#L25-L98) parameter to configure which
+[`OutputSetting`](converter/include/k4SimDelphes/DelphesEDM4HepOutputConfiguration.h#L12#L91) parameter to configure which
 `delphes` branches go into which `edm4hep` output collections. In the current
 implementation of the conversions this is filled from an additional configuration file
 that defines the necessary parameters:

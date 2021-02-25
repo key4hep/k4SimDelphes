@@ -34,6 +34,17 @@ message (STATUS "C++ standard: ${CMAKE_CXX_STANDARD}")
 # - Use GNU-style hierarchy for installing build products
 include(GNUInstallDirs)
 
+#--- setup build type (and default) if supported -------------------------------
+if (NOT CMAKE_CONFIGURATION_TYPES)
+  if (NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE RelWithDebInfo
+      CACHE STRING "Choose the type of build, options are: None|Release|MinSizeRel|Debug|RelWithDebInfo" FORCE)
+  else()
+    set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE}
+      CACHE STRING "Choose the type of build, options are: None|Release|MinSizeRel|Debug|RelWithDebInfo" FORCE)
+  endif()
+endif()
+
 configure_file(${CMAKE_SOURCE_DIR}/k4SimDelphesVersion.h
                ${CMAKE_BINARY_DIR}/k4SimDelphesVersion.h )
 install(FILES ${CMAKE_BINARY_DIR}/k4SimDelphesVersion.h
