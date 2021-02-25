@@ -46,7 +46,8 @@ public:
   bool check_Signal_Appereance();
   void set_debug(bool t=true)  {debug=t;};
   void set_verbose(bool t=true)  {verbose=t;};
-
+  void set_regenerate(bool t=true) {regenerate=t;};
+  
   void UpdatePythiaEvent(Pythia8::Particle *part1, EvtParticle *Evtpart );
 
      
@@ -73,5 +74,8 @@ private:
   bool debug;
   std::vector<int> B_ids;
   bool verbose;
+  bool regenerate;
+
+
 };
 #endif // K4SIMDELPHES_PYTHIAEVTGEN_INTERFACE_H

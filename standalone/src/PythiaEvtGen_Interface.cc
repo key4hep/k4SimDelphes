@@ -42,6 +42,8 @@ PythiaEvtGen_Interface::PythiaEvtGen_Interface(Pythia8::Pythia *p, std::string p
   init_seed=seed;
   pdl=evt_pdl;
   debug=false;
+  regenerate=false;
+  verbose=false;
   std::cout<<"Adding Inclusive File:"<<std::endl;
   add_inclusive(pdf); // adding inclusive decays
   //  int arr[] = {511,521,531,541,5122,5132,5142,5232,5242,5332,5342,5412,5414,5422,5424,5432,5434,5442,5444,5512,5514,5522,5524,5532,5534,5542,5544,5544};
@@ -200,7 +202,10 @@ void PythiaEvtGen_Interface::decay_signals()
 void PythiaEvtGen_Interface::decay()
 {
   Pythia8::Event savedEvent= pythia->event;
+  if(debug) std::cout<<"Before hadronization:"<<std::endl;
+  if(debug) pythia->event.list();
   pythia->forceHadronLevel(false); // we are hadronizing
+  if(debug) std::cout<<"After hadronization:"<<std::endl;
   if(debug) pythia->event.list();
 
   // first check if events have all the B's we need:
@@ -211,6 +216,16 @@ void PythiaEvtGen_Interface::decay()
       do
 	{
 	  pythia->event=savedEvent;
+	  if( regenerate)
+	    {
+	      if(debug)
+		{
+		  std::cout<<"We are regenerating whole decay"<<std::endl;
+		  pythia->next();
+		  pythia->event.list();
+
+		}
+	    }
 	  pythia->forceHadronLevel(false);
 	}
       while(check_Signal_Appereance() == false);
@@ -241,7 +256,7 @@ void PythiaEvtGen_Interface::decay()
     if (part->status() == 93 || part->status() == 94) continue;
 
     
-    if(std::find(B_ids.begin(), B_ids.end(), part->id()) != B_ids.end()) {
+    if(std::find(B_ids.begin(), B_ids.end(), abs(part->id())) != B_ids.end()) {
     /* v contains x */
 
     
