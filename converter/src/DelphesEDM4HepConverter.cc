@@ -219,7 +219,9 @@ void DelphesEDM4HepConverter::processTracks(const TClonesArray* delphesCollectio
     auto cand = particleCollection->create();
     cand.setCharge(delphesCand->Charge);
     const auto momentum = delphesCand->P4();
-    cand.setEnergy(momentum.E());
+    //Particle masses in Delphes are 0, so the energy should be recalculated if ones sets the mass to something else 
+    //cand.setEnergy(momentum.E());
+    cand.setEnergy(sqrt(momentum.Px()*momentum.Px() + momentum.Py()*momentum.Py() + momentum.Pz()*momentum.Pz()) + trackMass*trackMass);
     cand.setMomentum({(float) momentum.Px(), (float) momentum.Py(), (float) momentum.Pz()});
     // At this point indiscriminantly set the mass for each track. If this is a
     // muon or an electron, the mass will be set to the appropriate value later.
