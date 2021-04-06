@@ -3,6 +3,8 @@
 
 #include "k4FWCore/DataHandle.h"
 #include "GaudiAlg/GaudiAlgorithm.h"
+#include "k4FWCore/DataWrapper.h"
+#include "k4FWCore/PodioDataSvc.h"
 
 #include "edm4hep/MCParticleCollection.h"
 #include "edm4hep/ReconstructedParticleCollection.h"
@@ -54,6 +56,12 @@ private:
   ExRootTreeWriter* m_treeWriter{nullptr};
   TTree* m_converterTree{nullptr};
   ExRootConfReader* m_confReader{nullptr};
+
+  // since branch names are taken from delphes config
+  // and not declared as data handles,
+  // need podiodatasvc directly
+  PodioDataSvc* m_podioDataSvc;
+  ServiceHandle<IDataProviderSvc> m_eventDataSvc;
 
 
 };

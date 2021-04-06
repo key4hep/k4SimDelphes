@@ -31,6 +31,7 @@ delphesalg = k4SimDelphesAlg()
 delphesalg.DelphesCard = "delphes_card_IDEA.tcl"
 delphesalg.DelphesOutputSettings = "edm4hep_output_config.tcl"
 delphesalg.GenParticles.Path = "GenParticles"
+delphesalg.OutputLevel = VERBOSE
 ApplicationMgr().TopAlg += [delphesalg]
 
 
