@@ -201,7 +201,7 @@ private:
   static constexpr const char* m_appName = "DelphesPythia8EvtGen";
   std::unique_ptr<Pythia8::Pythia> m_pythia{nullptr};
   std::unique_ptr<Pythia8::EvtGenDecays> m_evtgen{nullptr};
-PythiaEvtGen_Interface *m_evtgen2;
+  PythiaEvtGen_Interface *m_evtgen2;
   FILE *m_inputFile = 0;
   TStopwatch m_readStopWatch, m_procStopWatch;
   ExRootTreeWriter *m_treeWriter{nullptr};
