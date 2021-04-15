@@ -185,11 +185,12 @@ void PythiaEvtGen_Interface::decay_signals()
       EvtId B_i = EvtPDL::getId(sig_names[i_sig] );
       if(debug) std::cout<<"EvtID "<<sig_names[i_sig] <<"  "<< part_index << std::endl;
       EvtVector4R pInit(part->e(), part->px(), part->py(), part->pz() );
-      if(part->id() != EvtPDL::getStdHep(B_i)){
-	if(debug) std::cout<<"We have wrong charge conjugate, changing"<<std::endl;
-	if(debug) std::cout<<"Changing the name: "<< EvtPDL::name(B_i)<<std::endl;
-	B_i=EvtPDL::chargeConj(B_i);
-      }      
+      if(part->id() != EvtPDL::getStdHep(B_i))
+	{
+	  if(debug) std::cout<<"We have wrong charge conjugate, changing"<<std::endl;
+	  if(debug) std::cout<<"Changing the name: "<< EvtPDL::name(B_i)<<std::endl;
+	  B_i=EvtPDL::chargeConj(B_i);
+	}
       EvtParticle *Evtpart = EvtParticleFactory::particleFactory( B_i, pInit );
       if(debug) std::cout<<"Evtparticle "<<std::endl;
       Evtpart->setDiagonalSpinDensity();
@@ -198,11 +199,7 @@ void PythiaEvtGen_Interface::decay_signals()
       if(debug) std::cout<<"Decayed"<<std::endl;
       part->tau(Evtpart->getLifetime());
       UpdatePythiaEvent(part, Evtpart);
-
-      
     }
-
-
 }
 
 
