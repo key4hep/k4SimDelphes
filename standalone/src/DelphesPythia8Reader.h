@@ -183,27 +183,6 @@ private:
   // for matching
   Pythia8::CombineMatchingInput *combined = 0;
   Pythia8::UserHooks *m_matching = 0;
-  /// Pythia8 engine for jet clustering
-  std::unique_ptr<Pythia8::SlowJet> m_slowJet{nullptr};
-
-  // -- aMCatNLO
-  bool m_doMePsMatching{false};
-  bool m_doMePsMerging{false};
-  /// Pythia8 engine for ME/PS matching
-  std::unique_ptr<Pythia8::JetMatchingMadgraph> m_matchingMG{nullptr};
-  /// Pythia8 engine for NLO ME/PS merging
-  std::unique_ptr<Pythia8::amcnlo_unitarised_interface> m_setting{nullptr};
-
-
-// Powheg
-  bool m_doPowheg{false};
-  unsigned long int m_nISRveto{0};
-  unsigned long int m_nFSRveto{0};    
-  /// Pythia8 engine for Powheg ME/PS merging
-  Pythia8::PowhegHooks* m_powhegHooks{nullptr};
-
-  ResonanceDecayFilterHook* m_resonanceDecayFilterHook{nullptr};
-
 };
 
 
