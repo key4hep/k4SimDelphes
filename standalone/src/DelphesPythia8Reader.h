@@ -51,20 +51,6 @@ public:
     // Initialize Pythia
     m_pythia = std::make_unique<Pythia8::Pythia>();
 
-
-  //add settings for resonance decay filter
-    m_pythia->settings.addFlag("ResonanceDecayFilter:filter", false);
-    m_pythia->settings.addFlag("ResonanceDecayFilter:exclusive", false);
-    m_pythia->settings.addFlag("ResonanceDecayFilter:eMuAsEquivalent", false);
-    m_pythia->settings.addFlag("ResonanceDecayFilter:eMuTauAsEquivalent", false);
-    m_pythia->settings.addFlag("ResonanceDecayFilter:allNuAsEquivalent", false);
-    m_pythia->settings.addFlag("ResonanceDecayFilter:udscAsEquivalent", false);
-    m_pythia->settings.addFlag("ResonanceDecayFilter:udscbAsEquivalent", false);
-    m_pythia->settings.addFlag("ResonanceDecayFilter:wzAsEquivalent", false);
-    m_pythia->settings.addMVec("ResonanceDecayFilter:mothers", std::vector<int>(), false, false, 0, 0);
-    m_pythia->settings.addMVec("ResonanceDecayFilter:daughters", std::vector<int>(), false, false, 0, 0);
-
-    /*
     // jet matching
 #if PYTHIA_VERSION_INTEGER < 8300
     m_matching = combined->getHook(*m_pythia);
@@ -73,7 +59,6 @@ public:
     }
     m_pythia->setUserHooksPtr(m_matching);
 #endif
-    */
 
     if (!m_pythia) {
       throw std::runtime_error("can't create Pythia instance");
