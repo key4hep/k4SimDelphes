@@ -23,10 +23,6 @@
 
 #include "Pythia.h"
 #include "Pythia8Plugins/CombineMatchingInput.h"
-#include "Pythia8Plugins/PowhegHooks.h"
-#include "Pythia8Plugins/aMCatNLOHooks.h"
-#include "Pythia8Plugins/JetMatching.h"
-#include "ResonanceDecayFilterHook.h"
 
 #include <iostream>
 #include <memory>
