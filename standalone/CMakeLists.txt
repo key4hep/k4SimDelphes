@@ -1,11 +1,5 @@
-find_package(EvtGen REQUIRED)
-find_package(Pythia8 REQUIRED)
 
 
-add_library(PythiaEvtGen_Interface SHARED src/PythiaEvtGen_Interface.cc)
-target_include_directories(PythiaEvtGen_Interface PRIVATE ${PYTHIA8_INCLUDE_DIRS} ${EVTGEN_INCLUDE_DIR})
-target_link_libraries(PythiaEvtGen_Interface ${PYTHIA8_LIBRARIES} ${EVTGEN_LIBRARIES})
-install(TARGETS PythiaEvtGen_Interface DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 
 # build executable and put it into bin/
@@ -39,6 +33,11 @@ if(BUILD_EVTGEN_READER)
   if(PYTHIA8_VERSION VERSION_LESS 300)
     message("ERROR: Cannot build EVTGEN Reader. PYTHIA8300 or newer required. ")
   else()
+    add_library(PythiaEvtGen_Interface SHARED src/PythiaEvtGen_Interface.cc)
+    target_include_directories(PythiaEvtGen_Interface PRIVATE ${PYTHIA8_INCLUDE_DIRS} ${EVTGEN_INCLUDE_DIR})
+    target_link_libraries(PythiaEvtGen_Interface ${PYTHIA8_LIBRARIES} ${EVTGEN_LIBRARIES})
+    install(TARGETS PythiaEvtGen_Interface DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
     add_executable(DelphesPythia8EvtGen_EDM4HEP src/DelphesPythia8EvtGen_EDM4HEP.cpp)
     add_executable(DelphesPythia8EvtGen_EDM4HEP_k4Interface src/DelphesPythia8EvtGen_EDM4HEP_k4Interface.cpp)
 
@@ -49,7 +48,5 @@ if(BUILD_EVTGEN_READER)
     target_include_directories(DelphesPythia8EvtGen_EDM4HEP_k4Interface PRIVATE ${PYTHIA8_INCLUDE_DIRS} ${EVTGEN_INCLUDE_DIR})
     target_link_libraries(DelphesPythia8EvtGen_EDM4HEP_k4Interface PythiaEvtGen_Interface DelphesEDM4HepConverter podio::podioRootIO ${PYTHIA8_LIBRARIES} ${DELPHES_LIBRARY} ${EVTGEN_LIBRARIES})
     install(TARGETS DelphesPythia8EvtGen_EDM4HEP_k4Interface DESTINATION bin)
-
-
-endif()
+  endif()
 endif()
