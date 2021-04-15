@@ -182,7 +182,6 @@ void PythiaEvtGen_Interface::decay_signals()
       int part_index = signal_map[i_sig][randomsignal];
       Pythia8::Particle *part = &event[part_index];
       //Particle preparation for EvtGen.
-      std::cout << "i  " << i_sig << "  sig_names[i_sig]  " << sig_names[i_sig] << std::endl;
       EvtId B_i = EvtPDL::getId(sig_names[i_sig] );      
       if(debug) std::cout<<"EvtID "<<sig_names[i_sig] <<"  "<< part_index << std::endl;
       EvtVector4R pInit(part->e(), part->px(), part->py(), part->pz() );
