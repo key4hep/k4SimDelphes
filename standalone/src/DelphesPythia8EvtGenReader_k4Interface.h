@@ -38,7 +38,7 @@ class DelphesPythia8EvtGenReader_k4Interface: public DelphesInputReader {
 
   std::string init(Delphes* modularDelphes, int argc, char *argv[]) override {
 
-    if (argc!=11) {
+    if ( (argc!=11) && (argc!=7) ) {
 
       return "";
     }
@@ -122,12 +122,16 @@ class DelphesPythia8EvtGenReader_k4Interface: public DelphesInputReader {
     // new interface:
     //Pythia8::Pythia *pythia=m_pythia.get();
 
-    int regenerate=atoi(argv[10]);
+    int regenerate=0;//=atoi(argv[10]);
     
     m_evtgen2= new PythiaEvtGen_Interface(m_pythia.get(), argv[5], argv[6], 1000);
-    m_evtgen2->add_decays(argv[7], atoi(argv[8]), argv[9]);
-    m_evtgen2->set_verbose();
-    //m_evtgen2->set_debug();
+    if(argc==11)
+      {
+	m_evtgen2->add_decays(argv[7], atoi(argv[8]), argv[9]);
+	//m_evtgen2->set_verbose();
+	//m_evtgen2->set_debug();
+	regenerate=atoi(argv[10]);
+      }
     if(regenerate) m_evtgen2->set_regenerate();
 
     return outputfile;

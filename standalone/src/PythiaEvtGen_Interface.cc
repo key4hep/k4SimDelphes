@@ -51,8 +51,8 @@ PythiaEvtGen_Interface::PythiaEvtGen_Interface(Pythia8::Pythia *p, std::string p
   //  int arr[] = {511,521,531,541,5122,5132,5142,5232,5242,5332,5342,5412,5414,5422,5424,5432,5434,5442,5444,5512,5514,5522,5524,5532,5534,5542,5544,5544};
   B_ids=std::vector<int>{511,521,531,541,5122,5132,5142,5232,5242,5332,5342,5412,5414,5422,5424,5432,5434,5442,5444,5512,5514,5522,5524,5532,5534,5542,5544,5544};
   std::cout<<"Finished Initialization"<<std::endl;
-
-
+  n_rehadronize = 1e4;
+  
   
 }
 //=============================================================================
@@ -214,6 +214,8 @@ void PythiaEvtGen_Interface::decay()
 
   // first check if events have all the B's we need:
   bool IsSignal=check_Signal_Appereance();
+  int i_rehadronize=0;
+  
   if(IsSignal == false) // repeat hadronization
     {
       if(debug) std::cout<<"We don't have an event:"<<std::endl;
@@ -233,10 +235,12 @@ void PythiaEvtGen_Interface::decay()
 	      if(debug) pythia->event.list();
 
 		  
-
+	      
 	    }
-
+	  if(i_rehadronize >= n_rehadronize) pythia->next();
+	  
 	  pythia->forceHadronLevel(false);
+	  i_rehadronize++;
 	}
       while(check_Signal_Appereance() == false);
 
