@@ -80,6 +80,7 @@ find_package(EDM4HEP)
 
 add_subdirectory(converter)
 add_subdirectory(standalone)
+add_subdirectory(examples)
 if(BUILD_FRAMEWORK)
   add_subdirectory(framework)
 endif()
