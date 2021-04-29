@@ -92,7 +92,7 @@ public:
     fillReferenceCollection<Electron>(delphesCollection, branch, "electron");
   }
 
-edm4hep::MCRecoParticleAssociationCollection* createExternalRecoAssociations(std::unordered_map<UInt_t, edm4hep::ConstMCParticle> mc_map);
+edm4hep::MCRecoParticleAssociationCollection* createExternalRecoAssociations(const std::unordered_map<UInt_t, edm4hep::ConstMCParticle>& mc_map);
 
 private:
 
