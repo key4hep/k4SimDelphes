@@ -27,8 +27,9 @@ if(BUILD_TESTING)
              WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/examples/options
              COMMAND  k4run k4simdelphesalg.py)
     # set up gaudi environment for tests
-    set_property(TEST k4SimDelphesAlgBasicTest APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}:${CMAKE_BINARY_DIR}/framework/k4SimDelphes:${k4Gen_loc}:$ENV{LD_LIBRARY_PATH}")
-    set_property(TEST k4SimDelphesAlgBasicTest APPEND PROPERTY ENVIRONMENT "PYTHONPATH=${k4Gen_loc}/../python:${CMAKE_BINARY_DIR}/framework/k4SimDelphes/genConf:$ENV{PYTHONPATH}")
+    set_property(TEST k4SimDelphesAlgBasicTest APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}:${CMAKE_BINARY_DIR}/framework/k4SimDelphes:$<TARGET_FILE_DIR:k4Gen::k4Gen>:$ENV{LD_LIBRARY_PATH}"
+    "PYTHONPATH=$<TARGET_FILE_DIR:k4Gen::k4Gen>/../python:${CMAKE_BINARY_DIR}/framework/k4SimDelphes/genConf:$ENV{PYTHONPATH}"
+    )
 
   else()
     message(WARNING "k4Gen not found, disabling some test!")
