@@ -69,27 +69,11 @@ StatusCode k4SimDelphesAlg::execute() {
 
   auto collections = m_edm4hepConverter->getCollections();
   for (auto& c: collections) {
-    //std::cout << c.first << std::endl;
-    //if (c.first == "ReconstructedParticles") {
-    //  for (auto p: *((edm4hep::ReconstructedParticleCollection*)c.second)) {
-    //    std::cout << "\t" << p << std::endl;
-    //  }
-    //}
-    //if (c.first == "MCRecoAssociations") {
-    auto new_c = m_edm4hepConverter->createExternalRecoAssociations(mapSimDelphes); //new edm4hep::MCRecoParticleAssociationCollection();
-     //for (auto p: *((edm4hep::MCRecoParticleAssociationCollection*)c.second)) {
-     //  std::cout << "\t" << p.getRec() << std::endl;
-     //  std::cout << "\t" << p.getSim() << std::endl;
-     // auto relation = new_c->create();
-     //   relation.setSim(p.getSim());
-     //   relation.setRec(p.getRec());
-     //  }
-     //  collections[c.first] = new_c;
-
-
-    DataWrapper<podio::CollectionBase>* wrapper = new DataWrapper<podio::CollectionBase>();
-    wrapper->setData(c.second);
-    m_podioDataSvc->registerObject("/Event", "/" + std::string(c.first), wrapper);
+    if (c.first == "MCRecoAssociations") {
+    auto new_c = m_edm4hepConverter->createExternalRecoAssociations(mapSimDelphes);
+       DataWrapper<podio::CollectionBase>* wrapper = new DataWrapper<podio::CollectionBase>();
+       wrapper->setData(new_c);
+       m_podioDataSvc->registerObject("/Event", "/" + std::string(c.first), wrapper);
        continue;
      }
 
