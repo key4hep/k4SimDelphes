@@ -149,7 +149,7 @@ OutputSettings getEDM4hepOutputSettings(ExRootConfReader* confReader)
 
   settings.JetCollections = toVecString(
     confReader->GetParam("EDM4HepOutput::JetCollections"),
-    {""});
+    {"Jet"});
 
   settings.MuonCollections = toVecString(
     confReader->GetParam("EDM4HepOutput::MuonCollections"),
@@ -165,11 +165,11 @@ OutputSettings getEDM4hepOutputSettings(ExRootConfReader* confReader)
 
   settings.MissingETCollections = toVecString(
     confReader->GetParam("EDM4HepOutput::MissingETCollections"),
-    {""});
+    {"MissingET"});
 
    settings.ScalarHTCollections = toVecString(
     confReader->GetParam("EDM4HepOutput::ScalarHTCollections"),
-    {""});
+    {"ScalarHT"});
 
    settings.RecoParticleCollectionName = confReader->GetString("EDM4HepOutput::RecoParticleCollectionName", "ReconstructedParticles");
 
