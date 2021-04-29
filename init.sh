@@ -1,1 +1,0 @@
-init_lcg_97a_FCC_4.sh
