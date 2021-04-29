@@ -330,9 +330,9 @@ void DelphesEDM4HepConverter::fillReferenceCollection(const TClonesArray* delphe
 
   for (auto iCand = 0; iCand < delphesCollection->GetEntries(); ++iCand) {
     auto* delphesCand = static_cast<DelphesT*>(delphesCollection->At(iCand));
-    auto recoRef = collection->create();
 
     if (auto matchedReco = getMatchingReco(delphesCand)) {
+      auto recoRef = collection->create();
       recoRef.setParticle(*matchedReco);
       // if we have an electron or muon we update the mass as well here
       if constexpr (std::is_same_v<DelphesT, Muon>) {
