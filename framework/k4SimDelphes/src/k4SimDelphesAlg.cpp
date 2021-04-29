@@ -65,7 +65,6 @@ StatusCode k4SimDelphesAlg::execute() {
   ///-- conversion of the output --/////////////////////////////////////////////
   m_edm4hepConverter->process(m_converterTree);
   // setup output collections
-  edm4hep::ReconstructedParticleCollection* recparticles = new edm4hep::ReconstructedParticleCollection();
 
   auto collections = m_edm4hepConverter->getCollections();
   for (auto& c: collections) {
