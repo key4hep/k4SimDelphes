@@ -21,6 +21,7 @@ public:
     TObjArray& stableParticleOutputArray,
     TObjArray& partonOutputArray)
   {
+    m_genParticleIds.clear();
     // loop over all input edm4hep particles
     for (auto&& edm_part: *edm_coll) {
       // create the delphes particle to be filled from edm4hep
@@ -47,6 +48,8 @@ public:
       candidate->Charge = edm_part.getCharge();
       candidate->PID = edm_part.getPDG();
       candidate->Status = edm_part.getGeneratorStatus();
+      m_genParticleIds.emplace(candidate->GetUniqueID(), edm_part);
+
       // candidate has all necessary infos, add it to delphes arrays
       allParticleOutputArray.Add(candidate);
       int pdgCode = TMath::Abs(candidate->PID);
@@ -58,8 +61,14 @@ public:
     }
     // no mother / daughter information is set in the Delphes GenParticles
     // as it is not needed for running delphes, and still present in edm4hep.
-  };
+    //
+  }
 
+  std::unordered_map<UInt_t, edm4hep::ConstMCParticle> getGenParticleIdMap() { return m_genParticleIds;}
+
+private:
+
+std::unordered_map<UInt_t, edm4hep::ConstMCParticle> m_genParticleIds;
 
 };
 

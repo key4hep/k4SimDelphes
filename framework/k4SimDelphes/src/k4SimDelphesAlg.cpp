@@ -3,6 +3,7 @@
 #include "k4SimDelphes/k4GenParticlesDelphesConverter.h"
 #include "ExRootTreeWriter.h" // use local copy, todo: fix / push upstream
 #include "edm4hep/ReconstructedParticleCollection.h"
+#include "edm4hep/MCRecoParticleAssociationCollection.h"
 
 DECLARE_COMPONENT(k4SimDelphesAlg)
 
@@ -58,6 +59,7 @@ StatusCode k4SimDelphesAlg::execute() {
       *m_allParticleOutputArray,
       *m_stableParticleOutputArray,
       *m_partonOutputArray);
+  auto mapSimDelphes = conv.getGenParticleIdMap();
   ///-- actual simulation --////////////////////////////////////////////////////
   m_Delphes->ProcessTask();
   ///-- conversion of the output --/////////////////////////////////////////////
@@ -67,6 +69,30 @@ StatusCode k4SimDelphesAlg::execute() {
 
   auto collections = m_edm4hepConverter->getCollections();
   for (auto& c: collections) {
+    //std::cout << c.first << std::endl;
+    //if (c.first == "ReconstructedParticles") {
+    //  for (auto p: *((edm4hep::ReconstructedParticleCollection*)c.second)) {
+    //    std::cout << "\t" << p << std::endl;
+    //  }
+    //}
+    //if (c.first == "MCRecoAssociations") {
+    auto new_c = m_edm4hepConverter->createExternalRecoAssociations(mapSimDelphes); //new edm4hep::MCRecoParticleAssociationCollection();
+     //for (auto p: *((edm4hep::MCRecoParticleAssociationCollection*)c.second)) {
+     //  std::cout << "\t" << p.getRec() << std::endl;
+     //  std::cout << "\t" << p.getSim() << std::endl;
+     // auto relation = new_c->create();
+     //   relation.setSim(p.getSim());
+     //   relation.setRec(p.getRec());
+     //  }
+     //  collections[c.first] = new_c;
+
+
+    DataWrapper<podio::CollectionBase>* wrapper = new DataWrapper<podio::CollectionBase>();
+    wrapper->setData(c.second);
+    m_podioDataSvc->registerObject("/Event", "/" + std::string(c.first), wrapper);
+       continue;
+     }
+
     DataWrapper<podio::CollectionBase>* wrapper = new DataWrapper<podio::CollectionBase>();
     wrapper->setData(c.second);
     m_podioDataSvc->registerObject("/Event", "/" + std::string(c.first), wrapper);

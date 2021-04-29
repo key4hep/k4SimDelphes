@@ -414,6 +414,20 @@ std::optional<edm4hep::ReconstructedParticle> DelphesEDM4HepConverter::getMatchi
   return {};
 }
 
+edm4hep::MCRecoParticleAssociationCollection* DelphesEDM4HepConverter::createExternalRecoAssociations(std::unordered_map<UInt_t, edm4hep::ConstMCParticle> mc_map) {
+
+  auto mcRecoRelations = new edm4hep::MCRecoParticleAssociationCollection();
+    for (auto particleID: mc_map) {
+    const auto [recoBegin, recoEnd] = m_recoParticleGenIds.equal_range(particleID.first);
+    for (auto it = recoBegin; it != recoEnd; ++it) {
+      auto relation = mcRecoRelations->create();
+      relation.setSim(particleID.second);
+      relation.setRec(it-> second);
+    }
+    }
+  return mcRecoRelations;
+}
+
 
 void DelphesEDM4HepConverter::registerGlobalCollections()
 {
@@ -590,5 +604,6 @@ void setMotherDaughterRelations(GenParticle const* delphesCand,
     }
   }
 }
+
 
 } // namespace k4SimDelphes
