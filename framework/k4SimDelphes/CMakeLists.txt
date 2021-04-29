@@ -12,7 +12,6 @@ gaudi_add_module(k4SimDelphesPlugins
                       Gaudi::GaudiKernel
                       EDM4HEP::edm4hep
                       ROOT::Core
-                      ROOT::Hist
                 )
 
 install(DIRECTORY examples DESTINATION share/${PROJECT_NAME})
