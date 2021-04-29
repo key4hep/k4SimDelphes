@@ -414,10 +414,10 @@ std::optional<edm4hep::ReconstructedParticle> DelphesEDM4HepConverter::getMatchi
   return {};
 }
 
-edm4hep::MCRecoParticleAssociationCollection* DelphesEDM4HepConverter::createExternalRecoAssociations(std::unordered_map<UInt_t, edm4hep::ConstMCParticle> mc_map) {
+edm4hep::MCRecoParticleAssociationCollection* DelphesEDM4HepConverter::createExternalRecoAssociations(const std::unordered_map<UInt_t, edm4hep::ConstMCParticle>& mc_map) {
 
   auto mcRecoRelations = new edm4hep::MCRecoParticleAssociationCollection();
-    for (auto particleID: mc_map) {
+    for (const auto& particleID: mc_map) {
     const auto [recoBegin, recoEnd] = m_recoParticleGenIds.equal_range(particleID.first);
     for (auto it = recoBegin; it != recoEnd; ++it) {
       auto relation = mcRecoRelations->create();
