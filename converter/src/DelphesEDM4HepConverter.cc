@@ -390,23 +390,27 @@ std::optional<edm4hep::ReconstructedParticle> DelphesEDM4HepConverter::getMatchi
   // take the FIRST good match. Since the delphes candidate originates from
   // either a Track or a Tower, there should always be exactly one such good
   // match.
+
+  // Handling slightly different member names for delphes depending on
+  // whether we are still working with Candidates or the actual output
+  // classes already
+  const auto delphes4Mom = [delphesCand]() {
+    if constexpr(std::is_same_v<DelphesT, Candidate>) {
+      return delphesCand->Momentum;
+    } else {
+      return delphesCand->P4();
+    }
+  }();
+
   for (const auto genId : getAllParticleIDs(delphesCand)) {
     const auto [recoBegin, recoEnd] = m_recoParticleGenIds.equal_range(genId);
     for (auto it = recoBegin; it != recoEnd; ++it) {
-      // Handling slightly different member names for delphes depending on
-      // whether we are still working with Candidates or the actual output
-      // classes already
-      if constexpr(std::is_same_v<DelphesT, Candidate>) {
-        if (equalP4(getP4(it->second), delphesCand->Momentum)) {
-          return it->second;
-        } else if (equalP4(getP4(it->second), delphesCand->Momentum, 1e-2, false)) {
-          // std::cout << "**** DEBUG: Kinematic matching successful after dropping energy matching and dropping momentum matching to percent level" << std::endl;
-          return it->second;
-        }
-      } else {
-        if (equalP4(getP4(it->second), delphesCand->P4())) {
-          return it->second;
-        }
+      const auto edm4Mom = getP4(it->second);
+      if (equalP4(edm4Mom, delphes4Mom)) {
+        return it->second;
+      } else if (equalP4(edm4Mom, delphes4Mom, 1e-2, false)) {
+        // std::cout << "**** DEBUG: Kinematic matching successful after dropping energy matching and dropping momentum matching to percent level" << std::endl;
+        return it->second;
       }
     }
   }
