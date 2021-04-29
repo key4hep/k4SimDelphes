@@ -4,10 +4,10 @@ project(k4SimDelphes)
 
 #--- Declare options -----------------------------------------------------------
 
-option(BUILD_PYTHIA_READER "Build the EDM4hep plugin for DD4hep" ON)
-option(BUILD_EVTGEN_READER "Build the DELPHES plugin for DD4hep" ON)
-option(BUILD_HEPMC_READER "Build the DELPHES plugin for DD4hep" ON)
-option(BUILD_FRAMEWORK "Build the DELPHES plugin for DD4hep" ON)
+option(BUILD_PYTHIA_READER "Build the EDM4hep plugin for Gaudi" ON)
+option(BUILD_EVTGEN_READER "Build the DELPHES plugin for Gaudi" ON)
+option(BUILD_HEPMC_READER "Build the DELPHES plugin for Gaudi" ON)
+option(BUILD_FRAMEWORK "Build the DELPHES plugin for Gaudi" ON)
 option(K4SIMDELPHES_DOCUMENTATION "Whether or not to create doxygen doc target." OFF)
 option(ENABLE_CPACK "Whether or not to use cpack config" OFF)
 option(USE_EXTERNAL_CATCH2 "If off, build the catch2 unittest framework locally" ON)
