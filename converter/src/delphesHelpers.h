@@ -8,6 +8,7 @@
 
 #include <vector>
 #include <set>
+#include <algorithm>
 
 namespace k4SimDelphes {
 // TODO: If CLHEP ever gets part of edm4hep, take this from there.
@@ -28,18 +29,37 @@ inline LorentzVectorT getP4(const T& particle) {
   };
 }
 
+namespace {
 /**
- * Compare two 4-momentum vectors to be within a relative tolerance in the
- * energy and all momentum components. The energy requirement can be dropped on
- * demand.
+ * Combination of a relative and absolute comparison. The absolute comparison
+ * should take precedence if the compared values are small, where relative
+ * differences can become very large. The definition of "small" depends on the
+ * ratio of relEps / absEps. E.g. for equal values everything for |a|, |b| < 1
+ * is considered small. In general max(|a|, |b|) < absEps / relEps defines where
+ * "small" begins for inputs a and b
+ */
+  bool cmp_float(float a, float b, float absEps=1e-6, float relEps=1e-6) {
+    return std::abs(a - b) <= std::max(absEps,
+                                       relEps * std::max(std::abs(a), std::abs(b)));
+  }
+}
+
+/**
+ * Compare two 4-momentum vectors to be "equal" in all their components. The
+ * energy requirement can be dropped.
+ *
+ * The components are compared to be either within a configurable absolute
+ * tolerance (default 1e-5) or to have a relative difference smaller than
+ * approximately 6e-7
  */
 template<typename LVectorT, typename LVectorU>
-inline bool equalP4(const LVectorT& p1, const LVectorU& p2, double tol=1e-3,
+inline bool equalP4(const LVectorT& p1, const LVectorU& p2, double tol=1e-5,
                     bool checkEnergy=true) {
-  if (checkEnergy && std::abs(p1.E() - p2.E()) / p1.E() > tol) return false;
-  if (std::abs((p1.Px() - p2.Px()) / p1.Px()) > tol) return false;
-  if (std::abs((p1.Py() - p2.Py()) / p1.Py()) > tol) return false;
-  if (std::abs((p1.Pz() - p2.Pz()) / p1.Pz()) > tol) return false;
+  const float relEpsilon = 5 * std::numeric_limits<float>::epsilon();
+  if (checkEnergy && !cmp_float(p1.E(), p2.E(), tol, relEpsilon)) return false;
+  if (!cmp_float(p1.Px(), p2.Px(), tol, relEpsilon)) return false;
+  if (!cmp_float(p1.Py(), p2.Py(), tol, relEpsilon)) return false;
+  if (!cmp_float(p1.Pz(), p2.Pz(), tol, relEpsilon)) return false;
 
   return true;
 }
