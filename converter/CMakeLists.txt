@@ -9,6 +9,7 @@ target_include_directories(DelphesEDM4HepConverter
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
   )
+
 target_link_libraries(DelphesEDM4HepConverter 
                         EDM4HEP::edm4hep
                         ${DELPHES_LIBRARY}
@@ -19,6 +20,7 @@ target_link_libraries(DelphesEDM4HepConverter
 
 install(DIRECTORY include/
         TYPE INCLUDE)
+
 install(TARGETS DelphesEDM4HepConverter 
         EXPORT k4SimDelphesTargets
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

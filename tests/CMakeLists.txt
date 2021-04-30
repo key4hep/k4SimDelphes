@@ -1,5 +1,7 @@
 
-add_subdirectory(unittests)
+if(BUILD_UNITTESTS)
+  add_subdirectory(unittests)
+endif()
 
 add_executable(compare_delphes_converter_outputs src/compare_delphes_converter_outputs.cpp)
 target_include_directories(compare_delphes_converter_outputs

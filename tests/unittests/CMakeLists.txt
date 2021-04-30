@@ -13,7 +13,7 @@ else()
 endif()
 
 
-add_executable(k4SimDelphesTests   tests.cpp)
+add_executable(k4SimDelphesTests   tests.cpp tests_edm4hepdelphesconverter.cpp)
 target_link_libraries(k4SimDelphesTests 
                         DelphesEDM4HepConverter 
                         EDM4HEP::edm4hep
