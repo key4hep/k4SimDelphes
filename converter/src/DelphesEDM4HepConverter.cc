@@ -408,8 +408,8 @@ std::optional<edm4hep::ReconstructedParticle> DelphesEDM4HepConverter::getMatchi
       const auto edm4Mom = getP4(it->second);
       if (equalP4(edm4Mom, delphes4Mom)) {
         return it->second;
-      } else if (equalP4(edm4Mom, delphes4Mom, 1e-2, false)) {
-        // std::cout << "**** DEBUG: Kinematic matching successful after dropping energy matching and dropping momentum matching to percent level" << std::endl;
+      } else if (equalP4(edm4Mom, delphes4Mom, 1e-5, false)) {
+        // std::cout << "**** DEBUG: Kinematic matching successful after dropping energy matching" << std::endl;
         return it->second;
       }
     }
