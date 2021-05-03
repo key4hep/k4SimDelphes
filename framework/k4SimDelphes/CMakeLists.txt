@@ -19,13 +19,20 @@ install(DIRECTORY examples DESTINATION share/${PROJECT_NAME})
 #--- Testing
 if(BUILD_TESTING)
 
+  #--- The genConf directory has been renamed to genConfDir in Gaudi 35r1
+  #--- See https://gitlab.cern.ch/gaudi/Gaudi/-/merge_requests/1158
+  set(GAUDI_GENCONF_DIR "genConfDir")
+  if (${Gaudi_VERSION} VERSION_LESS 35.1)
+    set(GAUDI_GENCONF_DIR "genConf")
+  endif()
+
   if(TARGET k4Gen::k4Gen)
     add_test(NAME k4SimDelphesAlgBasicTest
              WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/examples/options
              COMMAND  k4run k4simdelphesalg.py)
     # set up gaudi environment for tests
     set_property(TEST k4SimDelphesAlgBasicTest APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}:${CMAKE_BINARY_DIR}/framework/k4SimDelphes:$<TARGET_FILE_DIR:k4Gen::k4Gen>:$ENV{LD_LIBRARY_PATH}"
-    "PYTHONPATH=$<TARGET_FILE_DIR:k4Gen::k4Gen>/../python:${CMAKE_BINARY_DIR}/framework/k4SimDelphes/genConf:$ENV{PYTHONPATH}"
+    "PYTHONPATH=$<TARGET_FILE_DIR:k4Gen::k4Gen>/../python:${CMAKE_BINARY_DIR}/framework/k4SimDelphes/${GAUDI_GENCONF_DIR}:$ENV{PYTHONPATH}"
     )
 
   else()
