@@ -18,7 +18,6 @@ install(DIRECTORY examples DESTINATION share/${PROJECT_NAME})
 
 #--- Testing
 if(BUILD_TESTING)
-  find_package(k4Gen)
 
   if(TARGET k4Gen::k4Gen)
     add_test(NAME k4SimDelphesAlgBasicTest
