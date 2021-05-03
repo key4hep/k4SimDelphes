@@ -1,7 +1,5 @@
 
-if(USE_EXTERNAL_CATCH2)
-  find_package(Catch2 REQUIRED)
-else()
+if(NOT USE_EXTERNAL_CATCH2)
   message("Fetching local copy of Catch2 library for unit-tests...")
   Include(FetchContent)
   FetchContent_Declare(
@@ -11,7 +9,6 @@ else()
   FetchContent_MakeAvailable(Catch2)
   set(CMAKE_MODULE_PATH ${Catch2_SOURCE_DIR}/extras ${CMAKE_MODULE_PATH})
 endif()
-
 
 add_executable(k4SimDelphesTests   tests.cpp tests_edm4hepdelphesconverter.cpp)
 target_link_libraries(k4SimDelphesTests 
@@ -29,4 +26,3 @@ include(CTest)
 include(Catch)
 catch_discover_tests(k4SimDelphesTests
                     WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/../)
-
