@@ -330,9 +330,9 @@ void DelphesEDM4HepConverter::fillReferenceCollection(const TClonesArray* delphe
 
   for (auto iCand = 0; iCand < delphesCollection->GetEntries(); ++iCand) {
     auto* delphesCand = static_cast<DelphesT*>(delphesCollection->At(iCand));
-    auto recoRef = collection->create();
 
     if (auto matchedReco = getMatchingReco(delphesCand)) {
+      auto recoRef = collection->create();
       recoRef.setParticle(*matchedReco);
       // if we have an electron or muon we update the mass as well here
       if constexpr (std::is_same_v<DelphesT, Muon>) {
@@ -390,28 +390,46 @@ std::optional<edm4hep::ReconstructedParticle> DelphesEDM4HepConverter::getMatchi
   // take the FIRST good match. Since the delphes candidate originates from
   // either a Track or a Tower, there should always be exactly one such good
   // match.
+
+  // Handling slightly different member names for delphes depending on
+  // whether we are still working with Candidates or the actual output
+  // classes already
+  const auto delphes4Mom = [delphesCand]() {
+    if constexpr(std::is_same_v<DelphesT, Candidate>) {
+      return delphesCand->Momentum;
+    } else {
+      return delphesCand->P4();
+    }
+  }();
+
   for (const auto genId : getAllParticleIDs(delphesCand)) {
     const auto [recoBegin, recoEnd] = m_recoParticleGenIds.equal_range(genId);
     for (auto it = recoBegin; it != recoEnd; ++it) {
-      // Handling slightly different member names for delphes depending on
-      // whether we are still working with Candidates or the actual output
-      // classes already
-      if constexpr(std::is_same_v<DelphesT, Candidate>) {
-        if (equalP4(getP4(it->second), delphesCand->Momentum)) {
-          return it->second;
-        } else if (equalP4(getP4(it->second), delphesCand->Momentum, 1e-2, false)) {
-          // std::cout << "**** DEBUG: Kinematic matching successful after dropping energy matching and dropping momentum matching to percent level" << std::endl;
-          return it->second;
-        }
-      } else {
-        if (equalP4(getP4(it->second), delphesCand->P4())) {
-          return it->second;
-        }
+      const auto edm4Mom = getP4(it->second);
+      if (equalP4(edm4Mom, delphes4Mom)) {
+        return it->second;
+      } else if (equalP4(edm4Mom, delphes4Mom, 1e-5, false)) {
+        // std::cout << "**** DEBUG: Kinematic matching successful after dropping energy matching" << std::endl;
+        return it->second;
       }
     }
   }
 
   return {};
+}
+
+edm4hep::MCRecoParticleAssociationCollection* DelphesEDM4HepConverter::createExternalRecoAssociations(const std::unordered_map<UInt_t, edm4hep::ConstMCParticle>& mc_map) {
+
+  auto mcRecoRelations = new edm4hep::MCRecoParticleAssociationCollection();
+    for (const auto& particleID: mc_map) {
+    const auto [recoBegin, recoEnd] = m_recoParticleGenIds.equal_range(particleID.first);
+    for (auto it = recoBegin; it != recoEnd; ++it) {
+      auto relation = mcRecoRelations->create();
+      relation.setSim(particleID.second);
+      relation.setRec(it-> second);
+    }
+    }
+  return mcRecoRelations;
 }
 
 
@@ -590,5 +608,6 @@ void setMotherDaughterRelations(GenParticle const* delphesCand,
     }
   }
 }
+
 
 } // namespace k4SimDelphes

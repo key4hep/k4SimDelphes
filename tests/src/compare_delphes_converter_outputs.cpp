@@ -28,11 +28,10 @@
 template<typename DelphesT, typename EDM4HepT>
 bool compareKinematics(const DelphesT* delphesCand, const EDM4HepT& edm4hepCand) {
   using namespace k4SimDelphes;
-  if (!equalP4(delphesCand->P4(), getP4(edm4hepCand))) {
-    return false;
-  }
-
-  return true;
+  // Use the same matching criteria as in the converter: First try with all
+  // components, if that doesn't work try again without the energy
+  return equalP4(delphesCand->P4(), getP4(edm4hepCand)) ||  \
+    equalP4(delphesCand->P4(), getP4(edm4hepCand), 1e-5, false);
 }
 
 /**
@@ -274,7 +273,7 @@ void compareJets(const TClonesArray* delphesColl,
     }
 
     if (delphesCand->Constituents.GetEntries() != edm4hepCand.getParticles().size()) {
-      std::cerr << "Number of Jet constitutents differs between delphes and edm4hep output: "
+      std::cerr << "Number of Jet constitutents in Jet " << i << " differs between delphes and edm4hep output: "
                 << delphesCand->Constituents.GetEntries() << " vs " <<  edm4hepCand.getParticles().size() << std::endl;
       std::exit(1);
     }

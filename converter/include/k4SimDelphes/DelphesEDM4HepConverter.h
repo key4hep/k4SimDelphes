@@ -7,6 +7,7 @@
 // edm4hep
 #include "edm4hep/MCParticleConst.h"
 #include "edm4hep/ReconstructedParticle.h"
+#include "edm4hep/MCRecoParticleAssociationCollection.h"
 
 // ROOT
 #include "TTree.h"
@@ -91,6 +92,8 @@ public:
     fillReferenceCollection<Electron>(delphesCollection, branch, "electron");
   }
 
+edm4hep::MCRecoParticleAssociationCollection* createExternalRecoAssociations(const std::unordered_map<UInt_t, edm4hep::ConstMCParticle>& mc_map);
+
 private:
 
   template<typename DelphesT>
@@ -132,6 +135,7 @@ void DelphesEDM4HepConverter::createCollection(std::string_view name) {
   CollectionT* col = new CollectionT();
   m_collections.emplace(name, col);
 }
+
 
 } //namespace k4SimDelphes
 
