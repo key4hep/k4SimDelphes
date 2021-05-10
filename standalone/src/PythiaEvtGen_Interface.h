@@ -48,11 +48,10 @@ public:
   void set_verbose(bool t=true)  {verbose=t;};
 
   void set_regenerate(bool t=true) {regenerate=t;};
-  
 
   void UpdatePythiaEvent(Pythia8::Particle *part1, EvtParticle *Evtpart );
-
-     
+  
+  void set_rehadronize(int i) { n_rehadronize=i;};
 
 
 protected:
@@ -78,7 +77,8 @@ private:
   bool verbose;
 
   bool regenerate;
-
+  int n_rehadronize; // number of tries to rehadronize before regenerating
+  
 
 };
 #endif // K4SIMDELPHES_PYTHIAEVTGEN_INTERFACE_H
