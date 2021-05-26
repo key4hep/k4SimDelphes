@@ -25,6 +25,11 @@ find_path(DELPHES_BINARY_DIR
           HINTS ${DELPHES_INCLUDE_DIR}/../bin
 )
 
+find_path(DELPHES_CARDS_DIR
+          NAMES delphes_card_IDEA.tcl
+          HINTS ${searchpath}
+          PATH_SUFFIXES cards)
+
 unset(searchpath)
 
 set(DELPHES_INCLUDE_DIRS ${DELPHES_INCLUDE_DIR} ${DELPHES_EXTERNALS_INCLUDE_DIR})

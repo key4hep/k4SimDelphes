@@ -35,9 +35,13 @@ function(ADD_COMPARISON_TEST name converter)
     )
 endfunction()
 
-# Verbatim copy of the one shipped with delphes, except that we fix the
-# RandomSeed to get repeatable outcomes and also limit the number of events
-set(DELPHES_CARD ${CMAKE_SOURCE_DIR}/tests/data/delphes_card_IDEA.tcl)
+# Get the delphes card from the Delphes installation
+find_file(DELPHES_CARD delphes_card_IDEA.tcl PATHS ${DELPHES_CARDS_DIR})
+if(NOT DELPHES_CARD)
+  message(STATUS "Cannot find IDEA delphes card from the delphes installation. Falling back to card that is shipped with k4SimDelphes (might be out of date)")
+  set(DELPHES_CARD ${CMAKE_SOURCE_DIR}/tests/data/delphes_card_IDEA.tcl)
+endif()
+
 set(OUTPUT_CONFIG ${CMAKE_SOURCE_DIR}/examples/edm4hep_output_config.tcl)
 
 if(BUILD_PYTHIA_READER)
