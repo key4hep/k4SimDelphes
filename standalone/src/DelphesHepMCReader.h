@@ -11,7 +11,7 @@
 #include "classes/DelphesClasses.h"
 #include "classes/DelphesFactory.h"
 #include "classes/DelphesStream.h"
-#include "classes/DelphesHepMCReader.h"
+#include "classes/DelphesHepMCReader2.h"
 #include "modules/Delphes.h"
 
 #include "ExRootAnalysis/ExRootTreeBranch.h"
@@ -37,7 +37,7 @@ class DelphesHepMCInputReader: public DelphesInputReader {
     int i = 4;
 
 
-    m_reader = new DelphesHepMCReader;
+    m_reader = new DelphesHepMCReader2;
 
     Long64_t length = 0;
       if(i == argc || strncmp(argv[i], "-", 2) == 0)
@@ -136,7 +136,7 @@ private:
   FILE *m_inputFile = 0;
   TStopwatch m_readStopWatch, m_procStopWatch;
   ExRootTreeBranch *m_branchEvent = 0, *m_branchWeight = 0;
-  DelphesHepMCReader *m_reader = 0;
+  DelphesHepMCReader2 *m_reader = 0;
   Long64_t m_eventCounter;
 
 };
