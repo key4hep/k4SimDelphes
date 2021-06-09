@@ -6,7 +6,6 @@
 The following environment variables are expected to be set for the following to
 work:
 - `DELPHES_DIR`: points to the Delphes install directory
-- `EDM4HEP_DIR`: points to the EDM4hep install directory
 - `ROOT_INCLUDE_PATH`: contains the podio, EDM4hep and Delphes include
   directories (e.g. via `$EDM4HEP_DIR/include`)
 - `LD_LIBRARY_PATH`: contains the podio, EDM4hep and Delphes libs (and dicts)
@@ -44,14 +43,14 @@ Finally also copy the `edm4hep` output configuration to the `cards` directory
 (not strictly necessary but in this case makes for cleaner commands in the
 examples below)
 
-    cp path/to/EDM4hep/plugins/delphes/edm4hep_output_config.tcl cards
+    cp edm4hep_output_config.tcl cards
 
 ## Generating Delphes output
 
 A Delhpes output file is generated to have a baseline comparison for the edm4hep
 output. The output is generated using the following command
 
-    ${DELPHES_DIR}/bin/DelphesPythia8 \
+     DelphesPythia8 \
         cards/delphes_card_CMS.tcl \
         inputs/configNoLHE.cmnd \
         delphes_test_output.root
@@ -61,7 +60,7 @@ output. The output is generated using the following command
 
 The corresponding edm4hep output is produced using the following command
 
-    ${EDM4HEP_DIR}/bin/DelphesPythia8_EDM4HEP \
+     DelphesPythia8_EDM4HEP \
         cards/delphes_card_CMS.tcl \
         cards/edm4hep_output_config.tcl \
         inputs/configNoLHE.cmnd \
