@@ -18,7 +18,7 @@
 #include "classes/DelphesStream.h"
 #include "classes/DelphesLHEFReader.h"
 #include "modules/Delphes.h"
-#include "ExRootTreeWriter.h" // use local copy
+#include "ExRootAnalysis/ExRootTreeWriter.h"
 #include "ExRootAnalysis/ExRootTreeBranch.h"
 
 #include "Pythia.h"
