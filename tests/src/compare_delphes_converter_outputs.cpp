@@ -2,7 +2,6 @@
 
 #include "edm4hep/MCParticleCollection.h"
 #include "edm4hep/ReconstructedParticleCollection.h"
-#include "edm4hep/RecoParticleRefCollection.h"
 #include "edm4hep/MCRecoParticleAssociationCollection.h"
 
 #include "podio/ROOTReader.h"
@@ -221,11 +220,11 @@ void compareCollectionElements(const TClonesArray* delphesColl,
  */
 template<typename DelphesT>
 void compareCollectionElements(const TClonesArray* delphesColl,
-                               const edm4hep::RecoParticleRefCollection& edm4hepColl,
+                               const edm4hep::ReconstructedParticleCollection& edm4hepColl,
                                const std::string collName) {
   for (int i = 0; i < delphesColl->GetEntries(); ++i) {
     const auto* delphesCand = static_cast<DelphesT*>(delphesColl->At(i));
-    const auto edm4hepCand = edm4hepColl[i].getParticle();
+    const auto edm4hepCand = edm4hepColl[i];
     assertSameKinematics(delphesCand, edm4hepCand, stdErrorMessage, collName, i);
 
     // Photons have no charge, so nothing to compare here
@@ -360,15 +359,15 @@ int main(int argc, char* argv[]) {
     compareCollectionsBasic(genParticleCollDelphes, genParticleColl, "Particle");
     compareCollectionElements(genParticleCollDelphes, genParticleColl, "Particle");
 
-    auto& electronColl = store.get<edm4hep::RecoParticleRefCollection>("Electron");
+    auto& electronColl = store.get<edm4hep::ReconstructedParticleCollection>("Electron");
     compareCollectionsBasic(electronCollDelphes, electronColl, "Electron");
     compareCollectionElements<Electron>(electronCollDelphes, electronColl, "Electron");
 
-    auto& muonColl = store.get<edm4hep::RecoParticleRefCollection>("Muon");
+    auto& muonColl = store.get<edm4hep::ReconstructedParticleCollection>("Muon");
     compareCollectionsBasic(muonCollDelphes, muonColl, "Muon");
     compareCollectionElements<Muon>(muonCollDelphes, muonColl, "Muon");
 
-    auto& photonColl = store.get<edm4hep::RecoParticleRefCollection>("Photon");
+    auto& photonColl = store.get<edm4hep::ReconstructedParticleCollection>("Photon");
     compareCollectionsBasic(photonCollDelphes, photonColl, "Photon");
     compareCollectionElements<Photon>(photonCollDelphes, photonColl, "Photon");
 
