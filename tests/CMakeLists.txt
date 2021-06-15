@@ -35,21 +35,14 @@ function(ADD_COMPARISON_TEST name converter)
     )
 endfunction()
 
-# Get the delphes card from the Delphes installation
-find_file(DELPHES_CARD delphes_card_IDEA.tcl PATHS ${DELPHES_CARDS_DIR})
-if(NOT DELPHES_CARD)
-  message(STATUS "Cannot find IDEA delphes card from the delphes installation. Falling back to card that is shipped with k4SimDelphes (might be out of date)")
-  set(DELPHES_CARD ${CMAKE_SOURCE_DIR}/tests/data/delphes_card_IDEA.tcl)
-endif()
-
 set(OUTPUT_CONFIG ${CMAKE_SOURCE_DIR}/examples/edm4hep_output_config.tcl)
 
-if(BUILD_PYTHIA_READER)
-  ADD_COMPARISON_TEST(PythiaConverter DelphesPythia8_EDM4HEP ${DELPHES_CARD} ${OUTPUT_CONFIG} pythia_converter_output_ee_Z_bbbar.root ${CMAKE_SOURCE_DIR}/examples/data/ee_Z_bbbar_ecm91GeV.cmd)
-
-  # Only run tests using the TrackCovariance if it is actually available
-  if (DELPHES_TRACK_COV_HEADER)
-    set(DELPHES_TRK_COV_CARD ${CMAKE_SOURCE_DIR}/tests/data/delphes_card_IDEAtrkCov.tcl)
-    ADD_COMPARISON_TEST(PythiaConverter_TrkCov DelphesPythia8_EDM4HEP ${DELPHES_TRK_COV_CARD} ${OUTPUT_CONFIG} pythia_converter_output_ee_Z_ccbar.root ${CMAKE_SOURCE_DIR}/examples/data/ee_Z_bbbar_ecm91GeV.cmd)
+# Get the delphes card from the Delphes installation
+find_file(DELPHES_CARD delphes_card_IDEA.tcl PATHS ${DELPHES_CARDS_DIR})
+if(DELPHES_CARD)
+  if(BUILD_PYTHIA_READER)
+    ADD_COMPARISON_TEST(PythiaConverter_ee_Z_bbbar DelphesPythia8_EDM4HEP ${DELPHES_CARD} ${OUTPUT_CONFIG} pythia_converter_output_ee_Z_bbbar.root ${CMAKE_SOURCE_DIR}/examples/data/ee_Z_bbbar_ecm91GeV.cmd)
   endif()
+else()
+  message(WARNING "Cannot find IDEA delphes card from the delphes installation. Cannot use it for testing")
 endif()
