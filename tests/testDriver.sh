@@ -40,9 +40,11 @@ function random_seed_delphes_card() {
         local seed=${DELPHES_RANDOM_SEED}
     fi
     echo "RANDOM SEED FOR DELPHES CARD = ${seed}" | tee -a ${RANDOM_SEEDS_FILE}
-    grep "set RandomSeed" ${card_file} > /dev/null 2>&1 && \
-        sed "s/set RandomSeed .*/set RandomSeed ${seed}/" ${card_file} > ${out_file}|| \
-        sed "/set MaxEvents/a set RandomSeed ${seed}" ${card_file} > ${out_file}
+    # Check if we have an existing RandomSeed setting that we need to override
+    # Otherwise use the ExecutionPath as anchor and add it before that
+    grep -q "set RandomSeed" ${card_file} && \
+        sed "s/set RandomSeed .*/set RandomSeed ${seed}/" ${card_file} > ${out_file} || \
+        sed "/set ExecutionPath.*/i set RandomSeed ${seed}" ${card_file} > ${out_file}
 }
 random_seed_delphes_card ${DELPHES_CARD_IN} ${DELPHES_CARD}
 
@@ -57,7 +59,10 @@ function random_seed_pythia_cmd() {
         local seed=${PYTHIA_RANDOM_SEED}
     fi
     echo "RANDOM SEED FOR PYTHIA CMD = ${seed}" | tee -a ${RANDOM_SEEDS_FILE}
-    grep "Random:seed" ${cmd_file} > /dev/null 2>&1 && \
+
+    # Check if we have an existing Random:seed that we need to override
+    # Otherwise use the number of events as an anchor
+    grep -q "Random:seed" ${cmd_file} && \
         sed "s/Random:seed = .*/Random:seed = ${seed}/" ${cmd_file} > ${out_file} || \
         sed "/Main:numberOfEvents/a Random:setSeed = on\nRandom:seed = ${seed}" ${cmd_file} > ${out_file}
 }
