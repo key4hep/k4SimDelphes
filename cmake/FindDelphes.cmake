@@ -1,4 +1,13 @@
-set(searchpath $ENV{DELPHES_DIR} $ENV{DELPHES_DIR}/external $ENV{DELPHES_DIR}/lib $ENV{DELPHES_DIR}/include)
+set(searchpath
+  $ENV{DELPHES_DIR}
+  $ENV{DELPHES_DIR}/external
+  $ENV{DELPHES_DIR}/lib
+  $ENV{DELPHES_DIR}/include
+  $ENV{DELPHES}
+  $ENV{DELPHES}/external
+  $ENV{DELPHES}/lib
+  $ENV{DELPHES}/include
+  )
 
 
 find_library(DELPHES_LIBRARY
