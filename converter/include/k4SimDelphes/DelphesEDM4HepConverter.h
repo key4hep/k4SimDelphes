@@ -103,7 +103,7 @@ private:
   void registerGlobalCollections();
 
   template<typename CollectionT>
-  void createCollection(std::string_view const name);
+  void createCollection(std::string_view const name, bool makeRefColl=false);
 
   // cannot mark DelphesT as const, because for Candidate* the GetCandidates()
   // method is not marked as const.
@@ -130,9 +130,10 @@ private:
 };
 
 template<typename CollectionT>
-void DelphesEDM4HepConverter::createCollection(std::string_view name) {
+void DelphesEDM4HepConverter::createCollection(std::string_view name, bool makeRefColl) {
   std::string nameStr(name);
   CollectionT* col = new CollectionT();
+  col->setSubsetCollection(makeRefColl);
   m_collections.emplace(name, col);
 }
 
