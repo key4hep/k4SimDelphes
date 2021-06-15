@@ -11,7 +11,7 @@
 #include "modules/Delphes.h"
 
 #include "ExRootAnalysis/ExRootTreeBranch.h"
-#include "ExRootTreeWriter.h" // use local copy
+#include "ExRootAnalysis/ExRootTreeWriter.h"
 
 #include "TObjArray.h"
 #include "TTree.h"

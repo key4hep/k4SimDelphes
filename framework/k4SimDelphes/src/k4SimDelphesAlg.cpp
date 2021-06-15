@@ -1,7 +1,7 @@
 #include "k4SimDelphesAlg.h"
 #include "k4SimDelphes/DelphesEDM4HepOutputConfiguration.h"
 #include "k4SimDelphes/k4GenParticlesDelphesConverter.h"
-#include "ExRootTreeWriter.h" // use local copy, todo: fix / push upstream
+#include "ExRootAnalysis/ExRootTreeWriter.h"
 #include "edm4hep/ReconstructedParticleCollection.h"
 #include "edm4hep/MCRecoParticleAssociationCollection.h"
 

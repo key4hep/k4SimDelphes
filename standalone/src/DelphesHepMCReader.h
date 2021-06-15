@@ -16,7 +16,7 @@
 
 #include "ExRootAnalysis/ExRootTreeBranch.h"
 #include "ExRootAnalysis/ExRootTreeReader.h"
-#include "ExRootTreeWriter.h" // use local copy
+#include "ExRootAnalysis/ExRootTreeWriter.h"
 
 #include <iostream>
 #include <memory>
