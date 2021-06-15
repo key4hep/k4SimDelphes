@@ -7,7 +7,6 @@
 #include "edm4hep/TrackCollection.h"
 #include "edm4hep/ClusterCollection.h"
 #include "edm4hep/MCRecoParticleAssociationCollection.h"
-#include "edm4hep/RecoParticleRefCollection.h"
 #include "edm4hep/ParticleIDCollection.h"
 
 #include "classes/DelphesClasses.h"
@@ -126,7 +125,7 @@ DelphesEDM4HepConverter::DelphesEDM4HepConverter(const std::vector<BranchSetting
     if (contains(outputSettings.MuonCollections, branch.name.c_str()) ||
         contains(outputSettings.ElectronCollections, branch.name.c_str()) ||
         contains(outputSettings.PhotonCollections, branch.name.c_str())) {
-      createCollection<edm4hep::RecoParticleRefCollection>(branch.name);
+      createCollection<edm4hep::ReconstructedParticleCollection>(branch.name, true);
       m_processFunctions.emplace(branch.name, refProcessFunctions.at(branch.className));
     }
 
@@ -326,14 +325,13 @@ void DelphesEDM4HepConverter::processJets(const TClonesArray* delphesCollection,
 template<typename DelphesT>
 void DelphesEDM4HepConverter::fillReferenceCollection(const TClonesArray* delphesCollection, std::string_view const branch, std::string_view const type)
 {
-  auto* collection = static_cast<edm4hep::RecoParticleRefCollection*>(m_collections[branch]);
+  auto* collection = static_cast<edm4hep::ReconstructedParticleCollection*>(m_collections[branch]);
 
   for (auto iCand = 0; iCand < delphesCollection->GetEntries(); ++iCand) {
     auto* delphesCand = static_cast<DelphesT*>(delphesCollection->At(iCand));
 
     if (auto matchedReco = getMatchingReco(delphesCand)) {
-      auto recoRef = collection->create();
-      recoRef.setParticle(*matchedReco);
+      collection->push_back(*matchedReco);
       // if we have an electron or muon we update the mass as well here
       if constexpr (std::is_same_v<DelphesT, Muon>) {
         matchedReco->setMass(M_MU);
