@@ -21,8 +21,8 @@ target_link_libraries(k4SimDelphesTests
                         Catch2::Catch2 Catch2::Catch2WithMain
                         )
 
-
 include(CTest)
 include(Catch)
 catch_discover_tests(k4SimDelphesTests
-                    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/../)
+                     WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+                     PROPERTIES ENVIRONMENT DELPHES_CARDS_DIR=${DELPHES_CARDS_DIR})
