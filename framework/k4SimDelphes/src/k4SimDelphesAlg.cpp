@@ -36,7 +36,7 @@ StatusCode k4SimDelphesAlg::initialize() {
   m_Delphes->Clear();
 
   // data service
-  m_eventDataSvc.retrieve();
+  m_eventDataSvc.retrieve().ignore();
   m_podioDataSvc = dynamic_cast<PodioDataSvc*>( m_eventDataSvc.get());
 
   return StatusCode::SUCCESS;
@@ -72,13 +72,13 @@ StatusCode k4SimDelphesAlg::execute() {
     auto new_c = m_edm4hepConverter->createExternalRecoAssociations(mapSimDelphes);
        DataWrapper<podio::CollectionBase>* wrapper = new DataWrapper<podio::CollectionBase>();
        wrapper->setData(new_c);
-       m_podioDataSvc->registerObject("/Event", "/" + std::string(c.first), wrapper);
+       m_podioDataSvc->registerObject("/Event", "/" + std::string(c.first), wrapper).ignore();
        continue;
      }
 
     DataWrapper<podio::CollectionBase>* wrapper = new DataWrapper<podio::CollectionBase>();
     wrapper->setData(c.second);
-    m_podioDataSvc->registerObject("/Event", "/" + std::string(c.first), wrapper);
+    m_podioDataSvc->registerObject("/Event", "/" + std::string(c.first), wrapper).ignore();
   }
   m_Delphes->Clear();
   //delete m_edm4hepConverter;
