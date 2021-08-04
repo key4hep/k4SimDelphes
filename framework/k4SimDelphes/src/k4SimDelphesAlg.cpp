@@ -44,6 +44,10 @@ StatusCode k4SimDelphesAlg::initialize() {
 
 StatusCode k4SimDelphesAlg::execute() {
   verbose() << "Execute k4SimDelphesAlg... " << endmsg;
+  m_allParticleOutputArray->Clear();
+  m_stableParticleOutputArray->Clear();
+  m_partonOutputArray->Clear();
+  m_treeWriter->Clear();
   const auto branches = getBranchSettings(m_confReader->GetParam("TreeWriter::Branch"));
   const auto edm4hepOutputSettings = getEDM4hepOutputSettings(m_DelphesOutputSettings.value().c_str());
   m_edm4hepConverter = new DelphesEDM4HepConverter(branches,
