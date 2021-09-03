@@ -49,10 +49,10 @@ template<size_t N>
 void sortBranchesProcessingOrder(std::vector<BranchSettings>& branches,
                                  std::array<std::string_view, N> const& processingOrder);
 
-edm4hep::Track convertTrack(Track const* cand, const double magFieldBz);
+edm4hep::MutableTrack convertTrack(Track const* cand, const double magFieldBz);
 
 void setMotherDaughterRelations(GenParticle const* delphesCand,
-                                edm4hep::MCParticle particle,
+                                edm4hep::MutableMCParticle particle,
                                 edm4hep::MCParticleCollection& mcParticles);
 
 /**
@@ -376,7 +376,7 @@ void DelphesEDM4HepConverter::processScalarHT(const TClonesArray* delphesCollect
 
 
 template<typename DelphesT>
-std::optional<edm4hep::ReconstructedParticle> DelphesEDM4HepConverter::getMatchingReco(DelphesT* delphesCand) const
+std::optional<edm4hep::MutableReconstructedParticle> DelphesEDM4HepConverter::getMatchingReco(DelphesT* delphesCand) const
 {
   // Here we have to do some work to actually match the Delphes candidate to
   // the correct edm4hep::ReconstructedParticle because the possibility exists
@@ -416,7 +416,7 @@ std::optional<edm4hep::ReconstructedParticle> DelphesEDM4HepConverter::getMatchi
   return {};
 }
 
-edm4hep::MCRecoParticleAssociationCollection* DelphesEDM4HepConverter::createExternalRecoAssociations(const std::unordered_map<UInt_t, edm4hep::ConstMCParticle>& mc_map) {
+edm4hep::MCRecoParticleAssociationCollection* DelphesEDM4HepConverter::createExternalRecoAssociations(const std::unordered_map<UInt_t, edm4hep::MCParticle>& mc_map) {
 
   auto mcRecoRelations = new edm4hep::MCRecoParticleAssociationCollection();
     for (const auto& particleID: mc_map) {
@@ -469,9 +469,9 @@ void sortBranchesProcessingOrder(std::vector<BranchSettings>& branches,
 }
 
 
-edm4hep::Track convertTrack(Track const* cand, const double magFieldBz)
+edm4hep::MutableTrack convertTrack(Track const* cand, const double magFieldBz)
 {
-  edm4hep::Track track;
+  edm4hep::MutableTrack track;
   // Delphes does not really provide any information that would go into the
   // track itself. But some information can be used to at least partially
   // populate a TrackState
@@ -535,7 +535,7 @@ edm4hep::Track convertTrack(Track const* cand, const double magFieldBz)
 }
 
 void setMotherDaughterRelations(GenParticle const* delphesCand,
-                                edm4hep::MCParticle particle,
+                                edm4hep::MutableMCParticle particle,
                                 edm4hep::MCParticleCollection& mcParticles)
 {
   // NOTE: it is in general probably not possible to handle all the different
