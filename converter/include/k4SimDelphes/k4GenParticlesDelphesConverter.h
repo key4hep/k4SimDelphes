@@ -64,11 +64,11 @@ public:
     //
   }
 
-  std::unordered_map<UInt_t, edm4hep::ConstMCParticle> getGenParticleIdMap() { return m_genParticleIds;}
+  std::unordered_map<UInt_t, edm4hep::MCParticle> getGenParticleIdMap() { return m_genParticleIds;}
 
 private:
 
-std::unordered_map<UInt_t, edm4hep::ConstMCParticle> m_genParticleIds;
+std::unordered_map<UInt_t, edm4hep::MCParticle> m_genParticleIds;
 
 };
 

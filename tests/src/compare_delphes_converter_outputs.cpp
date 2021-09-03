@@ -62,10 +62,10 @@ void assertSameKinematics(const DelphesT* delphesCand, const EDM4HepT& edm4hepCa
  * Get all MCParticles related to a given ReconstructedParticle
  *
  */
-std::vector<edm4hep::ConstMCParticle>
-getAssociatedMCParticles(edm4hep::ConstReconstructedParticle reco,
+std::vector<edm4hep::MCParticle>
+getAssociatedMCParticles(edm4hep::ReconstructedParticle reco,
                          const edm4hep::MCRecoParticleAssociationCollection& associations) {
-  std::vector<edm4hep::ConstMCParticle> sims;
+  std::vector<edm4hep::MCParticle> sims;
   // NOTE: looping over the whole collection of associations here is super
   // inefficient, but as long as there is no utility for this, implementing the
   // necessary caching is just too much work for this test case here
@@ -102,7 +102,7 @@ std::vector<GenParticle*> getAssociatedMCParticles(const DelphesT* delphesCand) 
  */
 template<typename DelphesT>
 bool compareMCRelations(const DelphesT* delphesCand,
-                        edm4hep::ConstReconstructedParticle edm4hepCand,
+                        edm4hep::ReconstructedParticle edm4hepCand,
                         const edm4hep::MCRecoParticleAssociationCollection& associations) {
 
   const auto delphesGenParticles = getAssociatedMCParticles(delphesCand);

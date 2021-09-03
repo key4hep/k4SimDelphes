@@ -5,8 +5,8 @@
 #include "podio/CollectionBase.h"
 
 // edm4hep
-#include "edm4hep/MCParticleConst.h"
-#include "edm4hep/ReconstructedParticle.h"
+#include "edm4hep/MCParticle.h"
+#include "edm4hep/MutableReconstructedParticle.h"
 #include "edm4hep/MCRecoParticleAssociationCollection.h"
 
 // ROOT
@@ -92,7 +92,7 @@ public:
     fillReferenceCollection<Electron>(delphesCollection, branch, "electron");
   }
 
-edm4hep::MCRecoParticleAssociationCollection* createExternalRecoAssociations(const std::unordered_map<UInt_t, edm4hep::ConstMCParticle>& mc_map);
+edm4hep::MCRecoParticleAssociationCollection* createExternalRecoAssociations(const std::unordered_map<UInt_t, edm4hep::MCParticle>& mc_map);
 
 private:
 
@@ -108,7 +108,7 @@ private:
   // cannot mark DelphesT as const, because for Candidate* the GetCandidates()
   // method is not marked as const.
   template<typename DelphesT>
-  std::optional<edm4hep::ReconstructedParticle> getMatchingReco(/*const*/ DelphesT* delphesCand) const;
+  std::optional<edm4hep::MutableReconstructedParticle> getMatchingReco(/*const*/ DelphesT* delphesCand) const;
 
   using ProcessFunction = void (DelphesEDM4HepConverter::*)(const TClonesArray*, std::string_view const);
 
@@ -123,10 +123,10 @@ private:
   std::string m_mcRecoAssocCollName;
 
   // map from UniqueIDs (delphes generated particles) to MCParticles
-  std::unordered_map<UInt_t, edm4hep::ConstMCParticle> m_genParticleIds;
+  std::unordered_map<UInt_t, edm4hep::MCParticle> m_genParticleIds;
   // map from UniqueIDs (delphes generated particles) to (possibly multiple)
   // ReconstructedParticles
-  std::unordered_multimap<UInt_t, edm4hep::ReconstructedParticle> m_recoParticleGenIds;
+  std::unordered_multimap<UInt_t, edm4hep::MutableReconstructedParticle> m_recoParticleGenIds;
 };
 
 template<typename CollectionT>
