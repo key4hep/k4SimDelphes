@@ -39,6 +39,8 @@ StatusCode k4SimDelphesAlg::initialize() {
   m_eventDataSvc.retrieve().ignore();
   m_podioDataSvc = dynamic_cast<PodioDataSvc*>( m_eventDataSvc.get());
 
+  m_edm4hepOutputSettings = getEDM4hepOutputSettings(m_DelphesOutputSettings.value().c_str());
+
   return StatusCode::SUCCESS;
 }
 
@@ -49,9 +51,8 @@ StatusCode k4SimDelphesAlg::execute() {
   m_partonOutputArray->Clear();
   m_treeWriter->Clear();
   const auto branches = getBranchSettings(m_confReader->GetParam("TreeWriter::Branch"));
-  const auto edm4hepOutputSettings = getEDM4hepOutputSettings(m_DelphesOutputSettings.value().c_str());
   m_edm4hepConverter = new DelphesEDM4HepConverter(branches,
-                                           edm4hepOutputSettings,
+                                           m_edm4hepOutputSettings,
                                            m_confReader->GetDouble("ParticlePropagator::Bz", 0));
   verbose() << " ... Setup Input Collections " << endmsg;
   auto genparticles = m_InputMCParticles.get();
@@ -91,6 +92,7 @@ StatusCode k4SimDelphesAlg::execute() {
 
 StatusCode k4SimDelphesAlg::finalize() {
   m_Delphes->Finish();
-  delete m_confReader;
+  // TODO: investigate segfault if the following line is uncommented
+  //delete m_confReader;
   return StatusCode::SUCCESS;
 }
