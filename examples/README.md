@@ -147,14 +147,14 @@ Now we have output root file.. Let us open jupyter-notebook from our container:
 Copy paste `http://127.0.0.1:8888/?token` to your browser. You may have a look at the notebook `edm4hep_IsoM.ipynb`
 
 
-## Working Group Servers@DESY with Singularity
+## Working Group Servers with Singularity via cvmfs
 
 The docker image for this example was also deployed to `unpacked.cern.ch`, where images are unpacked. Then, it is easy for singularity to use this images via cvmfs.
 
 As usual; pull the repo, place the data folder, go to example folder
 ```console
 -bash-4.2$ pwd
-/nfs/dust/ilc/user/eren/k4SimDelphes/examples
+/your-working-directory/k4SimDelphes/examples
 ```
 
 Now ready to go inside the container
@@ -166,7 +166,7 @@ conda activate root_env
 source /home/ilc/init_env.sh
 cd $home
 ```
-After this stage, commands are the same. Just watch out: You need to be in DESY network to access juypter notebook. Otherwise, you need to tunnel.
+After this stage, commands are the same. Just watch out: You might need to tunnel working groups server's network (i.e cern.ch)
 
 
 
