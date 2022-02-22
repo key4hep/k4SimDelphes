@@ -7,7 +7,6 @@
 #include "edm4hep/TrackCollection.h"
 #include "edm4hep/ClusterCollection.h"
 #include "edm4hep/MCRecoParticleAssociationCollection.h"
-#include "edm4hep/RecoParticleRefCollection.h"
 #include "edm4hep/ParticleIDCollection.h"
 
 #include "classes/DelphesClasses.h"
@@ -50,10 +49,10 @@ template<size_t N>
 void sortBranchesProcessingOrder(std::vector<BranchSettings>& branches,
                                  std::array<std::string_view, N> const& processingOrder);
 
-edm4hep::Track convertTrack(Track const* cand, const double magFieldBz);
+edm4hep::MutableTrack convertTrack(Track const* cand, const double magFieldBz);
 
 void setMotherDaughterRelations(GenParticle const* delphesCand,
-                                edm4hep::MCParticle particle,
+                                edm4hep::MutableMCParticle particle,
                                 edm4hep::MCParticleCollection& mcParticles);
 
 /**
@@ -126,7 +125,7 @@ DelphesEDM4HepConverter::DelphesEDM4HepConverter(const std::vector<BranchSetting
     if (contains(outputSettings.MuonCollections, branch.name.c_str()) ||
         contains(outputSettings.ElectronCollections, branch.name.c_str()) ||
         contains(outputSettings.PhotonCollections, branch.name.c_str())) {
-      createCollection<edm4hep::RecoParticleRefCollection>(branch.name);
+      createCollection<edm4hep::ReconstructedParticleCollection>(branch.name, true);
       m_processFunctions.emplace(branch.name, refProcessFunctions.at(branch.className));
     }
 
@@ -326,14 +325,13 @@ void DelphesEDM4HepConverter::processJets(const TClonesArray* delphesCollection,
 template<typename DelphesT>
 void DelphesEDM4HepConverter::fillReferenceCollection(const TClonesArray* delphesCollection, std::string_view const branch, std::string_view const type)
 {
-  auto* collection = static_cast<edm4hep::RecoParticleRefCollection*>(m_collections[branch]);
+  auto* collection = static_cast<edm4hep::ReconstructedParticleCollection*>(m_collections[branch]);
 
   for (auto iCand = 0; iCand < delphesCollection->GetEntries(); ++iCand) {
     auto* delphesCand = static_cast<DelphesT*>(delphesCollection->At(iCand));
-    auto recoRef = collection->create();
 
     if (auto matchedReco = getMatchingReco(delphesCand)) {
-      recoRef.setParticle(*matchedReco);
+      collection->push_back(*matchedReco);
       // if we have an electron or muon we update the mass as well here
       if constexpr (std::is_same_v<DelphesT, Muon>) {
         matchedReco->setMass(M_MU);
@@ -378,7 +376,7 @@ void DelphesEDM4HepConverter::processScalarHT(const TClonesArray* delphesCollect
 
 
 template<typename DelphesT>
-std::optional<edm4hep::ReconstructedParticle> DelphesEDM4HepConverter::getMatchingReco(DelphesT* delphesCand) const
+std::optional<edm4hep::MutableReconstructedParticle> DelphesEDM4HepConverter::getMatchingReco(DelphesT* delphesCand) const
 {
   // Here we have to do some work to actually match the Delphes candidate to
   // the correct edm4hep::ReconstructedParticle because the possibility exists
@@ -390,23 +388,27 @@ std::optional<edm4hep::ReconstructedParticle> DelphesEDM4HepConverter::getMatchi
   // take the FIRST good match. Since the delphes candidate originates from
   // either a Track or a Tower, there should always be exactly one such good
   // match.
+
+  // Handling slightly different member names for delphes depending on
+  // whether we are still working with Candidates or the actual output
+  // classes already
+  const auto delphes4Mom = [delphesCand]() {
+    if constexpr(std::is_same_v<DelphesT, Candidate>) {
+      return delphesCand->Momentum;
+    } else {
+      return delphesCand->P4();
+    }
+  }();
+
   for (const auto genId : getAllParticleIDs(delphesCand)) {
     const auto [recoBegin, recoEnd] = m_recoParticleGenIds.equal_range(genId);
     for (auto it = recoBegin; it != recoEnd; ++it) {
-      // Handling slightly different member names for delphes depending on
-      // whether we are still working with Candidates or the actual output
-      // classes already
-      if constexpr(std::is_same_v<DelphesT, Candidate>) {
-        if (equalP4(getP4(it->second), delphesCand->Momentum)) {
-          return it->second;
-        } else if (equalP4(getP4(it->second), delphesCand->Momentum, 1e-2, false)) {
-          // std::cout << "**** DEBUG: Kinematic matching successful after dropping energy matching and dropping momentum matching to percent level" << std::endl;
-          return it->second;
-        }
-      } else {
-        if (equalP4(getP4(it->second), delphesCand->P4())) {
-          return it->second;
-        }
+      const auto edm4Mom = getP4(it->second);
+      if (equalP4(edm4Mom, delphes4Mom)) {
+        return it->second;
+      } else if (equalP4(edm4Mom, delphes4Mom, 1e-5, false)) {
+        // std::cout << "**** DEBUG: Kinematic matching successful after dropping energy matching" << std::endl;
+        return it->second;
       }
     }
   }
@@ -414,7 +416,7 @@ std::optional<edm4hep::ReconstructedParticle> DelphesEDM4HepConverter::getMatchi
   return {};
 }
 
-edm4hep::MCRecoParticleAssociationCollection* DelphesEDM4HepConverter::createExternalRecoAssociations(const std::unordered_map<UInt_t, edm4hep::ConstMCParticle>& mc_map) {
+edm4hep::MCRecoParticleAssociationCollection* DelphesEDM4HepConverter::createExternalRecoAssociations(const std::unordered_map<UInt_t, edm4hep::MCParticle>& mc_map) {
 
   auto mcRecoRelations = new edm4hep::MCRecoParticleAssociationCollection();
     for (const auto& particleID: mc_map) {
@@ -467,9 +469,9 @@ void sortBranchesProcessingOrder(std::vector<BranchSettings>& branches,
 }
 
 
-edm4hep::Track convertTrack(Track const* cand, const double magFieldBz)
+edm4hep::MutableTrack convertTrack(Track const* cand, const double magFieldBz)
 {
-  edm4hep::Track track;
+  edm4hep::MutableTrack track;
   // Delphes does not really provide any information that would go into the
   // track itself. But some information can be used to at least partially
   // populate a TrackState
@@ -503,33 +505,29 @@ edm4hep::Track convertTrack(Track const* cand, const double magFieldBz)
   
   TMatrixDSym covaFB = cand->CovarianceMatrix();
 
-  //This is needed as Delphes stores the units in the orignal format, so GeV and meters
-  double scale0 = 1.e3;
-  double scale1 = 1.;
-  //double scale2 = 1.e-3;
-  double scale2 = -2.* 1.e-3;    // CAREFUL: DELPHES USES THE HALF-CURVATURE
-  double scale3 = 1.e3;
-  double scale4 = 1.;
+  // needs to be applied to any covariance matrix element
+  // relating to curvature (index 2)
+  double scale2 = -2.;    // CAREFUL: DELPHES USES THE HALF-CURVATURE
+  
+  covMatrix[0]  = covaFB(0,0);
+  
+  covMatrix[1]  = covaFB(1,0);
+  covMatrix[2]  = covaFB(1,1);
 
-  covMatrix[0]  = covaFB(0,0) *scale0 * scale0;
+  covMatrix[3]  = covaFB(2,0) * scale2;
+  covMatrix[4]  = covaFB(2,1) * scale2;
+  covMatrix[5]  = covaFB(2,2) * scale2 * scale2;
   
-  covMatrix[1]  = covaFB(1,0) *scale1 * scale0;
-  covMatrix[2]  = covaFB(1,1) *scale1 * scale1;
-
-  covMatrix[3]  = covaFB(2,0) *scale2 * scale0;
-  covMatrix[4]  = covaFB(2,1) *scale2 * scale1;
-  covMatrix[5]  = covaFB(2,2) *scale2 * scale2;
+  covMatrix[6]  = covaFB(3,0);
+  covMatrix[7]  = covaFB(3,1);
+  covMatrix[8]  = covaFB(3,2) * scale2;
+  covMatrix[9]  = covaFB(3,3);
   
-  covMatrix[6]  = covaFB(3,0) *scale3 * scale0;
-  covMatrix[7]  = covaFB(3,1) *scale3 * scale1;
-  covMatrix[8]  = covaFB(3,2) *scale3 * scale2;
-  covMatrix[9]  = covaFB(3,3) *scale3 * scale3;
-  
-  covMatrix[10] = covaFB(4,0) *scale4 * scale0;
-  covMatrix[11] = covaFB(4,1) *scale4 * scale1;
-  covMatrix[12] = covaFB(4,2) *scale4 * scale2;
-  covMatrix[13] = covaFB(4,3) *scale4 * scale3;
-  covMatrix[14] = covaFB(4,4) *scale4 * scale4;
+  covMatrix[10] = covaFB(4,0);
+  covMatrix[11] = covaFB(4,1);
+  covMatrix[12] = covaFB(4,2) * scale2;
+  covMatrix[13] = covaFB(4,3);
+  covMatrix[14] = covaFB(4,4);
 
   track.addToTrackStates(trackState);
 
@@ -537,7 +535,7 @@ edm4hep::Track convertTrack(Track const* cand, const double magFieldBz)
 }
 
 void setMotherDaughterRelations(GenParticle const* delphesCand,
-                                edm4hep::MCParticle particle,
+                                edm4hep::MutableMCParticle particle,
                                 edm4hep::MCParticleCollection& mcParticles)
 {
   // NOTE: it is in general probably not possible to handle all the different

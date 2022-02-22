@@ -1,4 +1,13 @@
-set(searchpath $ENV{DELPHES_DIR} $ENV{DELPHES_DIR}/external $ENV{DELPHES_DIR}/lib $ENV{DELPHES_DIR}/include)
+set(searchpath
+  $ENV{DELPHES_DIR}
+  $ENV{DELPHES_DIR}/external
+  $ENV{DELPHES_DIR}/lib
+  $ENV{DELPHES_DIR}/include
+  $ENV{DELPHES}
+  $ENV{DELPHES}/external
+  $ENV{DELPHES}/lib
+  $ENV{DELPHES}/include
+  )
 
 
 find_library(DELPHES_LIBRARY
@@ -24,6 +33,11 @@ find_path(DELPHES_BINARY_DIR
           NAMES DelphesROOT
           HINTS ${DELPHES_INCLUDE_DIR}/../bin
 )
+
+find_path(DELPHES_CARDS_DIR
+          NAMES delphes_card_IDEA.tcl
+          HINTS ${searchpath}
+          PATH_SUFFIXES cards)
 
 unset(searchpath)
 

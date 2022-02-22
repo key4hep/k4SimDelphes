@@ -73,18 +73,46 @@ endif()
 
 
 #--- Non-optional Dependencies ------------------------------------------------
-find_package(Delphes)
-find_package(EDM4HEP)
+find_package(Delphes REQUIRED)
+find_package(EDM4HEP REQUIRED)
+
+#--- optional dependencies
+if(BUILD_PYTHIA_READER OR BUILD_EVTGEN_READER)
+  find_package(Pythia8 REQUIRED)
+
+  if(BUILD_EVTGEN_READER)
+    if(PYTHIA8_VERSION VERSION_LESS 300)
+      message("ERROR: Cannot build EVTGEN Reader. PYTHIA8300 or newer required. ")
+    endif()
+
+    find_package(EvtGen REQUIRED)
+  endif()
+endif()
 
 #--- Code Sub-directories -----------------------------------------------------
 add_subdirectory(converter)
 add_subdirectory(standalone)
 add_subdirectory(examples)
+
+
 if(BUILD_FRAMEWORK)
+  find_package(Gaudi REQUIRED) # Do not depend on implicit find via k4FWCore
+  find_package(k4FWCore REQUIRED)
+  if (BUILD_TESTING)
+    find_package(k4Gen REQUIRED) # Finds Gaudi, etc. again
+  endif()
+
   add_subdirectory(framework)
 endif()
+
 if(BUILD_TESTING)
   option(BUILD_UNITTESTS "Build the unittest for k4SimDelphes" ON)
+  if(BUILD_UNITTESTS)
+    if(USE_EXTERNAL_CATCH2)
+      find_package(Catch2 REQUIRED)
+    endif()
+  endif()
+
   add_subdirectory(tests)
 endif()
 

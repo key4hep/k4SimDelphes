@@ -1,7 +1,7 @@
 #include "k4SimDelphesAlg.h"
 #include "k4SimDelphes/DelphesEDM4HepOutputConfiguration.h"
 #include "k4SimDelphes/k4GenParticlesDelphesConverter.h"
-#include "ExRootTreeWriter.h" // use local copy, todo: fix / push upstream
+#include "ExRootAnalysis/ExRootTreeWriter.h"
 #include "edm4hep/ReconstructedParticleCollection.h"
 #include "edm4hep/MCRecoParticleAssociationCollection.h"
 
@@ -36,18 +36,23 @@ StatusCode k4SimDelphesAlg::initialize() {
   m_Delphes->Clear();
 
   // data service
-  m_eventDataSvc.retrieve();
+  m_eventDataSvc.retrieve().ignore();
   m_podioDataSvc = dynamic_cast<PodioDataSvc*>( m_eventDataSvc.get());
+
+  m_edm4hepOutputSettings = getEDM4hepOutputSettings(m_DelphesOutputSettings.value().c_str());
 
   return StatusCode::SUCCESS;
 }
 
 StatusCode k4SimDelphesAlg::execute() {
   verbose() << "Execute k4SimDelphesAlg... " << endmsg;
+  m_allParticleOutputArray->Clear();
+  m_stableParticleOutputArray->Clear();
+  m_partonOutputArray->Clear();
+  m_treeWriter->Clear();
   const auto branches = getBranchSettings(m_confReader->GetParam("TreeWriter::Branch"));
-  const auto edm4hepOutputSettings = getEDM4hepOutputSettings(m_DelphesOutputSettings.value().c_str());
   m_edm4hepConverter = new DelphesEDM4HepConverter(branches,
-                                           edm4hepOutputSettings,
+                                           m_edm4hepOutputSettings,
                                            m_confReader->GetDouble("ParticlePropagator::Bz", 0));
   verbose() << " ... Setup Input Collections " << endmsg;
   auto genparticles = m_InputMCParticles.get();
@@ -72,13 +77,13 @@ StatusCode k4SimDelphesAlg::execute() {
     auto new_c = m_edm4hepConverter->createExternalRecoAssociations(mapSimDelphes);
        DataWrapper<podio::CollectionBase>* wrapper = new DataWrapper<podio::CollectionBase>();
        wrapper->setData(new_c);
-       m_podioDataSvc->registerObject("/Event", "/" + std::string(c.first), wrapper);
+       m_podioDataSvc->registerObject("/Event", "/" + std::string(c.first), wrapper).ignore();
        continue;
      }
 
     DataWrapper<podio::CollectionBase>* wrapper = new DataWrapper<podio::CollectionBase>();
     wrapper->setData(c.second);
-    m_podioDataSvc->registerObject("/Event", "/" + std::string(c.first), wrapper);
+    m_podioDataSvc->registerObject("/Event", "/" + std::string(c.first), wrapper).ignore();
   }
   m_Delphes->Clear();
   //delete m_edm4hepConverter;
@@ -87,6 +92,7 @@ StatusCode k4SimDelphesAlg::execute() {
 
 StatusCode k4SimDelphesAlg::finalize() {
   m_Delphes->Finish();
-  delete m_confReader;
+  // TODO: investigate segfault if the following line is uncommented
+  //delete m_confReader;
   return StatusCode::SUCCESS;
 }

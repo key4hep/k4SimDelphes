@@ -18,7 +18,7 @@
 #include "classes/DelphesStream.h"
 #include "classes/DelphesLHEFReader.h"
 #include "modules/Delphes.h"
-#include "ExRootTreeWriter.h" // use local copy
+#include "ExRootAnalysis/ExRootTreeWriter.h"
 
 #include "Pythia.h"
 #include "Pythia8Plugins/CombineMatchingInput.h"
@@ -38,7 +38,7 @@ class DelphesPythia8EvtGenReader_k4Interface: public DelphesInputReader {
 
   std::string init(Delphes* modularDelphes, int argc, char *argv[]) override {
 
-    if (argc!=11) {
+    if ( (argc!=11) && (argc!=7) ) {
 
       return "";
     }
@@ -122,12 +122,18 @@ class DelphesPythia8EvtGenReader_k4Interface: public DelphesInputReader {
     // new interface:
     //Pythia8::Pythia *pythia=m_pythia.get();
 
-    int regenerate=atoi(argv[10]);
+    int regenerate=0;//=atoi(argv[10]);
     
     m_evtgen2= new PythiaEvtGen_Interface(m_pythia.get(), argv[5], argv[6], 1000);
-    m_evtgen2->add_decays(argv[7], atoi(argv[8]), argv[9]);
-    m_evtgen2->set_verbose(false);
-    //m_evtgen2->set_debug();
+    
+    //m_evtgen2->set_verbose();                                                                                                                                                                                                                               
+    //m_evtgen2->set_debug();    
+
+    if(argc==11)
+      {
+      	m_evtgen2->add_decays(argv[7], atoi(argv[8]), argv[9]);
+	      regenerate=atoi(argv[10]);
+      }
     if(regenerate) m_evtgen2->set_regenerate();
 
     return outputfile;
@@ -178,7 +184,7 @@ class DelphesPythia8EvtGenReader_k4Interface: public DelphesInputReader {
         modularDelphes->Clear();
         m_reader->Clear();
       }
-      
+
       m_evtgen2->decay();
       //  else{
       //   m_evtgen->decay();

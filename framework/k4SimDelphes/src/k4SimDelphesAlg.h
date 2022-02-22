@@ -9,7 +9,8 @@
 #include "edm4hep/MCParticleCollection.h"
 #include "edm4hep/ReconstructedParticleCollection.h"
 
- #include "k4SimDelphes/DelphesEDM4HepConverter.h"
+#include "k4SimDelphes/DelphesEDM4HepConverter.h"
+#include "k4SimDelphes/DelphesEDM4HepOutputConfiguration.h"
 
 
 #include "modules/Delphes.h"
@@ -62,6 +63,7 @@ private:
   // need podiodatasvc directly
   PodioDataSvc* m_podioDataSvc;
   ServiceHandle<IDataProviderSvc> m_eventDataSvc;
+  k4SimDelphes::OutputSettings m_edm4hepOutputSettings;
 
 
 };
