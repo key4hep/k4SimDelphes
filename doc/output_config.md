@@ -100,12 +100,12 @@ classes. For the conversion the Delphes classes are taken from the `TreeWriter`
 | `Track`       | `ReconstructedParticle` with associated `Track`   |
 | `Tower`       | `ReconstructedParticle` with associated `Cluster` |
 | `Jet`         | `ReconstructedParticle`                           |
-| `Muon`        | `RecoParticleRef`                                 |
-| `Electron`    | `RecoParticleRef`                                 |
-| `Photon`      | `RecoParticleRef`                                 |
+| `Muon`        | `ReconstructedParticle` (subset collection)       |
+| `Electron`    | `ReconstructedParticle` (subset collection)       |
+| `Photon`      | `ReconstructedParticle` (subset collection)       |
 | `MissingET`   | `ReconstructedParticle`                           |
 | `ScalarHT`    | `ParticleID`                                      |
-|  n/a          | `MCRecoParticleAssociation`                       |
+| n/a           | `MCRecoParticleAssociation`                       |
 
 All Delphes classes that are not listed here are currently not converted.
 
