@@ -120,7 +120,7 @@ All Delphes classes that are not listed here are currently not converted.
       constituents will be differend between Jets in the Delphes output and in
       the `edm4hep` output.
 
-- [ ] Not all available information is used in the conversion. An incomplet list
+- [ ] Not all available information is used in the conversion. An incomplete list
       of things that are currently not available in `edm4hep`:
   - [ ] Jet substructure variables (including subjets)
   - [ ] Isolation variables
