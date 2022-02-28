@@ -6,7 +6,7 @@ The `DelphesEDM4HepConverter` takes an
 implementation of the conversions this is filled from an additional configuration file
 that defines the necessary parameters:
 
-[edm4hep_output_config.tcl](edm4hep_output_config.tcl). This `tcl` file has to
+[edm4hep_output_config.tcl](../examples/edm4hep_output_config.tcl). This `tcl` file has to
 be passed to the conversion executable as parameter from the command line. **No
 changes to the delphes card that is used are necessary.** An exemplary call
 could look something like this (replacing the `delphes_card.tcl` and the
