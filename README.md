@@ -9,6 +9,9 @@ framework](https://github.com/key4hep) via Gaudi.
 `k4SimDelphes` allows some configuration of its output, more information about
 this configuration can be found [in this doc](doc/output_config.md)
 
+## Build status
+[![linux](https://github.com/key4hep/k4SimDelphes/actions/workflows/test.yml/badge.svg)](https://github.com/key4hep/k4SimDelphes/actions/workflows/test.yml)
+
 ## Dependencies
 Required:
 - `Delphes` >= 3.5.0
