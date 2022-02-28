@@ -1,133 +1,63 @@
-# Delphes to EDM4hep output converter
+# k4SimDelphes
 
-The `DelphesEDM4HepConverter` creates an `edm4hep` output file from a `delphes`
-process.
+This repository holds the code for converting the
+[Delphes](https://cp3.irmp.ucl.ac.be/projects/delphes) EDM to the
+[EDM4hep](https://github.com/key4hep/EDM4hep) format. It offers standalone
+executables as well as integration into the [Key4hep
+framework](https://github.com/key4hep) via Gaudi.
 
-## Configuration
+`k4SimDelphes` allows some configuration of its output, more information about
+this configuration can be found [in this doc](docs/output_config.md)
 
-The `DelphesEDM4HepConverter` takes an
-[`OutputSetting`](converter/include/k4SimDelphes/DelphesEDM4HepOutputConfiguration.h#L12#L91) parameter to configure which
-`delphes` branches go into which `edm4hep` output collections. In the current
-implementation of the conversions this is filled from an additional configuration file
-that defines the necessary parameters:
+## Dependencies
+Required:
+- `Delphes` >= 3.5.0
+- `EDM4hep`
 
-[edm4hep_output_config.tcl](edm4hep_output_config.tcl). This `tcl` file has to
-be passed to the conversion executable as parameter from the command line. **No
-changes to the delphes card that is used are necessary.** An exemplary call
-could look something like this (replacing the `delphes_card.tcl` and the
-`input_file.stdhep` with actual input files):
+Required for framework integration:
+- `Gaudi` >= 36.0
+- [`k4FWCore`](https://github.com/key4hep/k4FWCore)
+
+Optional for standalone executables:
+- [`Pythia8`](https://pythia.org/)
+- [`EvtGen`](https://evtgen.hepforge.org/)
+
+## Build and install
+The easiest way to build and install `k4SimDelphes` is to use an existing
+Key4hep installation that brings all the required dependencies along. From there
+the steps follow the usual chain of events: cloning the repository, running
+cmake and then building and installing
 
 ``` bash
-DelphesSTDHEP_EDM4HEP delphes_card.tcl \
-                      edm4hep_output_config.tcl \
-                      edm4hep_output.root \
-                      input_file.stdhep
+source /cvmfs/sw-nightlies.hsf.org/key4hep/setup.sh
+git clone https://github.com/k4SimDelphes
+cd k4SimDelphes
+mkdir build && cd build
+cmake .. -DCMAKE_INSTALL_PREFIX=../install
+make install
 ```
 
-A module `EDM4HepOutput` is introduced solely for the purpose of being able to
-easily reuse the `tcl` parser from delphes and to introduce a logical
-containment for the parameters. The names of the delphes branches are taken from the `TreeWriter`
-module defintion and used in the `EDM4HepOutput`.
+To use this newly installed version (instead of the one that comes with the
+Key4hep installation) it is necessary to alter the environment slightly
 
-### Collection conversions
+``` bash
+cd ../install
+export PATH=$(pwd)/bin:${PATH}
+export LD_LIBRARY_PATH=$(pwd)/lib64:${LD_LIBRARY_PATH}
+```
 
-The configuration mainly steers which Delphes collections are still available in
-the `edm4hep` output. A description of which Delphes output classes correspond
-to which `edm4hep` classes can be found [below](#class-conversions). The
-collections specified in the `EDM4HepOutput` module are the `BranchName`s taken
-from the `TreeWriter` definition. Each of the following configuration parameters
-takes a list of collection names that will then also be available in the output.
+If you are not on a RedHat based system you might have to change `lib64` to
+`lib` in the last command above.
 
-#### `ReconstructedParticleCollections`
-All `Track` and `Tower` input collections that will be stored in one global
-`edm4hep::ReconstructedParticleCollection`. These will be associated to the
-generated particles stored as `edm4hep::MCParticle`s. The converter works under
-the assumption that this is a non-overlapping list of particles. It is the users
-responsibility to make sure that this is the case. (See [known
-issues](#known-issues)).
-  
-#### `GenParticleCollection`
-All Delphes `GenParticle` collections that will be considered and stored as
-`edm4hep::MCParticle`. Each Delphes collection will be put into its own
-`edm4hep` output collection under the same name, but all generated particles
-will be considered for the associations to the `ReconstructedParticle`s in the
-global collection (See [above](#reconstructedparticlecollections)). Usually it
-is enough to use the `Particle` branch here since that contains all generated
-particles from Delphes.
+## Testing
+Using the `BUILD_TESTING=ON` (default) enables and builds some additional tests
+for `k4SimDelphes`. After the build has completed these can be run via
 
-#### `JetCollections`
-All Delphes `Jet` collections that will be converted and stored. Each delphes
-collection gets its own `edm4hep` output collection under the same name. The jet
-constituents are taken from the global `ReconstructedParticle` collection (See [above](#reconstructedparticlecollections)).
-
-#### `MuonCollections`
-All Delphes `Muon` collections that will be converted and stored. Each delphes
-collection gets its own `edm4hep` output collection under the same name. Only
-particles from the global `ReconstructedParticle` collection are considered.
-
-#### `ElectronCollections`
-All Delphes `Electron` collections that will be converted and stored. Each
-delphes collection gets its own `edm4hep` output collection under the same name.
-Only particles from the global `ReconstructedParticle` collection are
-considered.
-
-#### `PhotonCollections`
-All Delphes `Photon` collections that will be converted and stored. Each delphes
-collection gets its own `edm4hep` output collection under the same name. Only
-particles from the global `ReconstructedParticle` collection are considered.
-
-#### `MissingETCollections`
-All Delphes `MissingET` collections that will be converted and stored. Each
-delphes collection gets its own `edm4hep` output collection under the same name.
-The filled collection contains only one element per event.
-
-#### `ScalarHTCollections`
-All Delphes `ScalarHT` collections that will be converted and stored. Each
-delphes collection gets its own `edm4hep` output collection under the same name.
-The filled collection contains only one element per event.
-
-
-The parameters **`RecoParticleCollectionName`** and
-**`MCRecoAssociationCollectionName`** control the names of the [global
-reconstructed particle colleciton](#reconstructedparticlecollections) and the
-collection with the `MCRecoParticleAssociation`s that can be used to find the
-`MCParticle`s associated to `ReconstructedParticle`s (and vice versa).
-
-### Class conversions
-
-The following table lists which Delphes classes correspond to which `edm4hep`
-classes. For the conversion the Delphes classes are taken from the `TreeWriter`
-(the `BranchClass` for each `Branch` defined in there)
-
-| Delphes       | `edm4hep`                                         |
-|---------------|---------------------------------------------------|
-| `GenParticle` | `MCParticle`                                      |
-| `Track`       | `ReconstructedParticle` with associated `Track`   |
-| `Tower`       | `ReconstructedParticle` with associated `Cluster` |
-| `Jet`         | `ReconstructedParticle`                           |
-| `Muon`        | `RecoParticleRef`                                 |
-| `Electron`    | `RecoParticleRef`                                 |
-| `Photon`      | `RecoParticleRef`                                 |
-| `MissingET`   | `ReconstructedParticle`                           |
-| `ScalarHT`    | `ParticleID`                                      |
-|  n/a          | `MCRecoParticleAssociation`                       |
-
-All Delphes classes that are not listed here are currently not converted.
-
-
-### Known issues
-
-- [ ] Double counting of Tracks and Clusters. In Delphes it is possible that a
-      `Tower` and a `Track` point back to the same generated particle. This is
-      currently not checked and each `Track` and `Tower` will be converted into
-      an `edm4hep::ReconstructedParticle`. Hence, it is possible to get more
-      than one per generated particle. This means that the number of jet
-      constituents will be differend between Jets in the Delphes output and in
-      the `edm4hep` output.
-
-- [ ] Not all available information is used in the conversion. An incomplet list
-      of things that are currently not available in `edm4hep`:
-  - [ ] Jet substructure variables (including subjets)
-  - [ ] Isolation variables
-  - [ ] Flavor tag information
-  - [ ] Tau tag information
+``` bash
+# list all available tests
+ctest -N
+# Run all tests
+ctest 
+# Run a specific test (matching on the name) with verbose output
+ctest -R PythiaConverter_ee_Z_bbbar --verbose
+```
