@@ -7,7 +7,7 @@ executables as well as integration into the [Key4hep
 framework](https://github.com/key4hep) via Gaudi.
 
 `k4SimDelphes` allows some configuration of its output, more information about
-this configuration can be found [in this doc](docs/output_config.md)
+this configuration can be found [in this doc](doc/output_config.md)
 
 ## Dependencies
 Required:
