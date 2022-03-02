@@ -29,6 +29,12 @@ int doit(int argc, char* argv[], DelphesInputReader& inputReader) {
   auto* modularDelphes = new Delphes("Delphes");
   const auto outputFile = inputReader.init(modularDelphes, argc, argv);
   if (outputFile.empty()) {
+    // Check if the user requested the help, and print the usage message and
+    // return succesfully in that case
+    if (argv[1] == std::string_view("--help") || argv[1] == std::string_view("-h")) {
+      std::cout << inputReader.getUsage() << std::endl;
+      return 0;
+    }
     std::cerr << inputReader.getUsage() << std::endl;
     return 1;
   }
