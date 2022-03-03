@@ -1,4 +1,4 @@
-//#define CATCH_CONFIG_FAST_COMPILE 
+//#define CATCH_CONFIG_FAST_COMPILE
 #define CATCH_CONFIG_MAIN
 #include <catch2/catch_all.hpp>
 
@@ -11,14 +11,11 @@
 
 using namespace k4SimDelphes;
 
-TEST_CASE( "k4SimDelphes Converter Tests", "[converter]" ) {
+TEST_CASE("k4SimDelphes Converter Tests", "[converter]") {
+  SECTION("DelphesEDM4HepConverter ctor");
+  DelphesEDM4HepConverter conv = DelphesEDM4HepConverter(getDelphesCard());
 
-    SECTION("DelphesEDM4HepConverter ctor");
-    DelphesEDM4HepConverter conv = DelphesEDM4HepConverter(getDelphesCard());
-
-    SECTION("DelphesEDM4HepConverter getCollections");
-    auto coll = conv.getCollections();
-    REQUIRE(coll.size() == 0);
-
-
+  SECTION("DelphesEDM4HepConverter getCollections");
+  auto coll = conv.getCollections();
+  REQUIRE(coll.size() == 0);
 }
