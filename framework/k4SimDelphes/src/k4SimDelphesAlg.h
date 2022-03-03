@@ -20,7 +20,7 @@ namespace edm4hep {
 
 /** @class k4SimDelphesAlg
  *
- *  Main Algorithm to run Delphes, getting MCParticle input, producing 
+ *  Main Algorithm to run Delphes, getting MCParticle input, producing
  *  ReconstructedParticle output.
  */
 class k4SimDelphesAlg : public GaudiAlgorithm {

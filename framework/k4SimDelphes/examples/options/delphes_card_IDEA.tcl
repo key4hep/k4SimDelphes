@@ -1,12 +1,12 @@
 ####################################################################                                l
-# FCC-ee IDEA detector model                                                                                      
-#                                                                                                    
-# Authors: Elisa Fontanesi, Lorenzo Pezzotti, Massimiliano Antonello                                 
+# FCC-ee IDEA detector model
+#
+# Authors: Elisa Fontanesi, Lorenzo Pezzotti, Massimiliano Antonello
 # email: efontane@bo.infn.it,
-#        lorenzo.pezzotti01@universitadipavia.it,                                                    
-#        m.antonello@uninsubria.it,                                                                  
-#####################################################################                                
-#       
+#        lorenzo.pezzotti01@universitadipavia.it,
+#        m.antonello@uninsubria.it,
+#####################################################################
+#
 #######################################
 # Order of execution of various modules
 #######################################
@@ -25,7 +25,7 @@ set ExecutionPath {
   ElectronMomentumSmearing
   MuonMomentumSmearing
 
-  TrackMerger 
+  TrackMerger
   Calorimeter
   EFlowMerger
 
@@ -44,7 +44,7 @@ set ExecutionPath {
   NeutrinoFilter
   GenJetFinder
   GenMissingET
-  
+
   FastJetFinder
 
   JetEnergyScale
@@ -100,7 +100,7 @@ module Efficiency ChargedHadronTrackingEfficiency {
     }
 }
 
-#	(pt <= 0.1)                                     * (0.00) + 
+#	(pt <= 0.1)                                     * (0.00) +
 #	(abs(eta) <= 3.0)               * (pt > 0.1)    * (1.00) +
 #	(abs(eta) > 3)                                  * (0.00)
 
@@ -121,7 +121,7 @@ module Efficiency ElectronTrackingEfficiency {
         (energy >= 0.5) * (abs(eta) <= 3.0)                    * (0.997) +
         (energy < 0.5 && energy >= 0.3) * (abs(eta) <= 3.0)    * (0.65) +
         (energy < 0.3) * (abs(eta) <= 3.0)                     * (0.06)
-    } 
+    }
 }
 
 
@@ -170,8 +170,8 @@ module MomentumSmearing ElectronMomentumSmearing {
     # Resolution given in dpT/pT.
     # IDEAdet
     set ResolutionFormula {
-        (abs(eta) <= 3.0)                   * sqrt(0.0001145^2 + 0.0002024^2*pt + (pt*2.093e-005)^2) 
-   }  
+        (abs(eta) <= 3.0)                   * sqrt(0.0001145^2 + 0.0002024^2*pt + (pt*2.093e-005)^2)
+   }
 }
 
 ###############################
@@ -185,7 +185,7 @@ module MomentumSmearing MuonMomentumSmearing {
     # Resolution given in dpT/pT.
     # IDEAdet
     set ResolutionFormula {
-        (abs(eta) <= 3.0)                   * sqrt(0.0001145^2 + 0.0002024^2*pt + (pt*2.093e-005)^2) 
+        (abs(eta) <= 3.0)                   * sqrt(0.0001145^2 + 0.0002024^2*pt + (pt*2.093e-005)^2)
     }
 }
 
@@ -202,9 +202,9 @@ module Merger TrackMerger {
 }
 
 
-#############                                                                                                                         
-# Calorimeter                                                                                                                                            
-#############                                                                                                                                           
+#############
+# Calorimeter
+#############
 module DualReadoutCalorimeter Calorimeter {
   set ParticleInputArray ParticlePropagator/stableParticles
   set TrackInputArray TrackMerger/tracks
@@ -226,48 +226,48 @@ module DualReadoutCalorimeter Calorimeter {
   set SmearTowerCenter true
     set pi [expr {acos(-1)}]
 
-    # Lists of the edges of each tower in eta and phi;                                                                                            
-    # each list starts with the lower edge of the first tower;                                                                                                    
-    # the list ends with the higher edged of the last tower.                                                                                        
-    # Barrel:  deta=0.02 towers up to |eta| <= 0.88 ( up to 45°)                                                                                        
-    # Endcaps: deta=0.02 towers up to |eta| <= 3.0 (8.6° = 100 mrad)                                                                                           
-    # Cell size: about 6 cm x 6 cm                                                  
+    # Lists of the edges of each tower in eta and phi;
+    # each list starts with the lower edge of the first tower;
+    # the list ends with the higher edged of the last tower.
+    # Barrel:  deta=0.02 towers up to |eta| <= 0.88 ( up to 45°)
+    # Endcaps: deta=0.02 towers up to |eta| <= 3.0 (8.6° = 100 mrad)
+    # Cell size: about 6 cm x 6 cm
 
-    #barrel:                                                                                        
+    #barrel:
     set PhiBins {}
     for {set i -120} {$i <= 120} {incr i} {
         add PhiBins [expr {$i * $pi/120}]
     }
-    #deta=0.02 units for |eta| <= 0.88                                                              
+    #deta=0.02 units for |eta| <= 0.88
     for {set i -44} {$i < 45} {incr i} {
         set eta [expr {$i * 0.02}]
         add EtaPhiBins $eta $PhiBins
     }
 
-    #endcaps:                                                                                       
+    #endcaps:
     set PhiBins {}
     for {set i -120} {$i <= 120} {incr i} {
         add PhiBins [expr {$i* $pi/120}]
     }
-    #deta=0.02 units for 0.88 < |eta| <= 3.0                                                        
-    #first, from -3.0 to -0.88                                                                      
+    #deta=0.02 units for 0.88 < |eta| <= 3.0
+    #first, from -3.0 to -0.88
     for {set i 1} {$i <=106} {incr i} {
         set eta [expr {-3.00 + $i * 0.02}]
         add EtaPhiBins $eta $PhiBins
     }
-    #same for 0.88 to 3.0                                                                           
+    #same for 0.88 to 3.0
     for  {set i 1} {$i <=106} {incr i} {
         set eta [expr {0.88 + $i * 0.02}]
         add EtaPhiBins $eta $PhiBins
     }
 
-    # default energy fractions {abs(PDG code)} {Fecal Fhcal}                                                                                  
+    # default energy fractions {abs(PDG code)} {Fecal Fhcal}
     add EnergyFraction {0} {0.0 1.0}
-    # energy fractions for e, gamma and pi0                                                                                                           
+    # energy fractions for e, gamma and pi0
     add EnergyFraction {11} {1.0 0.0}
     add EnergyFraction {22} {1.0 0.0}
     add EnergyFraction {111} {1.0 0.0}
-    # energy fractions for muon, neutrinos and neutralinos                                                                             
+    # energy fractions for muon, neutrinos and neutralinos
     add EnergyFraction {12} {0.0 0.0}
     add EnergyFraction {13} {0.0 0.0}
     add EnergyFraction {14} {0.0 0.0}
@@ -277,18 +277,18 @@ module DualReadoutCalorimeter Calorimeter {
     add EnergyFraction {1000025} {0.0 0.0}
     add EnergyFraction {1000035} {0.0 0.0}
     add EnergyFraction {1000045} {0.0 0.0}
-    # energy fractions for K0short and Lambda                                                                                                            
+    # energy fractions for K0short and Lambda
     add EnergyFraction {310} {0.3 0.7}
     add EnergyFraction {3122} {0.3 0.7}
 
 
-    # set ECalResolutionFormula {resolution formula as a function of eta and energy}                                
+    # set ECalResolutionFormula {resolution formula as a function of eta and energy}
     set ECalResolutionFormula {
     (abs(eta) <= 0.88 )                     * sqrt(energy^2*0.01^2 + energy*0.11^2)+
     (abs(eta) > 0.88 && abs(eta) <= 3.0)    * sqrt(energy^2*0.01^2 + energy*0.11^2)
     }
 
-    # set HCalResolutionFormula {resolution formula as a function of eta and energy}                                                
+    # set HCalResolutionFormula {resolution formula as a function of eta and energy}
     set HCalResolutionFormula {
     (abs(eta) <= 0.88 )                     * sqrt(energy^2*0.01^2 + energy*0.30^2)+
     (abs(eta) > 0.88 && abs(eta) <= 3.0)    * sqrt(energy^2*0.01^2 + energy*0.30^2)
@@ -365,7 +365,7 @@ module Efficiency ElectronEfficiency {
   # set EfficiencyFormula {efficiency formula as a function of eta and pt}
 
   # efficiency formula for electrons
-  set EfficiencyFormula {          
+  set EfficiencyFormula {
         (energy < 2.0)                                         * (0.000)+
         (energy >= 2.0) * (abs(eta) <= 0.88)                   * (0.99) +
         (energy >= 2.0) * (abs(eta) >0.88 && abs(eta) <= 3.0)  * (0.99) +
@@ -401,7 +401,7 @@ module Efficiency MuonEfficiency {
   # set EfficiencyFormula {efficiency as a function of eta and pt}
 
   # efficiency formula for muons
-  set EfficiencyFormula {                                   
+  set EfficiencyFormula {
         (energy < 2.0)                                         * (0.000)+
         (energy >= 2.0) * (abs(eta) <= 0.88)                   * (0.99) +
         (energy >= 2.0) * (abs(eta) >0.88 && abs(eta) <= 3.0)  * (0.99) +
@@ -549,7 +549,7 @@ module BTagging BTagging {
   set BitNumber 0
 
   # add EfficiencyFormula {abs(PDG code)} {efficiency formula as a function of eta and pt}
-  
+
   # default efficiency formula (misidentification rate)
   add EfficiencyFormula {0} {0.01}
 
@@ -605,12 +605,12 @@ module UniqueObjectFinder UniqueObjectFinder {
 
 module TreeWriter TreeWriter {
     # add Branch InputArray BranchName BranchClass
-    
+
     add Branch Delphes/allParticles Particle GenParticle
 
     add Branch TrackMerger/tracks Track Track
     add Branch Calorimeter/towers Tower Tower
-    
+
     add Branch Calorimeter/eflowTracks EFlowTrack Track
     add Branch Calorimeter/eflowPhotons EFlowPhoton Tower
     add Branch Calorimeter/eflowNeutralHadrons EFlowNeutralHadron Tower
@@ -618,17 +618,17 @@ module TreeWriter TreeWriter {
     add Branch Calorimeter/photons CaloPhoton Photon
     add Branch PhotonEfficiency/photons PhotonEff Photon
     add Branch PhotonIsolation/photons PhotonIso Photon
-    
+
     add Branch GenJetFinder/jets GenJet Jet
     add Branch GenMissingET/momentum GenMissingET MissingET
-    
+
     add Branch UniqueObjectFinder/jets Jet Jet
     add Branch UniqueObjectFinder/electrons Electron Electron
     add Branch UniqueObjectFinder/photons Photon Photon
     add Branch UniqueObjectFinder/muons Muon Muon
-    
-    add Branch JetEnergyScale/jets AntiKtJet Jet  
-    
+
+    add Branch JetEnergyScale/jets AntiKtJet Jet
+
     add Branch MissingET/momentum MissingET MissingET
     add Branch ScalarHT/energy ScalarHT ScalarHT
 }
