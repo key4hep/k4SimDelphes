@@ -1,7 +1,7 @@
 
 
 add_library(DelphesEDM4HepConverter SHARED src/DelphesEDM4HepConverter.cc)
-target_include_directories(DelphesEDM4HepConverter 
+target_include_directories(DelphesEDM4HepConverter
   SYSTEM PUBLIC ${DELPHES_INCLUDE_DIRS}
   )
 target_include_directories(DelphesEDM4HepConverter
@@ -10,7 +10,7 @@ target_include_directories(DelphesEDM4HepConverter
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
   )
 
-target_link_libraries(DelphesEDM4HepConverter 
+target_link_libraries(DelphesEDM4HepConverter
                         EDM4HEP::edm4hep
                         ${DELPHES_LIBRARY}
                         podio::podio
@@ -21,7 +21,7 @@ target_link_libraries(DelphesEDM4HepConverter
 install(DIRECTORY include/
         TYPE INCLUDE)
 
-install(TARGETS DelphesEDM4HepConverter 
+install(TARGETS DelphesEDM4HepConverter
         EXPORT k4SimDelphesTargets
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         PUBLIC_HEADER DESTINATION include/k4SimDelphes

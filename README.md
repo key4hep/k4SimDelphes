@@ -60,7 +60,7 @@ for `k4SimDelphes`. After the build has completed these can be run via
 # list all available tests
 ctest -N
 # Run all tests
-ctest 
+ctest
 # Run a specific test (matching on the name) with verbose output
 ctest -R PythiaConverter_ee_Z_bbbar --verbose
 ```

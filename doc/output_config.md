@@ -40,7 +40,7 @@ generated particles stored as `edm4hep::MCParticle`s. The converter works under
 the assumption that this is a non-overlapping list of particles. It is the users
 responsibility to make sure that this is the case. (See [known
 issues](#known-issues)).
-  
+
 ### `GenParticleCollection`
 All Delphes `GenParticle` collections that will be considered and stored as
 `edm4hep::MCParticle`. Each Delphes collection will be put into its own
@@ -126,5 +126,5 @@ All Delphes classes that are not listed here are currently not converted.
   - [ ] Isolation variables
   - [ ] Flavor tag information
   - [ ] Tau tag information
- 
+
 
