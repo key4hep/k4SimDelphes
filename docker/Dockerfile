@@ -22,20 +22,33 @@ RUN git clone https://github.com/iLCSoft/LCIO.git \
 
 WORKDIR ${HOME}
 
-## Delphes installation from local (unfortunate) due to TF1.h error in ROOT 6.22
-## details : https://cp3.irmp.ucl.ac.be/projects/delphes/ticket/1449
 
-RUN wget http://cp3.irmp.ucl.ac.be/downloads/Delphes-3.5.0.tar.gz \
-  && tar -zxf Delphes-3.5.0.tar.gz \
-  && cd Delphes-3.5.0 \
-  && make 
+RUN git clone https://github.com/delphes/delphes.git \
+    && mv delphes Delphes-3.5.0 \
+    && cd Delphes-3.5.0 \
+    && make
 
-#COPY Delphes-3.4.2 ${HOME}/Delphes-3.4.2
-#RUN cd ${HOME}/Delphes-3.4.2 \
-#    && make 
+
+## Installing with tarball is not suggested 
+#RUN wget http://cp3.irmp.ucl.ac.be/downloads/Delphes-3.5.0.tar.gz \
+#  && tar -zxf Delphes-3.5.0.tar.gz \
+#  && cd Delphes-3.5.0 \
+#  && make 
+
+
 
 ENV DELPHES_DIR /home/ilc/Delphes-3.5.0
 ENV LCIO /home/ilc/LCIO
+
+
+RUN cp $LCIO/examples/cpp/delphes2lcio -r . \
+  && source ${ROOTSYS}/bin/thisroot.sh  \
+  && cd delphes2lcio \
+  && mkdir build \
+  && cd build \
+  && cmake -D LCIO_DIR=$LCIO .. \
+  && make -j 4 install 
+
 
 COPY requirements.txt requirements.txt 
 RUN pip install --upgrade pip \
@@ -74,10 +87,3 @@ RUN git clone https://github.com/key4hep/k4SimDelphes.git; cd k4SimDelphes; mkdi
 
 
 COPY init_env.sh ${HOME}
-
-
-
-
-
-
-

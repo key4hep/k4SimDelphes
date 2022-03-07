@@ -7,7 +7,7 @@ This image contains:
 3. Delphes (3.5.0)
 4. Podio
 5. EDM4HEP
-6. k4SimDelphes
+6. k4SimDelphes (with support for reading STDHEP files in standalone mode only)
 
 
 if you want to build the image yourself,

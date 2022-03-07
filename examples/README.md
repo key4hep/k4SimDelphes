@@ -114,6 +114,7 @@ modified      /home/ilc/.bashrc
 source .bashrc 
 conda activate root_env
 source init_env.sh 
+cd wdir
 ```
 Ready to generate output file
 ```bash
@@ -167,10 +168,3 @@ source /home/ilc/init_env.sh
 cd $home
 ```
 After this stage, commands are the same. Just watch out: You might need to tunnel working groups server's network (i.e cern.ch)
-
-
-
-
-
-
-
