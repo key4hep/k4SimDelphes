@@ -1,8 +1,8 @@
  ################################################################################
  #    Copyright (C) 2014 GSI Helmholtzzentrum fuer Schwerionenforschung GmbH    #
  #                                                                              #
- #              This software is distributed under the terms of the             # 
- #         GNU Lesser General Public Licence version 3 (LGPL) version 3,        #  
+ #              This software is distributed under the terms of the             #
+ #         GNU Lesser General Public Licence version 3 (LGPL) version 3,        #
  #                  copied verbatim in the file "LICENSE"                       #
  ################################################################################
 # - Try to find EvtGen instalation
@@ -23,7 +23,7 @@ FIND_PATH(EVTGEN_LIBRARY_DIR NAMES libEvtGen.so
 
 set(EVTGEN_LIBRARIES ${EVTGEN_LIBRARY_DIR}/libEvtGen.so ${EVTGEN_LIBRARY_DIR}/libEvtGenExternal.so)
 
-Find_Path(EVTGENDATA NAMES evt.pdl 
+Find_Path(EVTGENDATA NAMES evt.pdl
   HINTS ${searchpath}
   PATH_SUFFIXES share)
 

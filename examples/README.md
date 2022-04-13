@@ -77,7 +77,7 @@ corresponding filename and produce a new `.root` file with some histograms that
 should ideally be equivalent (but are currently not).
 
     root -q 'path/to/EDM4hep/plugins/delphes/examples/read_delphes.C("delphes_test_output.root")'
-    root -q 'path/to/EDM4hep/plugins/delphes/examples/read_edm4hep.C("edm4hep_test_output.root")' 
+    root -q 'path/to/EDM4hep/plugins/delphes/examples/read_edm4hep.C("edm4hep_test_output.root")'
 
 After this the files `histograms_delphes.root` and `histograms_edm4hep.root`
 should be present and filled with some histograms that can be compared. The

@@ -10,14 +10,12 @@
 
 //EvtGen
 #include "EvtGen/EvtGen.hh"
-#include "EvtGenBase/EvtMTRandomEngine.hh"
 #include "EvtGenBase/EvtAbsRadCorr.hh"
 #include "EvtGenBase/EvtDecayBase.hh"
+#include "EvtGenBase/EvtMTRandomEngine.hh"
 
 //std
 #include <cstdlib>
-
-
 
 /** @class PythiaEvtGen_Interface PythiaEvtGen_Interface.h k4simdelphes/PythiaEvtGen_Interface.h
  *
@@ -28,57 +26,51 @@
 class PythiaEvtGen_Interface {
 public:
   /// Standard constructor
-  PythiaEvtGen_Interface(Pythia8::Pythia *p, std::string pdf, std::string evt_pdl, int seed );
+  PythiaEvtGen_Interface(Pythia8::Pythia* p, std::string pdf, std::string evt_pdl, int seed);
 
-  virtual ~PythiaEvtGen_Interface( ); ///< Destructor
+  virtual ~PythiaEvtGen_Interface();  ///< Destructor
 
   //void add_decays(std::string decayfile, int seed, int motherID);
   //void add_decays(std::string decayfile, int motherID);
   void add_decays(std::string decayfile, int motherID, std::string name);
-  
-  void add_inclusive(std::string decayfile,int seed);
-  void add_inclusive(std::string decayfile);
 
+  void add_inclusive(std::string decayfile, int seed);
+  void add_inclusive(std::string decayfile);
 
   void decay_signals();
   void decay();
 
   bool check_Signal_Appereance();
-  void set_debug(bool t=true)  {debug=t;};
-  void set_verbose(bool t=true)  {verbose=t;};
+  void set_debug(bool t = true) { debug = t; };
+  void set_verbose(bool t = true) { verbose = t; };
 
-  void set_regenerate(bool t=true) {regenerate=t;};
+  void set_regenerate(bool t = true) { regenerate = t; };
 
-  void UpdatePythiaEvent(Pythia8::Particle *part1, EvtParticle *Evtpart );
-  
-  void set_rehadronize(int i) { n_rehadronize=i;};
+  void UpdatePythiaEvent(Pythia8::Particle* part1, EvtParticle* Evtpart);
 
+  void set_rehadronize(int i) { n_rehadronize = i; };
 
 protected:
-
 private:
-  
   //  std::vector<EvtGen*> EG_gens;
-  EvtGen* evtgen;
-  std::vector<int> motherIDs;
+  EvtGen*                  evtgen;
+  std::vector<int>         motherIDs;
   std::vector<std::string> sig_names;
-  Pythia8::Pythia *pythia;
-  std::string particleDataFile;
-  int init_seed;
- 
+  Pythia8::Pythia*         pythia;
+  std::string              particleDataFile;
+  int                      init_seed;
+
   std::string pdl;
   //int **signal_map;
   std::vector<std::vector<int>> signal_map;
 
   std::vector<int> NOfSignal_list;
 
-  bool debug;
+  bool             debug;
   std::vector<int> B_ids;
-  bool verbose;
+  bool             verbose;
 
   bool regenerate;
-  int n_rehadronize; // number of tries to rehadronize before regenerating
-  
-
+  int  n_rehadronize;  // number of tries to rehadronize before regenerating
 };
-#endif // K4SIMDELPHES_PYTHIAEVTGEN_INTERFACE_H
+#endif  // K4SIMDELPHES_PYTHIAEVTGEN_INTERFACE_H
