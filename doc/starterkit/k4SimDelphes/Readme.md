@@ -38,6 +38,8 @@ The arguments in this case are (in the order they are passed)
 - The pythia card that describes the physics process [as described above](#setup-and-prerequisites)
 - The name of the output file that will be created and that will contain the generated and simulated events in EDM4hep format
 
+Setting the environment variable `K4SIMDELPHES_BATCH_MODE` to anything other an empty string will reduce the verbosity of the program a bit.
+
 ### Other standalone executables
 k4SimDelphes provides other standalone executables that can read different inputs. They offer the same functionality as the ones available from Delphes:
 - `DelphesSTDHEP_EDM4HEP` - for reading STDHEP inputs

@@ -64,6 +64,7 @@ template <typename WriterT = podio::ROOTWriter> int doit(int argc, char* argv[],
     modularDelphes->Clear();
 
     const int         maxEvents = confReader->GetInt("::MaxEvents", 0);
+    const char* batchMode = std::getenv("K4SIMDELPHES_BATCH_MODE");
     ExRootProgressBar progressBar(-1);
     Int_t             eventCounter = 0;
     for (Int_t entry = 0; !inputReader.finished() && (maxEvents > 0 ? entry < maxEvents : true) && !interrupted;
@@ -79,12 +80,15 @@ template <typename WriterT = podio::ROOTWriter> int doit(int argc, char* argv[],
       eventStore.clearCollections();
 
       modularDelphes->Clear();
-      progressBar.Update(eventCounter, eventCounter);
+      if (!batchMode) {
+        progressBar.Update(eventCounter, eventCounter);
+      }
       eventCounter++;
     }
 
-    progressBar.Update(eventCounter, eventCounter, true);
+    if (!batchMode) {
     progressBar.Finish();
+    }
     podioWriter.finish();
     modularDelphes->Finish();
     std::cout << "** Exiting ..." << std::endl;
