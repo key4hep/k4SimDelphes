@@ -531,6 +531,10 @@ edm4hep::Track convertTrack(Track const* cand, const double magFieldBz)
 
   track.addToTrackStates(trackState);
 
+  float radiusOfInnermostHit = sqrt( pow( cand->XFirstHit, 2) + pow( cand->YFirstHit, 2) );
+  track.setRadiusOfInnermostHit( radiusOfInnermostHit );
+
+
   return track;
 }
 
