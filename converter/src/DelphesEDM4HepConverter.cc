@@ -8,6 +8,10 @@
 #include "edm4hep/ParticleIDCollection.h"
 #include "edm4hep/ReconstructedParticleCollection.h"
 #include "edm4hep/TrackCollection.h"
+#include "edm4hep/TrackerHitCollection.h"
+#include "edm4hep/Vector3d.h"
+
+#include "podio/UserDataCollection.h"
 
 #include "classes/DelphesClasses.h"
 
@@ -92,6 +96,8 @@ namespace k4SimDelphes {
           contains(RECO_TRACK_OUTPUT, branch.className.c_str())) {
         registerGlobalCollections();
         createCollection<edm4hep::TrackCollection>(branch.name);
+	m_userdatacollections.emplace(std::string(branch.name) + "_dNdx", new podio::UserDataCollection<float>());
+	m_userdatacollections.emplace(std::string(branch.name) + "_L", new podio::UserDataCollection<float>());
         m_processFunctions.emplace(branch.name, &DelphesEDM4HepConverter::processTracks);
       }
 
@@ -186,15 +192,36 @@ namespace k4SimDelphes {
   void DelphesEDM4HepConverter::processTracks(const TClonesArray* delphesCollection, std::string_view const branch) {
     auto* particleCollection = static_cast<edm4hep::ReconstructedParticleCollection*>(m_collections[m_recoCollName]);
     auto* trackCollection    = static_cast<edm4hep::TrackCollection*>(m_collections[branch]);
+    //UserData for overflowing information
+    podio::UserDataCollection<float>* dndxCollection =   m_userdatacollections.at(std::string(branch) + "_dNdx");
+    podio::UserDataCollection<float>* pathLengthCollection = m_userdatacollections.at(std::string(branch) + "_L");
+
     auto* mcRecoRelations =
         static_cast<edm4hep::MCRecoParticleAssociationCollection*>(m_collections[m_mcRecoAssocCollName]);
     auto* idCollection = static_cast<edm4hep::ParticleIDCollection*>(m_collections[m_particleIDName]);
+    auto* trackerHitColl = static_cast<edm4hep::TrackerHitCollection*>(m_collections[TRACKERHIT_OUTPUT_NAME]);
 
     for (auto iCand = 0; iCand < delphesCollection->GetEntries(); ++iCand) {
       auto* delphesCand = static_cast<Track*>(delphesCollection->At(iCand));
 
       auto track = convertTrack(delphesCand, m_magneticFieldBz);
+      auto trackerHit1 = trackerHitColl->create();
+      trackerHit1.setTime(delphesCand->T);
+      edm4hep::Vector3d position1(delphesCand->XFirstHit, delphesCand->YFirstHit, delphesCand->ZFirstHit);
+      trackerHit1.setPosition(position1);
+      track.addToTrackerHits(trackerHit1);
+
+      auto trackerHit2 = trackerHitColl->create();
+      trackerHit2.setTime(delphesCand->TOuter);
+      edm4hep::Vector3d position2(delphesCand->XOuter, delphesCand->YOuter, delphesCand->ZOuter);
+      trackerHit2.setPosition(position2);
+      track.addToTrackerHits(trackerHit2);
+
+      track.setRadiusOfInnermostHit(sqrt(delphesCand->XFirstHit*delphesCand->XFirstHit+delphesCand->YFirstHit*delphesCand->YFirstHit));
+
       trackCollection->push_back(track);
+      dndxCollection->push_back(delphesCand->dNdx);
+      pathLengthCollection->push_back(delphesCand->L);
 
       auto id = idCollection->create();
 
@@ -415,6 +442,9 @@ namespace k4SimDelphes {
     }
     if (m_collections.find(m_particleIDName) == m_collections.end()) {
       createCollection<edm4hep::ParticleIDCollection>(m_particleIDName);
+    }
+    if (m_collections.find(TRACKERHIT_OUTPUT_NAME) == m_collections.end()) {
+      createCollection<edm4hep::TrackerHitCollection>(TRACKERHIT_OUTPUT_NAME);
     }
   }
 
