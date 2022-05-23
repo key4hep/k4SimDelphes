@@ -44,7 +44,7 @@ namespace k4SimDelphes {
   /**
    * Classes that will be stored as TrackerHits
    */
-  constexpr std::string_view TRACKERHIT_OUTPUT_NAME = "TrackerHits"; 
+  constexpr std::string_view TRACKERHIT_OUTPUT_NAME = "TrackerHits";
 
   struct BranchSettings {
     std::string input;
