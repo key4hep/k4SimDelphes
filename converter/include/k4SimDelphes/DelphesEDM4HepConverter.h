@@ -3,6 +3,7 @@
 
 // podio
 #include "podio/CollectionBase.h"
+#include "podio/UserDataCollection.h"
 
 // edm4hep
 #include "edm4hep/MCParticle.h"
@@ -40,6 +41,11 @@ namespace k4SimDelphes {
    */
   constexpr std::array<std::string_view, 1> RECO_CLUSTER_OUTPUT = {"Tower"};
 
+  /**
+   * Classes that will be stored as TrackerHits
+   */
+  constexpr std::string_view TRACKERHIT_OUTPUT_NAME = "TrackerHits";
+
   struct BranchSettings {
     std::string input;
     std::string name;
@@ -69,6 +75,9 @@ namespace k4SimDelphes {
 
     inline std::unordered_map<std::string_view, podio::CollectionBase*> getCollections() { return m_collections; }
 
+    inline std::unordered_map<std::string, podio::UserDataCollection<float>*> getUserDataCollections() {
+      return m_userdatacollections;
+    }
     void processParticles(const TClonesArray* delphesCollection, std::string_view const branch);
     void processTracks(const TClonesArray* delphesCollection, std::string_view const branch);
     void processClusters(const TClonesArray* delphesCollection, std::string_view const branch);
@@ -106,9 +115,10 @@ namespace k4SimDelphes {
 
     using ProcessFunction = void (DelphesEDM4HepConverter::*)(const TClonesArray*, std::string_view const);
 
-    std::vector<BranchSettings>                                  m_branches;
-    std::unordered_map<std::string_view, podio::CollectionBase*> m_collections;
-    std::unordered_map<std::string_view, ProcessFunction>        m_processFunctions;
+    std::vector<BranchSettings>                                        m_branches;
+    std::unordered_map<std::string_view, podio::CollectionBase*>       m_collections;
+    std::unordered_map<std::string, podio::UserDataCollection<float>*> m_userdatacollections;
+    std::unordered_map<std::string_view, ProcessFunction>              m_processFunctions;
 
     double m_magneticFieldBz;  // necessary for determining track parameters
 
