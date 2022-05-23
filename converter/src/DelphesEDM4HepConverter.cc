@@ -224,6 +224,12 @@ namespace k4SimDelphes {
       dndxCollection->push_back(delphesCand->dNdx);
       pathLengthCollection->push_back(delphesCand->L);
 
+      edm4hep::Quantity dxQuantities{};
+      dxQuantities.type  = 0;
+      dxQuantities.value = delphesCand->dNdx;
+
+      track.addToQuantity(dxQuantities);
+
       auto id = idCollection->create();
 
       auto cand = particleCollection->create();
