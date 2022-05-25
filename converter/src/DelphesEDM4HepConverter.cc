@@ -193,7 +193,6 @@ namespace k4SimDelphes {
     auto* particleCollection = static_cast<edm4hep::ReconstructedParticleCollection*>(m_collections[m_recoCollName]);
     auto* trackCollection    = static_cast<edm4hep::TrackCollection*>(m_collections[branch]);
     //UserData for overflowing information
-    //podio::UserDataCollection<float>* dndxCollection       = m_userdatacollections.at(std::string(branch) + "_dNdx");
     podio::UserDataCollection<float>* pathLengthCollection = m_userdatacollections.at(std::string(branch) + "_L");
 
     auto* mcRecoRelations =
@@ -221,7 +220,6 @@ namespace k4SimDelphes {
           sqrt(delphesCand->XFirstHit * delphesCand->XFirstHit + delphesCand->YFirstHit * delphesCand->YFirstHit));
 
       trackCollection->push_back(track);
-      //dndxCollection->push_back(delphesCand->dNdx);
       pathLengthCollection->push_back(delphesCand->L);
 
       edm4hep::Quantity dxQuantities{};
