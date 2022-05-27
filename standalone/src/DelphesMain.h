@@ -2,8 +2,8 @@
 #include "k4SimDelphes/DelphesEDM4HepConverter.h"
 #include "k4SimDelphes/DelphesEDM4HepOutputConfiguration.h"
 
-#include "podio/EventStore.h"
-#include "podio/ROOTWriter.h"
+#include "podio/Frame.h"
+#include "podio/ROOTFrameWriter.h"
 
 #include "ExRootAnalysis/ExRootConfReader.h"
 #include "ExRootAnalysis/ExRootProgressBar.h"
@@ -16,7 +16,7 @@
 static bool interrupted = false;
 void        SignalHandler(int /*si*/) { interrupted = true; }
 
-template <typename WriterT = podio::ROOTWriter> int doit(int argc, char* argv[], DelphesInputReader& inputReader) {
+template <typename WriterT = podio::ROOTFrameWriter> int doit(int argc, char* argv[], DelphesInputReader& inputReader) {
   using namespace k4SimDelphes;
 
   // We can't make this a unique_ptr because it interferes with whatever ROOT is
@@ -34,6 +34,8 @@ template <typename WriterT = podio::ROOTWriter> int doit(int argc, char* argv[],
     return 1;
   }
 
+  WriterT podioWriter(outputFile);
+
   signal(SIGINT, SignalHandler);
   try {
     auto confReader = std::make_unique<ExRootConfReader>();
@@ -44,16 +46,6 @@ template <typename WriterT = podio::ROOTWriter> int doit(int argc, char* argv[],
     const auto              edm4hepOutputSettings = getEDM4hepOutputSettings(argv[2]);
     DelphesEDM4HepConverter edm4hepConverter(branches, edm4hepOutputSettings,
                                              confReader->GetDouble("ParticlePropagator::Bz", 0));
-
-    // Now that the converter is setup, we can also actually register the
-    // collections with the EventStore and add them to the writer for output
-    podio::EventStore eventStore;
-    WriterT           podioWriter(outputFile, &eventStore);
-    auto              collections = edm4hepConverter.getCollections();
-    for (auto& c : collections) {
-      eventStore.registerCollection(std::string(c.first), c.second);
-      podioWriter.registerForWrite(std::string(c.first));
-    }
 
     // has to happen before InitTask
     TObjArray* allParticleOutputArray    = modularDelphes->ExportArray("allParticles");
@@ -75,8 +67,20 @@ template <typename WriterT = podio::ROOTWriter> int doit(int argc, char* argv[],
 
       modularDelphes->ProcessTask();
       edm4hepConverter.process(inputReader.converterTree());
-      podioWriter.writeEvent();
-      eventStore.clearCollections();
+
+      // Put everything into a Frame and write it out
+      podio::Frame frame;
+      for (auto& [name, coll] : edm4hepConverter.getCollections()) {
+        frame.put(std::move(coll), name);
+
+        // The first time around we have to register the collections
+        // TODO: Fix upstream in podio to use a better default
+        if (entry == 0) {
+          podioWriter.registerForWrite(name);
+        }
+      }
+
+      podioWriter.writeFrame(frame);
 
       modularDelphes->Clear();
       progressBar.Update(eventCounter, eventCounter);
