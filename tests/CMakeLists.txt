@@ -29,7 +29,7 @@ function(ADD_COMPARISON_TEST name converter)
     COMMAND bash -x ${CMAKE_SOURCE_DIR}/tests/testDriver.sh ${converter} ${ARGN})
 
   set_property(TEST ${name} PROPERTY ENVIRONMENT
-    LD_LIBRARY_PATH=$<TARGET_FILE_DIR:DelphesEDM4HepConverter>:$<TARGET_FILE_DIR:EDM4HEP::edm4hepDict>:$<TARGET_FILE_DIR:podio::podioDict>:$ENV{LD_LIBRARY_PATH}
+    LD_LIBRARY_PATH=$<TARGET_FILE_DIR:DelphesEDM4HepConverter>:$<TARGET_FILE_DIR:EDM4HEP::edm4hepDict>:$<TARGET_FILE_DIR:podio::podioDict>:$<TARGET_FILE_DIR:ROOT::RIO>:$ENV{LD_LIBRARY_PATH}
     PATH=$<TARGET_FILE_DIR:${converter}>:${DELPHES_BINARY_DIR}:$ENV{PATH}
     COMPARE=$<TARGET_FILE:compare_delphes_converter_outputs>
     )
