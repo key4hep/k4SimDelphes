@@ -3,7 +3,6 @@
 
 // podio
 #include "podio/CollectionBase.h"
-#include "podio/UserDataCollection.h"
 
 // edm4hep
 #include "edm4hep/MCParticle.h"
@@ -75,10 +74,6 @@ namespace k4SimDelphes {
 
     inline const std::unordered_map<std::string, podio::CollectionBase*>& getCollections() { return m_collections; }
 
-    inline std::unordered_map<std::string, podio::UserDataCollection<float>*> getUserDataCollections() {
-      return m_userdatacollections;
-    }
-
     void processParticles(const TClonesArray* delphesCollection, std::string const& branch);
     void processTracks(const TClonesArray* delphesCollection, std::string const& branch);
     void processClusters(const TClonesArray* delphesCollection, std::string const& branch);
@@ -116,10 +111,9 @@ namespace k4SimDelphes {
 
     using ProcessFunction = void (DelphesEDM4HepConverter::*)(const TClonesArray*, std::string const&);
 
-    std::vector<BranchSettings>                                        m_branches;
-    std::unordered_map<std::string, podio::CollectionBase*>            m_collections;
-    std::unordered_map<std::string, podio::UserDataCollection<float>*> m_userdatacollections;
-    std::unordered_map<std::string_view, ProcessFunction>              m_processFunctions;
+    std::vector<BranchSettings>                             m_branches;
+    std::unordered_map<std::string, podio::CollectionBase*> m_collections;
+    std::unordered_map<std::string_view, ProcessFunction>   m_processFunctions;
 
     double m_magneticFieldBz;  // necessary for determining track parameters
 

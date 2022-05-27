@@ -96,8 +96,8 @@ namespace k4SimDelphes {
           contains(RECO_TRACK_OUTPUT, branch.className.c_str())) {
         registerGlobalCollections();
         createCollection<edm4hep::TrackCollection>(branch.name);
-        m_userdatacollections.emplace(std::string(branch.name) + "_dNdx", new podio::UserDataCollection<float>());
-        m_userdatacollections.emplace(std::string(branch.name) + "_L", new podio::UserDataCollection<float>());
+        createCollection<podio::UserDataCollection<float>>(branch.name + "_dNdx");
+        createCollection<podio::UserDataCollection<float>>(branch.name + "_L");
         m_processFunctions.emplace(branch.name, &DelphesEDM4HepConverter::processTracks);
       }
 
@@ -193,8 +193,8 @@ namespace k4SimDelphes {
     auto* particleCollection = static_cast<edm4hep::ReconstructedParticleCollection*>(m_collections[m_recoCollName]);
     auto* trackCollection    = static_cast<edm4hep::TrackCollection*>(m_collections[branch]);
     //UserData for overflowing information
-    podio::UserDataCollection<float>* dndxCollection       = m_userdatacollections.at(std::string(branch) + "_dNdx");
-    podio::UserDataCollection<float>* pathLengthCollection = m_userdatacollections.at(std::string(branch) + "_L");
+    auto* dndxCollection       = static_cast<podio::UserDataCollection<float>*>(m_collections[branch + "_dNdx"]);
+    auto* pathLengthCollection = static_cast<podio::UserDataCollection<float>*>(m_collections[branch + "_L"]);
 
     auto* mcRecoRelations =
         static_cast<edm4hep::MCRecoParticleAssociationCollection*>(m_collections[m_mcRecoAssocCollName]);
