@@ -160,7 +160,7 @@ namespace k4SimDelphes {
     m_recoParticleGenIds.clear();
   }
 
-  void DelphesEDM4HepConverter::processParticles(const TClonesArray* delphesCollection, std::string_view const branch) {
+  void DelphesEDM4HepConverter::processParticles(const TClonesArray* delphesCollection, std::string const& branch) {
     auto* collection = static_cast<edm4hep::MCParticleCollection*>(m_collections[branch]);
     for (int iCand = 0; iCand < delphesCollection->GetEntries(); ++iCand) {
       auto* delphesCand = static_cast<GenParticle*>(delphesCollection->At(iCand));
@@ -189,7 +189,7 @@ namespace k4SimDelphes {
     }
   }
 
-  void DelphesEDM4HepConverter::processTracks(const TClonesArray* delphesCollection, std::string_view const branch) {
+  void DelphesEDM4HepConverter::processTracks(const TClonesArray* delphesCollection, std::string const& branch) {
     auto* particleCollection = static_cast<edm4hep::ReconstructedParticleCollection*>(m_collections[m_recoCollName]);
     auto* trackCollection    = static_cast<edm4hep::TrackCollection*>(m_collections[branch]);
     //UserData for overflowing information
@@ -251,7 +251,7 @@ namespace k4SimDelphes {
     }
   }
 
-  void DelphesEDM4HepConverter::processClusters(const TClonesArray* delphesCollection, std::string_view const branch) {
+  void DelphesEDM4HepConverter::processClusters(const TClonesArray* delphesCollection, std::string const& branch) {
     auto* particleCollection = static_cast<edm4hep::ReconstructedParticleCollection*>(m_collections[m_recoCollName]);
     auto* clusterCollection  = static_cast<edm4hep::ClusterCollection*>(m_collections[branch]);
     auto* mcRecoRelations =
@@ -296,7 +296,7 @@ namespace k4SimDelphes {
     }
   }
 
-  void DelphesEDM4HepConverter::processJets(const TClonesArray* delphesCollection, std::string_view const branch) {
+  void DelphesEDM4HepConverter::processJets(const TClonesArray* delphesCollection, std::string const& branch) {
     auto* jetCollection = static_cast<edm4hep::ReconstructedParticleCollection*>(m_collections[branch]);
     auto* idCollection  = static_cast<edm4hep::ParticleIDCollection*>(m_collections[m_particleIDName]);
 
@@ -332,8 +332,8 @@ namespace k4SimDelphes {
   }
 
   template <typename DelphesT>
-  void DelphesEDM4HepConverter::fillReferenceCollection(const TClonesArray*    delphesCollection,
-                                                        std::string_view const branch, std::string_view const type) {
+  void DelphesEDM4HepConverter::fillReferenceCollection(const TClonesArray* delphesCollection,
+                                                        std::string const& branch, std::string_view const type) {
     auto* collection = static_cast<edm4hep::ReconstructedParticleCollection*>(m_collections[branch]);
 
     for (auto iCand = 0; iCand < delphesCollection->GetEntries(); ++iCand) {
@@ -359,7 +359,7 @@ namespace k4SimDelphes {
     }
   }
 
-  void DelphesEDM4HepConverter::processMissingET(const TClonesArray* delphesCollection, std::string_view const branch) {
+  void DelphesEDM4HepConverter::processMissingET(const TClonesArray* delphesCollection, std::string const& branch) {
     auto* collection  = static_cast<edm4hep::ReconstructedParticleCollection*>(m_collections[branch]);
     auto* delphesCand = static_cast<MissingET*>(delphesCollection->At(0));
 
@@ -370,7 +370,7 @@ namespace k4SimDelphes {
     // cand.setMass(delphesCand->Mass);
   }
 
-  void DelphesEDM4HepConverter::processScalarHT(const TClonesArray* delphesCollection, std::string_view const branch) {
+  void DelphesEDM4HepConverter::processScalarHT(const TClonesArray* delphesCollection, std::string const& branch) {
     auto* collection  = static_cast<edm4hep::ParticleIDCollection*>(m_collections[branch]);
     auto* delphesCand = static_cast<ScalarHT*>(delphesCollection->At(0));
 
