@@ -225,7 +225,7 @@ namespace k4SimDelphes {
       dxQuantities.type  = 0;
       dxQuantities.value = delphesCand->dNdx;
 
-      track.addToQuantity(dxQuantities);
+      track.addToDxQuantities(dxQuantities);
 
       auto id = idCollection->create();
 
