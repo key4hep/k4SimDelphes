@@ -72,15 +72,8 @@ template <typename WriterT = podio::ROOTFrameWriter> int doit(int argc, char* ar
       podio::Frame frame;
       for (auto& [name, coll] : edm4hepConverter.getCollections()) {
         frame.put(std::move(coll), name);
-
-        // The first time around we have to register the collections
-        // TODO: Fix upstream in podio to use a better default
-        if (entry == 0) {
-          podioWriter.registerForWrite(name);
-        }
       }
-
-      podioWriter.writeFrame(frame);
+      podioWriter.writeFrame(frame, "events");
 
       modularDelphes->Clear();
       progressBar.Update(eventCounter, eventCounter);
