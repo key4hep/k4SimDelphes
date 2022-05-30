@@ -83,6 +83,10 @@ namespace k4SimDelphes {
      */
     CollectionMapT getCollections() { return std::move(m_collections); }
 
+    edm4hep::MCRecoParticleAssociationCollection* createExternalRecoAssociations(
+        const std::unordered_map<UInt_t, edm4hep::MCParticle>& mc_map);
+
+  private:
     void processParticles(const TClonesArray* delphesCollection, std::string const& branch);
     void processTracks(const TClonesArray* delphesCollection, std::string const& branch);
     void processClusters(const TClonesArray* delphesCollection, std::string const& branch);
@@ -100,9 +104,6 @@ namespace k4SimDelphes {
     void processElectrons(const TClonesArray* delphesCollection, std::string const& branch) {
       fillReferenceCollection<Electron>(delphesCollection, branch, "electron");
     }
-
-    edm4hep::MCRecoParticleAssociationCollection* createExternalRecoAssociations(
-        const std::unordered_map<UInt_t, edm4hep::MCParticle>& mc_map);
 
   private:
     template <typename DelphesT>
