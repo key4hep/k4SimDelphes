@@ -55,12 +55,6 @@ template <typename WriterT = podio::ROOTWriter> int doit(int argc, char* argv[],
       podioWriter.registerForWrite(std::string(c.first));
     }
 
-    auto userdatacollections = edm4hepConverter.getUserDataCollections();
-    for (auto& c : userdatacollections) {
-      eventStore.registerCollection(std::string(c.first), c.second);
-      podioWriter.registerForWrite(std::string(c.first));
-    }
-
     // has to happen before InitTask
     TObjArray* allParticleOutputArray    = modularDelphes->ExportArray("allParticles");
     TObjArray* stableParticleOutputArray = modularDelphes->ExportArray("stableParticles");
