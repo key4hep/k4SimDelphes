@@ -181,16 +181,14 @@ namespace k4SimDelphes {
   }
 
   void DelphesEDM4HepConverter::processTracks(const TClonesArray* delphesCollection, std::string const& branch) {
-    auto* particleCollection =
-        static_cast<edm4hep::ReconstructedParticleCollection*>(m_collections[m_recoCollName].get());
-    auto* trackCollection = createCollection<edm4hep::TrackCollection>(branch);
+    auto* particleCollection = getCollection<edm4hep::ReconstructedParticleCollection>(m_recoCollName);
+    auto* trackCollection    = createCollection<edm4hep::TrackCollection>(branch);
     //UserData for overflowing information
     auto* pathLengthCollection = createCollection<podio::UserDataCollection<float>>(branch + "_L");
 
-    auto* mcRecoRelations =
-        static_cast<edm4hep::MCRecoParticleAssociationCollection*>(m_collections[m_mcRecoAssocCollName].get());
-    auto* idCollection   = static_cast<edm4hep::ParticleIDCollection*>(m_collections[m_particleIDName].get());
-    auto* trackerHitColl = static_cast<edm4hep::TrackerHitCollection*>(m_collections[TRACKERHIT_OUTPUT_NAME].get());
+    auto* mcRecoRelations = getCollection<edm4hep::MCRecoParticleAssociationCollection>(m_mcRecoAssocCollName);
+    auto* idCollection    = getCollection<edm4hep::ParticleIDCollection>(m_particleIDName);
+    auto* trackerHitColl  = getCollection<edm4hep::TrackerHitCollection>(TRACKERHIT_OUTPUT_NAME);
 
     for (auto iCand = 0; iCand < delphesCollection->GetEntries(); ++iCand) {
       auto* delphesCand = static_cast<Track*>(delphesCollection->At(iCand));
@@ -248,11 +246,9 @@ namespace k4SimDelphes {
   }
 
   void DelphesEDM4HepConverter::processClusters(const TClonesArray* delphesCollection, std::string const& branch) {
-    auto* particleCollection =
-        static_cast<edm4hep::ReconstructedParticleCollection*>(m_collections[m_recoCollName].get());
-    auto* clusterCollection = createCollection<edm4hep::ClusterCollection>(branch);
-    auto* mcRecoRelations =
-        static_cast<edm4hep::MCRecoParticleAssociationCollection*>(m_collections[m_mcRecoAssocCollName].get());
+    auto* particleCollection = getCollection<edm4hep::ReconstructedParticleCollection>(m_recoCollName);
+    auto* clusterCollection  = createCollection<edm4hep::ClusterCollection>(branch);
+    auto* mcRecoRelations    = getCollection<edm4hep::MCRecoParticleAssociationCollection>(m_mcRecoAssocCollName);
 
     for (auto iCand = 0; iCand < delphesCollection->GetEntries(); ++iCand) {
       auto* delphesCand = static_cast<Tower*>(delphesCollection->At(iCand));
@@ -295,7 +291,7 @@ namespace k4SimDelphes {
 
   void DelphesEDM4HepConverter::processJets(const TClonesArray* delphesCollection, std::string const& branch) {
     auto* jetCollection = createCollection<edm4hep::ReconstructedParticleCollection>(branch);
-    auto* idCollection  = static_cast<edm4hep::ParticleIDCollection*>(m_collections[m_particleIDName].get());
+    auto* idCollection  = getCollection<edm4hep::ParticleIDCollection>(m_particleIDName);
 
     for (auto iCand = 0; iCand < delphesCollection->GetEntries(); ++iCand) {
       auto* delphesCand = static_cast<Jet*>(delphesCollection->At(iCand));

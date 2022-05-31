@@ -112,7 +112,15 @@ namespace k4SimDelphes {
 
     void registerGlobalCollections();
 
+    /** Create a collection in the internal map
+     */
     template <typename CollectionT> CollectionT* createCollection(std::string const& name, bool makeRefColl = false);
+
+    /** Get a collection that has already been registered in the internal map
+     */
+    template <typename CollectionT> CollectionT* getCollection(const std::string& name) {
+      return static_cast<CollectionT*>(m_collections[name].get());
+    }
 
     // cannot mark DelphesT as const, because for Candidate* the GetCandidates()
     // method is not marked as const.
