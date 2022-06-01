@@ -26,7 +26,7 @@ template <typename WriterT = podio::ROOTWriter> int doit(int argc, char* argv[],
   if (outputFile.empty()) {
     // Check if the user requested the help, and print the usage message and
     // return succesfully in that case
-    if (argv[1] == std::string_view("--help") || argv[1] == std::string_view("-h")) {
+    if (argc > 1 && (argv[1] == std::string_view("--help") || argv[1] == std::string_view("-h"))) {
       std::cout << inputReader.getUsage() << std::endl;
       return 0;
     }
