@@ -31,7 +31,10 @@ class DelphesPythia8Reader : public DelphesInputReader {
 public:
   DelphesPythia8Reader(){};
 
-  ~DelphesPythia8Reader() {if (m_pythia)PrintXS(m_pythia.get());}
+  ~DelphesPythia8Reader() {
+    if (m_pythia)
+      PrintXS(m_pythia.get());
+  }
 
   std::string init(Delphes* modularDelphes, int argc, char* argv[]) override {
     if (argc != 5) {
