@@ -21,6 +21,9 @@ SET( ${PROJECT_NAME}_VERSION
   "${${PROJECT_NAME}_VERSION_MAJOR}.${${PROJECT_NAME}_VERSION_MINOR}.${${PROJECT_NAME}_VERSION_PATCH}" )
 
 
+#--- Such that the binaries in install are properly linked --------------------
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE CACHE BOOL "RPATH USE LINK PATH")
+
 #--- Declare C++ Standard -----------------------------------------------------
 set(CMAKE_CXX_STANDARD 17 CACHE STRING "")
 if(NOT CMAKE_CXX_STANDARD MATCHES "17")
