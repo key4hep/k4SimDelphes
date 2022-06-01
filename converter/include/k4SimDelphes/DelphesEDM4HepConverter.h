@@ -40,6 +40,11 @@ namespace k4SimDelphes {
    */
   constexpr std::array<std::string_view, 1> RECO_CLUSTER_OUTPUT = {"Tower"};
 
+  /**
+   * Classes that will be stored as TrackerHits
+   */
+  constexpr auto TRACKERHIT_OUTPUT_NAME = "TrackerHits";
+
   struct BranchSettings {
     std::string input;
     std::string name;
@@ -67,23 +72,23 @@ namespace k4SimDelphes {
 
     void process(TTree* delphesTree);
 
-    inline std::unordered_map<std::string_view, podio::CollectionBase*> getCollections() { return m_collections; }
+    inline const std::unordered_map<std::string, podio::CollectionBase*>& getCollections() { return m_collections; }
 
-    void processParticles(const TClonesArray* delphesCollection, std::string_view const branch);
-    void processTracks(const TClonesArray* delphesCollection, std::string_view const branch);
-    void processClusters(const TClonesArray* delphesCollection, std::string_view const branch);
-    void processJets(const TClonesArray* delphesCollection, std::string_view const branch);
-    void processPhotons(const TClonesArray* delphesCollection, std::string_view const branch) {
+    void processParticles(const TClonesArray* delphesCollection, std::string const& branch);
+    void processTracks(const TClonesArray* delphesCollection, std::string const& branch);
+    void processClusters(const TClonesArray* delphesCollection, std::string const& branch);
+    void processJets(const TClonesArray* delphesCollection, std::string const& branch);
+    void processPhotons(const TClonesArray* delphesCollection, std::string const& branch) {
       fillReferenceCollection<Photon>(delphesCollection, branch, "photon");
     }
 
-    void processMissingET(const TClonesArray* delphesCollection, std::string_view const branch);
-    void processScalarHT(const TClonesArray* delphesCollection, std::string_view const branch);
+    void processMissingET(const TClonesArray* delphesCollection, std::string const& branch);
+    void processScalarHT(const TClonesArray* delphesCollection, std::string const& branch);
 
-    void processMuons(const TClonesArray* delphesCollection, std::string_view const branch) {
+    void processMuons(const TClonesArray* delphesCollection, std::string const& branch) {
       fillReferenceCollection<Muon>(delphesCollection, branch, "muon");
     }
-    void processElectrons(const TClonesArray* delphesCollection, std::string_view const branch) {
+    void processElectrons(const TClonesArray* delphesCollection, std::string const& branch) {
       fillReferenceCollection<Electron>(delphesCollection, branch, "electron");
     }
 
@@ -92,23 +97,23 @@ namespace k4SimDelphes {
 
   private:
     template <typename DelphesT>
-    void fillReferenceCollection(const TClonesArray* delphesCollection, std::string_view const branch,
+    void fillReferenceCollection(const TClonesArray* delphesCollection, std::string const& branch,
                                  const std::string_view type);
 
     void registerGlobalCollections();
 
-    template <typename CollectionT> void createCollection(std::string_view const name, bool makeRefColl = false);
+    template <typename CollectionT> void createCollection(std::string const& name, bool makeRefColl = false);
 
     // cannot mark DelphesT as const, because for Candidate* the GetCandidates()
     // method is not marked as const.
     template <typename DelphesT>
     std::optional<edm4hep::MutableReconstructedParticle> getMatchingReco(/*const*/ DelphesT* delphesCand) const;
 
-    using ProcessFunction = void (DelphesEDM4HepConverter::*)(const TClonesArray*, std::string_view const);
+    using ProcessFunction = void (DelphesEDM4HepConverter::*)(const TClonesArray*, std::string const&);
 
-    std::vector<BranchSettings>                                  m_branches;
-    std::unordered_map<std::string_view, podio::CollectionBase*> m_collections;
-    std::unordered_map<std::string_view, ProcessFunction>        m_processFunctions;
+    std::vector<BranchSettings>                             m_branches;
+    std::unordered_map<std::string, podio::CollectionBase*> m_collections;
+    std::unordered_map<std::string_view, ProcessFunction>   m_processFunctions;
 
     double m_magneticFieldBz;  // necessary for determining track parameters
 
@@ -124,8 +129,7 @@ namespace k4SimDelphes {
   };
 
   template <typename CollectionT>
-  void DelphesEDM4HepConverter::createCollection(std::string_view name, bool makeRefColl) {
-    std::string  nameStr(name);
+  void DelphesEDM4HepConverter::createCollection(std::string const& name, bool makeRefColl) {
     CollectionT* col = new CollectionT();
     col->setSubsetCollection(makeRefColl);
     m_collections.emplace(name, col);
