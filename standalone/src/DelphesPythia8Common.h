@@ -17,6 +17,19 @@
 
 #include <iostream>
 
+void PrintXS(Pythia8::Pythia* pythia) {
+
+  // convert mb to pb
+  float xsec = pythia->info.sigmaGen() * 1.e09;
+
+  std::cout<<"------------------------------------------------------------------------"<<std::endl;
+  std::cout<<""<<std::endl;
+  std::cout<<"Pythia8 Cross-section: "<<xsec<<" pb"<<std::endl;
+  std::cout<<""<<std::endl;
+
+}
+
+
 void ConvertInput(Long64_t eventCounter, Pythia8::Pythia* pythia, ExRootTreeBranch* branch, DelphesFactory* factory,
                   TObjArray* allParticleOutputArray, TObjArray* stableParticleOutputArray, TObjArray* partonOutputArray,
                   TStopwatch* readStopWatch, TStopwatch* procStopWatch) {
