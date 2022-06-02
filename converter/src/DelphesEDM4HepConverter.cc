@@ -96,7 +96,6 @@ namespace k4SimDelphes {
           contains(RECO_TRACK_OUTPUT, branch.className.c_str())) {
         registerGlobalCollections();
         createCollection<edm4hep::TrackCollection>(branch.name);
-        createCollection<podio::UserDataCollection<float>>(branch.name + "_dNdx");
         createCollection<podio::UserDataCollection<float>>(branch.name + "_L");
         m_processFunctions.emplace(branch.name, &DelphesEDM4HepConverter::processTracks);
       }
@@ -193,7 +192,6 @@ namespace k4SimDelphes {
     auto* particleCollection = static_cast<edm4hep::ReconstructedParticleCollection*>(m_collections[m_recoCollName]);
     auto* trackCollection    = static_cast<edm4hep::TrackCollection*>(m_collections[branch]);
     //UserData for overflowing information
-    auto* dndxCollection       = static_cast<podio::UserDataCollection<float>*>(m_collections[branch + "_dNdx"]);
     auto* pathLengthCollection = static_cast<podio::UserDataCollection<float>*>(m_collections[branch + "_L"]);
 
     auto* mcRecoRelations =
@@ -221,8 +219,13 @@ namespace k4SimDelphes {
           sqrt(delphesCand->XFirstHit * delphesCand->XFirstHit + delphesCand->YFirstHit * delphesCand->YFirstHit));
 
       trackCollection->push_back(track);
-      dndxCollection->push_back(delphesCand->dNdx);
       pathLengthCollection->push_back(delphesCand->L);
+
+      edm4hep::Quantity dxQuantities{};
+      dxQuantities.type  = 0;
+      dxQuantities.value = delphesCand->dNdx;
+
+      track.addToDxQuantities(dxQuantities);
 
       auto id = idCollection->create();
 
