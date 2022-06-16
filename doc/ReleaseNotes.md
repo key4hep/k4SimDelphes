@@ -1,3 +1,29 @@
+# v00-01-09
+
+* 2022-06-02 clementhelsens ([PR#83](https://github.com/key4hep/k4SimDelphes/pull/83))
+  - Add dNdx to Tracks properly as `dxQuantity` (added to EDM4hep in [EDM4hep#137](https://github.com/key4hep/EDM4hep/pull/137))
+
+* 2022-06-01 clementhelsens ([PR#88](https://github.com/key4hep/k4SimDelphes/pull/88))
+  - Add RPATH to Cmake such that the librairies are properly linked in ```install/bin```
+
+* 2022-06-01 clementhelsens ([PR#87](https://github.com/key4hep/k4SimDelphes/pull/87))
+  - Adding at the end of the job a print of the cross section calculated by Pythia
+
+* 2022-06-01 Thomas Madlener ([PR#86](https://github.com/key4hep/k4SimDelphes/pull/86))
+  - Fix segmentation fault when passing no arguments to standalone executables by explicitly checking whether arguments are passed
+
+* 2022-05-30 Thomas Madlener ([PR#84](https://github.com/key4hep/k4SimDelphes/pull/84))
+  - Store `podio::UserDataCollection` in the same map as other collections internally, so that all collections can be stored through the same interface.
+    - By doing so making the new outputs also available to the framework use case.
+  - Switch the internal collection map from using `std::string_view` keys to `std::string` keys to make it easier to define collection names that are derived from Delphes branch names.
+
+* 2022-05-23 Thomas Madlener ([PR#82](https://github.com/key4hep/k4SimDelphes/pull/82))
+  - Make sure clang-format run in CI works with older diffutils
+
+* 2022-05-23 clementhelsens ([PR#81](https://github.com/key4hep/k4SimDelphes/pull/81))
+  - This adds tracker hit information and tracker radiusas part of the EDM
+  - And also adds path lenght and dndx as user data
+
 # v00-01-08
 
 * 2022-03-17 Thomas Madlener ([PR#75](https://github.com/key4hep/k4SimDelphes/pull/75))
