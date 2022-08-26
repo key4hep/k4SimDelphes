@@ -73,6 +73,9 @@ namespace k4SimDelphes {
     DelphesEDM4HepConverter(const std::vector<BranchSettings>& branches, OutputSettings const& outputSettings,
                             double magFieldBz);
 
+    /**
+     * Process the passed delphesTree and convert the particles contained in it.
+     */
     void process(TTree* delphesTree);
 
     /** Get the converted collections and their ownership.
