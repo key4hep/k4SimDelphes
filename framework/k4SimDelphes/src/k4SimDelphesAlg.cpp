@@ -17,10 +17,10 @@ k4SimDelphesAlg::k4SimDelphesAlg(const std::string& name, ISvcLocator* svcLoc)
 
 StatusCode k4SimDelphesAlg::initialize() {
   ///-- setup Configuration and input arrays //////////////////////////////////
-  m_Delphes    = std::make_unique<Delphes>("Delphes");
-  m_confReader = new ExRootConfReader();
-  m_confReader->ReadFile(m_DelphesCard.value().c_str());
-  m_Delphes->SetConfReader(m_confReader);
+  m_Delphes       = std::make_unique<Delphes>("Delphes");
+  auto confReader = ExRootConfReader();
+  confReader.ReadFile(m_DelphesCard.value().c_str());
+  m_Delphes->SetConfReader(&confReader);
   m_treeWriter    = new ExRootTreeWriter(nullptr, "Delphes");
   m_converterTree = new TTree("ConverterTree", "Analysis");
   // avoid having any connection with a TFile that might be opened later
@@ -38,7 +38,10 @@ StatusCode k4SimDelphesAlg::initialize() {
   m_eventDataSvc.retrieve().ignore();
   m_podioDataSvc = dynamic_cast<PodioDataSvc*>(m_eventDataSvc.get());
 
-  m_edm4hepOutputSettings = getEDM4hepOutputSettings(m_DelphesOutputSettings.value().c_str());
+  const auto branches       = getBranchSettings(confReader.GetParam("TreeWriter::Branch"));
+  const auto outputSettings = getEDM4hepOutputSettings(m_DelphesOutputSettings.value().c_str());
+  m_edm4hepConverter        = std::make_unique<k4SimDelphes::DelphesEDM4HepConverter>(
+      branches, outputSettings, confReader.GetDouble("ParticlePropagator::Bz", 0));
 
   return StatusCode::SUCCESS;
 }
@@ -49,9 +52,7 @@ StatusCode k4SimDelphesAlg::execute() {
   m_stableParticleOutputArray->Clear();
   m_partonOutputArray->Clear();
   m_treeWriter->Clear();
-  const auto branches = getBranchSettings(m_confReader->GetParam("TreeWriter::Branch"));
-  m_edm4hepConverter  = new DelphesEDM4HepConverter(branches, m_edm4hepOutputSettings,
-                                                   m_confReader->GetDouble("ParticlePropagator::Bz", 0));
+
   verbose() << " ... Setup Input Collections " << endmsg;
   auto genparticles = m_InputMCParticles.get();
   // input
@@ -60,8 +61,10 @@ StatusCode k4SimDelphesAlg::execute() {
                               *m_stableParticleOutputArray, *m_partonOutputArray);
   auto mapSimDelphes = conv.getGenParticleIdMap();
   ///-- actual simulation --////////////////////////////////////////////////////
+  verbose() << "Running delphes simulation" << endmsg;
   m_Delphes->ProcessTask();
   ///-- conversion of the output --/////////////////////////////////////////////
+  verbose() << "Running converter" << endmsg;
   m_edm4hepConverter->process(m_converterTree);
   // setup output collections
 
@@ -80,13 +83,12 @@ StatusCode k4SimDelphesAlg::execute() {
     m_podioDataSvc->registerObject("/Event", "/" + std::string(c.first), wrapper).ignore();
   }
   m_Delphes->Clear();
-  //delete m_edm4hepConverter;
+
   return StatusCode::SUCCESS;
 }
 
 StatusCode k4SimDelphesAlg::finalize() {
   m_Delphes->Finish();
-  // TODO: investigate segfault if the following line is uncommented
-  //delete m_confReader;
+
   return StatusCode::SUCCESS;
 }
