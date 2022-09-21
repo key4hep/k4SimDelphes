@@ -4,8 +4,8 @@
 #include "edm4hep/MCRecoParticleAssociationCollection.h"
 #include "edm4hep/ReconstructedParticleCollection.h"
 
-#include "podio/EventStore.h"
-#include "podio/ROOTReader.h"
+#include "podio/Frame.h"
+#include "podio/ROOTFrameReader.h"
 
 #include "ExRootAnalysis/ExRootTreeBranch.h"
 #include "ExRootAnalysis/ExRootTreeReader.h"
@@ -311,10 +311,8 @@ void compareMET(const TClonesArray* delphesColl, const edm4hep::ReconstructedPar
 
 int main(int argc, char* argv[]) {
   // do the necessary setup work for podio and delphes first
-  podio::ROOTReader reader{};
+  podio::ROOTFrameReader reader{};
   reader.openFile(argv[1]);
-  podio::EventStore store{};
-  store.setReader(&reader);
 
   auto chain = std::make_unique<TChain>("Delphes");
   chain->Add(argv[2]);
@@ -332,34 +330,35 @@ int main(int argc, char* argv[]) {
 
   // now start comparing the contents of the files
   const auto nEntries = treeReader->GetEntries();
-  if (nEntries != reader.getEntries()) {
+  if (nEntries != reader.getEntries("events")) {
     std::cerr << "Number of events in delphes and edm4hep outputfile do not agree: " << nEntries << " vs "
-              << reader.getEntries() << std::endl;
+              << reader.getEntries("events") << std::endl;
     return 1;
   }
 
   for (int entry = 0; entry < nEntries; ++entry) {
     treeReader->ReadEntry(entry);
+    podio::Frame frame(reader.readNextEntry("events"));
 
     std::cout << "EVENT: " << entry << std::endl;
 
-    auto& genParticleColl = store.get<edm4hep::MCParticleCollection>("Particle");
+    auto& genParticleColl = frame.get<edm4hep::MCParticleCollection>("Particle");
     compareCollectionsBasic(genParticleCollDelphes, genParticleColl, "Particle");
     compareCollectionElements(genParticleCollDelphes, genParticleColl, "Particle");
 
-    auto& electronColl = store.get<edm4hep::ReconstructedParticleCollection>("Electron");
+    auto& electronColl = frame.get<edm4hep::ReconstructedParticleCollection>("Electron");
     compareCollectionsBasic(electronCollDelphes, electronColl, "Electron");
     compareCollectionElements<Electron>(electronCollDelphes, electronColl, "Electron");
 
-    auto& muonColl = store.get<edm4hep::ReconstructedParticleCollection>("Muon");
+    auto& muonColl = frame.get<edm4hep::ReconstructedParticleCollection>("Muon");
     compareCollectionsBasic(muonCollDelphes, muonColl, "Muon");
     compareCollectionElements<Muon>(muonCollDelphes, muonColl, "Muon");
 
-    auto& photonColl = store.get<edm4hep::ReconstructedParticleCollection>("Photon");
+    auto& photonColl = frame.get<edm4hep::ReconstructedParticleCollection>("Photon");
     compareCollectionsBasic(photonCollDelphes, photonColl, "Photon");
     compareCollectionElements<Photon>(photonCollDelphes, photonColl, "Photon");
 
-    auto&     recoColl = store.get<edm4hep::ReconstructedParticleCollection>("ReconstructedParticles");
+    auto&     recoColl = frame.get<edm4hep::ReconstructedParticleCollection>("ReconstructedParticles");
     const int nRecos   = tracks->GetEntries() + ecalClusters->GetEntries() + hcalClusters->GetEntries();
 
     if (nRecos != recoColl.size()) {
@@ -368,23 +367,20 @@ int main(int argc, char* argv[]) {
       return 1;
     }
 
-    auto& mcRecoAssocColl = store.get<edm4hep::MCRecoParticleAssociationCollection>("MCRecoAssociations");
+    auto& mcRecoAssocColl = frame.get<edm4hep::MCRecoParticleAssociationCollection>("MCRecoAssociations");
 
     compareCollectionElements<Track>(tracks, recoColl, "EFlowTrack", 0, mcRecoAssocColl);
     compareCollectionElements<Tower>(ecalClusters, recoColl, "EFlowPhoton", tracks->GetEntries(), mcRecoAssocColl);
     compareCollectionElements<Tower>(hcalClusters, recoColl, "EFlowNeutralHadron",
                                      tracks->GetEntries() + ecalClusters->GetEntries(), mcRecoAssocColl);
 
-    auto& jetColl = store.get<edm4hep::ReconstructedParticleCollection>("Jet");
+    auto& jetColl = frame.get<edm4hep::ReconstructedParticleCollection>("Jet");
     compareCollectionsBasic(delphesJetColl, jetColl, "Jet");
     compareJets(delphesJetColl, jetColl, "Jet");
 
-    auto& metColl = store.get<edm4hep::ReconstructedParticleCollection>("MissingET");
+    auto& metColl = frame.get<edm4hep::ReconstructedParticleCollection>("MissingET");
     compareCollectionsBasic(delphesMET, metColl, "MissingET");
     compareMET(delphesMET, metColl);
-
-    store.clear();
-    reader.endOfEvent();
   }
 
   return 0;

@@ -1,18 +1,21 @@
 #ifndef _K4SIMDELPHESALG_H
 #define _K4SIMDELPHESALG_H
 
-#include "GaudiAlg/GaudiAlgorithm.h"
-#include "k4FWCore/DataHandle.h"
-#include "k4FWCore/DataWrapper.h"
-#include "k4FWCore/PodioDataSvc.h"
+#include "k4SimDelphes/DelphesEDM4HepConverter.h"
+#include "k4SimDelphes/DelphesEDM4HepOutputConfiguration.h"
 
 #include "edm4hep/MCParticleCollection.h"
 #include "edm4hep/ReconstructedParticleCollection.h"
 
-#include "k4SimDelphes/DelphesEDM4HepConverter.h"
-#include "k4SimDelphes/DelphesEDM4HepOutputConfiguration.h"
+#include "k4FWCore/DataHandle.h"
+#include "k4FWCore/DataWrapper.h"
+#include "k4FWCore/PodioDataSvc.h"
+
+#include "GaudiAlg/GaudiAlgorithm.h"
 
 #include "modules/Delphes.h"
+
+#include <memory>
 
 namespace edm4hep {
   class MCParticleCollection;
@@ -45,23 +48,21 @@ private:
   Gaudi::Property<std::string> m_DelphesOutputSettings{
       this, "DelphesOutputSettings", "", "Name of config file with k4simdelphes specific output settings"};
 
-  std::unique_ptr<Delphes> m_Delphes{nullptr};
-  //std::unique_ptr<k4SimDelphes::DelphesEDM4HepConverter> m_edm4hepConverter{nullptr};
-  k4SimDelphes::DelphesEDM4HepConverter* m_edm4hepConverter{nullptr};
-  TObjArray*                             m_allParticleOutputArray{nullptr};
-  TObjArray*                             m_stableParticleOutputArray{nullptr};
-  TObjArray*                             m_partonOutputArray{nullptr};
+  std::unique_ptr<Delphes>                               m_Delphes{nullptr};
+  std::unique_ptr<ExRootConfReader>                      m_confReader{nullptr};
+  std::unique_ptr<k4SimDelphes::DelphesEDM4HepConverter> m_edm4hepConverter{nullptr};
+  TObjArray*                                             m_allParticleOutputArray{nullptr};
+  TObjArray*                                             m_stableParticleOutputArray{nullptr};
+  TObjArray*                                             m_partonOutputArray{nullptr};
 
   ExRootTreeWriter* m_treeWriter{nullptr};
   TTree*            m_converterTree{nullptr};
-  ExRootConfReader* m_confReader{nullptr};
 
   // since branch names are taken from delphes config
   // and not declared as data handles,
   // need podiodatasvc directly
   PodioDataSvc*                   m_podioDataSvc;
   ServiceHandle<IDataProviderSvc> m_eventDataSvc;
-  k4SimDelphes::OutputSettings    m_edm4hepOutputSettings;
 };
 
 #endif  // _K4SIMDELPHESALG_H
