@@ -79,7 +79,7 @@ StatusCode k4SimDelphesAlg::execute() {
     }
 
     DataWrapper<podio::CollectionBase>* wrapper = new DataWrapper<podio::CollectionBase>();
-    wrapper->setData(c.second.release());  // TODO: Does DataWrapper take ownership?
+    wrapper->setData(c.second.release());  // DataWrapper takes ownership
     m_podioDataSvc->registerObject("/Event", "/" + std::string(c.first), wrapper).ignore();
   }
   m_Delphes->Clear();
