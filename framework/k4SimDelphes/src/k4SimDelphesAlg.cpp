@@ -17,10 +17,10 @@ k4SimDelphesAlg::k4SimDelphesAlg(const std::string& name, ISvcLocator* svcLoc)
 
 StatusCode k4SimDelphesAlg::initialize() {
   ///-- setup Configuration and input arrays //////////////////////////////////
-  m_Delphes       = std::make_unique<Delphes>("Delphes");
-  auto confReader = ExRootConfReader();
-  confReader.ReadFile(m_DelphesCard.value().c_str());
-  m_Delphes->SetConfReader(&confReader);
+  m_Delphes    = std::make_unique<Delphes>("Delphes");
+  m_confReader = std::make_unique<ExRootConfReader>();
+  m_confReader->ReadFile(m_DelphesCard.value().c_str());
+  m_Delphes->SetConfReader(m_confReader.get());
   m_treeWriter    = new ExRootTreeWriter(nullptr, "Delphes");
   m_converterTree = new TTree("ConverterTree", "Analysis");
   // avoid having any connection with a TFile that might be opened later
@@ -38,10 +38,10 @@ StatusCode k4SimDelphesAlg::initialize() {
   m_eventDataSvc.retrieve().ignore();
   m_podioDataSvc = dynamic_cast<PodioDataSvc*>(m_eventDataSvc.get());
 
-  const auto branches       = getBranchSettings(confReader.GetParam("TreeWriter::Branch"));
+  const auto branches       = getBranchSettings(m_confReader->GetParam("TreeWriter::Branch"));
   const auto outputSettings = getEDM4hepOutputSettings(m_DelphesOutputSettings.value().c_str());
   m_edm4hepConverter        = std::make_unique<k4SimDelphes::DelphesEDM4HepConverter>(
-      branches, outputSettings, confReader.GetDouble("ParticlePropagator::Bz", 0));
+      branches, outputSettings, m_confReader->GetDouble("ParticlePropagator::Bz", 0));
 
   return StatusCode::SUCCESS;
 }
