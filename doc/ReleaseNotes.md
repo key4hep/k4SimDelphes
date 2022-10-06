@@ -1,3 +1,8 @@
+# v00-02
+
+* 2022-09-21 Thomas Madlener ([PR#85](https://github.com/key4hep/k4SimDelphes/pull/85))
+  - Make the standalone executables use the `podio::Frame`
+
 # v00-01-09
 
 * 2022-06-02 clementhelsens ([PR#83](https://github.com/key4hep/k4SimDelphes/pull/83))
