@@ -3,6 +3,7 @@
 #include "edm4hep/MCParticleCollection.h"
 #include "edm4hep/MCRecoParticleAssociationCollection.h"
 #include "edm4hep/ReconstructedParticleCollection.h"
+#include "edm4hep/utils/kinematics.h"
 
 #include "podio/Frame.h"
 #include "podio/ROOTFrameReader.h"
@@ -19,6 +20,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <memory>
+#include <numeric>
 #include <vector>
 
 /**
@@ -300,6 +302,22 @@ void compareJets(const TClonesArray* delphesColl, const edm4hep::ReconstructedPa
                              assertMsg, collName, i, j);
       }
     }
+
+    // Use the energy for comparisons here, since we set the mass for the tracks
+    // (potentially differently to what delphes is doing)
+    const auto edm4hepJetP4   = edm4hep::utils::p4(edm4hepCand, edm4hep::utils::UseEnergy);
+    const auto edm4hepConstP4 = std::transform_reduce(
+        edm4hepCand.getParticles().begin(), edm4hepCand.getParticles().end(), edm4hep::LorentzVectorE{}, std::plus{},
+        [](const auto& cand) { return edm4hep::utils::p4(cand, edm4hep::utils::UseEnergy); });
+
+    // Compare only the full 4 momenta here as this should be exact
+    if (!k4SimDelphes::equalP4(edm4hepJetP4, edm4hepConstP4)) {
+      std::cerr << "Sum of EDM4hep jet constituents 4-momenta is not Jet momentum for Jet " << i
+                << " (sum(constituents): " << edm4hepConstP4 << ", jet: " << edm4hepJetP4 << ")" << std::endl;
+      std::exit(1);
+    }
+
+    // TODO: Check the same for delphes?
   }
 }
 
