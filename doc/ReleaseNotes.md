@@ -1,3 +1,8 @@
+# v00-02-01
+
+* 2022-10-26 Thomas Madlener ([PR#91](https://github.com/key4hep/k4SimDelphes/pull/91))
+  - Add a test to make sure that the sum of the jet constituents 4 momenta and the Jet 4 momenta agree
+
 # v00-02
 
 * 2022-09-21 Thomas Madlener ([PR#85](https://github.com/key4hep/k4SimDelphes/pull/85))
