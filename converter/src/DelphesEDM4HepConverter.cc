@@ -269,11 +269,15 @@ namespace k4SimDelphes {
       // that would probably make the matching that is done below much harder
 
       auto       cand     = particleCollection->create();
-      const auto momentum = delphesCand->P4();  // NOTE: assuming massless here!
+      // NOTE: Delphes assumes m=0 for photons and m=0.497611 for neutral hadrons (KL)
+      const auto momentum = delphesCand->P4();  
       // TODO: fill this when it is available later, when when we link the references?
       // cand.setCharge(delphesCand->Charge);
       cand.setMomentum({(float)momentum.Px(), (float)momentum.Py(), (float)momentum.Pz()});
       cand.setEnergy(delphesCand->E);
+      cand.setMass(delphesCand->P4().M());
+      auto pid = (delphesCand->Ehad > 0.) ? 130 : 22;
+      cand.setType(pid); // NOTE: set PID of cluster consistent with mass
 
       cand.addToClusters(cluster);
 
