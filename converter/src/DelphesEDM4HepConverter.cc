@@ -9,6 +9,7 @@
 #include "edm4hep/ReconstructedParticleCollection.h"
 #include "edm4hep/TrackCollection.h"
 #include "edm4hep/TrackerHitCollection.h"
+#include "edm4hep/CalorimeterHitCollection.h"
 #include "edm4hep/Vector3d.h"
 
 #include "podio/UserDataCollection.h"
@@ -249,7 +250,8 @@ namespace k4SimDelphes {
     auto* particleCollection = getCollection<edm4hep::ReconstructedParticleCollection>(m_recoCollName);
     auto* clusterCollection  = createCollection<edm4hep::ClusterCollection>(branch);
     auto* mcRecoRelations    = getCollection<edm4hep::MCRecoParticleAssociationCollection>(m_mcRecoAssocCollName);
-
+    auto* calorimeterHitColl  = getCollection<edm4hep::CalorimeterHitCollection>(CALORIMETERHIT_OUTPUT_NAME);
+    
     for (auto iCand = 0; iCand < delphesCollection->GetEntries(); ++iCand) {
       auto* delphesCand = static_cast<Tower*>(delphesCollection->At(iCand));
 
@@ -276,9 +278,16 @@ namespace k4SimDelphes {
       cand.setMomentum({(float)momentum.Px(), (float)momentum.Py(), (float)momentum.Pz()});
       cand.setEnergy(delphesCand->E);
       cand.setMass(delphesCand->P4().M());
+      // NOTE: Particle-Flow Neutral are either photons or K_L in Delphes
       auto pid = (delphesCand->Ehad > 0.) ? 130 : 22;
       cand.setType(pid); // NOTE: set PID of cluster consistent with mass
 
+      // store position and time of neutral candidate in a CalorimeterHit
+      auto calorimeterHit = calorimeterHitColl->create();
+      calorimeterHit.setTime(delphesCand->T);
+      edm4hep::Vector3f position(delphesCand->X, delphesCand->Y, delphesCand->Z);
+      calorimeterHit.setPosition(position);
+      cluster.addToHits(calorimeterHit);
       cand.addToClusters(cluster);
 
       for (const auto genId : getAllParticleIDs(delphesCand)) {
@@ -443,6 +452,9 @@ namespace k4SimDelphes {
     }
     if (m_collections.find(TRACKERHIT_OUTPUT_NAME) == m_collections.end()) {
       createCollection<edm4hep::TrackerHitCollection>(TRACKERHIT_OUTPUT_NAME);
+    }
+    if (m_collections.find(CALORIMETERHIT_OUTPUT_NAME) == m_collections.end()) {
+      createCollection<edm4hep::CalorimeterHitCollection>(CALORIMETERHIT_OUTPUT_NAME);
     }
   }
 
