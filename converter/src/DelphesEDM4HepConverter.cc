@@ -195,12 +195,21 @@ namespace k4SimDelphes {
       auto* delphesCand = static_cast<Track*>(delphesCollection->At(iCand));
 
       auto track       = convertTrack(delphesCand, m_magneticFieldBz);
+       
+      // this is the position/time at the IP
+      auto trackerHit0 = trackerHitColl->create();
+      trackerHit0.setTime(delphesCand->T);
+      edm4hep::Vector3d position0(delphesCand->X, delphesCand->Y, delphesCand->Z);
+      trackerHit0.setPosition(position0);
+      track.addToTrackerHits(trackerHit0);
+
+      // this is the position of the first hit (NB: time not available in Delphes here)
       auto trackerHit1 = trackerHitColl->create();
-      trackerHit1.setTime(delphesCand->T);
       edm4hep::Vector3d position1(delphesCand->XFirstHit, delphesCand->YFirstHit, delphesCand->ZFirstHit);
       trackerHit1.setPosition(position1);
       track.addToTrackerHits(trackerHit1);
 
+      // this is the position/time at the calorimeter 
       auto trackerHit2 = trackerHitColl->create();
       trackerHit2.setTime(delphesCand->TOuter);
       edm4hep::Vector3d position2(delphesCand->XOuter, delphesCand->YOuter, delphesCand->ZOuter);
