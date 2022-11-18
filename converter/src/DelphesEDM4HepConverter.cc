@@ -149,6 +149,7 @@ namespace k4SimDelphes {
     // into maps here for internal use only (see #89)
     m_genParticleIds.clear();
     m_recoParticleGenIds.clear();
+    m_recoParticleIds.clear();
   }
 
   void DelphesEDM4HepConverter::processParticles(const TClonesArray* delphesCollection, std::string const& branch) {
@@ -253,6 +254,7 @@ namespace k4SimDelphes {
       }
 
       m_recoParticleGenIds.emplace(genId, cand);
+      m_recoParticleIds.emplace(delphesCand->GetUniqueID(), cand);
     }
   }
 
@@ -309,6 +311,7 @@ namespace k4SimDelphes {
 
         m_recoParticleGenIds.emplace(genId, cand);
       }
+      m_recoParticleIds.emplace(delphesCand->GetUniqueID(), cand);
     }
   }
 
@@ -336,10 +339,9 @@ namespace k4SimDelphes {
 
       const auto& constituents = delphesCand->Constituents;
       for (auto iConst = 0; iConst < constituents.GetEntries(); ++iConst) {
-        // TODO: Can we do better than Candidate here?
         auto* constituent = static_cast<Candidate*>(constituents.At(iConst));
-        if (auto matchedReco = getMatchingReco(constituent)) {
-          jet.addToParticles(*matchedReco);
+        if (const auto it = m_recoParticleIds.find(constituent->GetUniqueID()); it != m_recoParticleIds.end()) {
+          jet.addToParticles(it->second);
         } else {
           std::cerr << "**** WARNING: No matching ReconstructedParticle was found for a Jet constituent" << std::endl;
         }
