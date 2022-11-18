@@ -145,8 +145,14 @@ namespace k4SimDelphes {
     // map from UniqueIDs (delphes generated particles) to MCParticles
     std::unordered_map<UInt_t, edm4hep::MCParticle> m_genParticleIds;
     // map from UniqueIDs (delphes generated particles) to (possibly multiple)
-    // ReconstructedParticles
+    // ReconstructedParticles. This map is necessary because Muon, Electron and
+    // Photon can only be reliably matched via their gen particles
     std::unordered_multimap<UInt_t, edm4hep::MutableReconstructedParticle> m_recoParticleGenIds;
+    // Map of UniqueIDs (delphes candidates) to ReconstrucedParticles. Used in
+    // putting together the list of jet constituents. This is necessary because
+    // the particle flow implementation of Delphes creates candidates without a
+    // gen particle.
+    std::unordered_map<UInt_t, edm4hep::MutableReconstructedParticle> m_recoParticleIds;
   };
 
   template <typename CollectionT>
