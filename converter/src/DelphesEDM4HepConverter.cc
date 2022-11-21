@@ -2,6 +2,7 @@
 #include "delphesHelpers.h"  // getAllParticleIds
 #include "k4SimDelphes/DelphesEDM4HepOutputConfiguration.h"
 
+#include "edm4hep/CalorimeterHitCollection.h"
 #include "edm4hep/ClusterCollection.h"
 #include "edm4hep/MCParticleCollection.h"
 #include "edm4hep/MCRecoParticleAssociationCollection.h"
@@ -162,6 +163,7 @@ namespace k4SimDelphes {
       cand.setMass(delphesCand->Mass);
       cand.setMomentum({delphesCand->Px, delphesCand->Py, delphesCand->Pz});
       cand.setVertex({delphesCand->X, delphesCand->Y, delphesCand->Z});
+      cand.setTime(delphesCand->T);   // in seconds
       cand.setPDG(delphesCand->PID);  // delphes uses whatever hepevt.idhep provides
       cand.setGeneratorStatus(delphesCand->Status);
 
@@ -194,15 +196,24 @@ namespace k4SimDelphes {
     for (auto iCand = 0; iCand < delphesCollection->GetEntries(); ++iCand) {
       auto* delphesCand = static_cast<Track*>(delphesCollection->At(iCand));
 
-      auto track       = convertTrack(delphesCand, m_magneticFieldBz);
-      auto trackerHit1 = trackerHitColl->create();
-      trackerHit1.setTime(delphesCand->T);
+      auto track = convertTrack(delphesCand, m_magneticFieldBz);
+
+      // this is the position/time at the IP
+      auto trackerHit0 = trackerHitColl->create();
+      trackerHit0.setTime(delphesCand->T);  // in seconds
+      edm4hep::Vector3d position0(delphesCand->X, delphesCand->Y, delphesCand->Z);
+      trackerHit0.setPosition(position0);
+      track.addToTrackerHits(trackerHit0);
+
+      // this is the position of the first hit (NB: time not available in Delphes here)
+      auto              trackerHit1 = trackerHitColl->create();
       edm4hep::Vector3d position1(delphesCand->XFirstHit, delphesCand->YFirstHit, delphesCand->ZFirstHit);
       trackerHit1.setPosition(position1);
       track.addToTrackerHits(trackerHit1);
 
+      // this is the position/time at the calorimeter
       auto trackerHit2 = trackerHitColl->create();
-      trackerHit2.setTime(delphesCand->TOuter);
+      trackerHit2.setTime(delphesCand->TOuter);  // in seconds
       edm4hep::Vector3d position2(delphesCand->XOuter, delphesCand->YOuter, delphesCand->ZOuter);
       trackerHit2.setPosition(position2);
       track.addToTrackerHits(trackerHit2);
@@ -251,6 +262,7 @@ namespace k4SimDelphes {
     auto* particleCollection = getCollection<edm4hep::ReconstructedParticleCollection>(m_recoCollName);
     auto* clusterCollection  = createCollection<edm4hep::ClusterCollection>(branch);
     auto* mcRecoRelations    = getCollection<edm4hep::MCRecoParticleAssociationCollection>(m_mcRecoAssocCollName);
+    auto* calorimeterHitColl = getCollection<edm4hep::CalorimeterHitCollection>(CALORIMETERHIT_OUTPUT_NAME);
 
     for (auto iCand = 0; iCand < delphesCollection->GetEntries(); ++iCand) {
       auto* delphesCand = static_cast<Tower*>(delphesCollection->At(iCand));
@@ -270,13 +282,24 @@ namespace k4SimDelphes {
       // edm4hep::clusters, with energies split according to Eem and Ehad. But
       // that would probably make the matching that is done below much harder
 
-      auto       cand     = particleCollection->create();
-      const auto momentum = delphesCand->P4();  // NOTE: assuming massless here!
+      auto cand = particleCollection->create();
+      // NOTE: Delphes assumes m=0 for photons and m=0.497611 for neutral hadrons (KL)
+      const auto momentum = delphesCand->P4();
       // TODO: fill this when it is available later, when when we link the references?
       // cand.setCharge(delphesCand->Charge);
       cand.setMomentum({(float)momentum.Px(), (float)momentum.Py(), (float)momentum.Pz()});
       cand.setEnergy(delphesCand->E);
+      cand.setMass(delphesCand->P4().M());
+      // NOTE: Particle-Flow Neutral are either photons or K_L in Delphes
+      auto pid = (delphesCand->Ehad > 0.) ? 130 : 22;
+      cand.setType(pid);  // NOTE: set PID of cluster consistent with mass
 
+      // store position and time of neutral candidate in a CalorimeterHit
+      auto calorimeterHit = calorimeterHitColl->create();
+      calorimeterHit.setTime(delphesCand->T);  // in seconds
+      edm4hep::Vector3f position(delphesCand->X, delphesCand->Y, delphesCand->Z);
+      calorimeterHit.setPosition(position);
+      cluster.addToHits(calorimeterHit);
       cand.addToClusters(cluster);
 
       for (const auto genId : getAllParticleIDs(delphesCand)) {
@@ -441,6 +464,9 @@ namespace k4SimDelphes {
     }
     if (m_collections.find(TRACKERHIT_OUTPUT_NAME) == m_collections.end()) {
       createCollection<edm4hep::TrackerHitCollection>(TRACKERHIT_OUTPUT_NAME);
+    }
+    if (m_collections.find(CALORIMETERHIT_OUTPUT_NAME) == m_collections.end()) {
+      createCollection<edm4hep::CalorimeterHitCollection>(CALORIMETERHIT_OUTPUT_NAME);
     }
   }
 
