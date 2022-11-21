@@ -45,12 +45,11 @@ namespace k4SimDelphes {
    * Classes that will be stored as TrackerHits
    */
   constexpr auto TRACKERHIT_OUTPUT_NAME = "TrackerHits";
-  
+
   /**
    * * Classes that will be stored as TrackerHits
    */
   constexpr auto CALORIMETERHIT_OUTPUT_NAME = "CalorimeterHits";
-
 
   struct BranchSettings {
     std::string input;
