@@ -23,6 +23,7 @@
 
 #include "Pythia.h"
 #include "Pythia8Plugins/CombineMatchingInput.h"
+#include "Pythia8Plugins/ResonanceDecayFilterHook.h"
 
 #include <iostream>
 #include <memory>
@@ -66,6 +67,11 @@ public:
     if (!m_pythia) {
       throw std::runtime_error("can't create Pythia instance");
     }
+
+    //load and initialize the ResonanceDecayFilterUserhook
+    bool resonanceDecayFilter = m_pythia->settings.flag("ResonanceDecayFilter:filter");
+    m_resonanceDecayFilterHook = new Pythia8::ResonanceDecayFilterHook(m_pythia->settings);
+    m_pythia->addUserHooksPtr((Pythia8::UserHooksPtr)m_resonanceDecayFilterHook);
 
     // Read in commands from configuration file
     const std::string pythia8configname(argv[3]);
@@ -185,6 +191,9 @@ private:
   // for matching
   Pythia8::CombineMatchingInput* combined   = 0;
   Pythia8::UserHooks*            m_matching = 0;
+
+  //resonance decayfilter
+  Pythia8::ResonanceDecayFilterHook* m_resonanceDecayFilterHook{nullptr};
 };
 
 #endif
