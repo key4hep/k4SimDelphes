@@ -17,8 +17,7 @@ Stat:showPartonLevel = off         ! additional statistics on MPI
 
 ! 3) Tell Pythia that LHEF input is used
 Beams:frameType             = 4
-#Beams:LHEF = /afs/cern.ch/user/b/bistapf/FCC_EvtGen/k4SimDelphes/events_000000883.lhe ! the LHEF to read from
-Beams:LHEF = /afs/cern.ch/user/b/bistapf/Dev_k4SimDelphes/k4SimDelphes/fcchh_w_pythia/lhe_tester_ggHH.lhe ! the LHEF to read from
+Beams:LHEF = ../../examples/data/lhe_tester_ggHH.lhe ! the LHEF to read from
 
 ! 4) Exclusive decay with ResonanceDecayUserHook
 25:onMode = off
