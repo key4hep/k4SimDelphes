@@ -1,5 +1,5 @@
 ! 1) Settings that will be used in a main program.
-Main:numberOfEvents = 10000            ! number of events to generate
+Main:numberOfEvents = 3            ! number of events to generate
 Main:timesAllowErrors = 100        ! abort run after this many flawed events
 #Random:seed = 1234                ! initialize random generator with a seed
 
