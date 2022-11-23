@@ -74,7 +74,21 @@ function random_seed_pythia_cmd() {
 # edm4hep run
 DELPHES_OUTPUT_FILE=${OUTPUT_FILE/.root/_delphes.root}
 shift 4
-REST_ARGS=${@}
+REST_ARGS=
+RUN_DELPHES_COMPARE=1
+while [ $# != 0 ]; do
+    case "$1" in
+        --no-delphes)
+            RUN_DELPHES_COMPARE=0
+            shift
+            ;;
+        *)
+            REST_ARGS="${REST_ARGS} ${1}"
+            shift
+            ;;
+    esac
+done
+
 
 # Delphes will not overwrite existing files
 [ -f ${DELPHES_OUTPUT_FILE} ] && rm ${DELPHES_OUTPUT_FILE}
@@ -88,10 +102,16 @@ if [ ${DELPHES_CMD/Delphes/} = 'Pythia8' ]; then
     [[ ${xtrace_on} = "yes" ]] && set -x
 
     ${EDM4HEP_CMD} ${DELPHES_CARD} ${OUTPUT_CONFIG} ${PYTHIA_CMD} ${OUTPUT_FILE}
-    ${DELPHES_CMD} ${DELPHES_CARD} ${PYTHIA_CMD} ${DELPHES_OUTPUT_FILE}
+    if [ ${RUN_DELPHES_COMPARE} = 1 ]; then
+        ${DELPHES_CMD} ${DELPHES_CARD} ${PYTHIA_CMD} ${DELPHES_OUTPUT_FILE}
+    fi
 else
     ${EDM4HEP_CMD} ${DELPHES_CARD} ${OUTPUT_CONFIG} ${OUTPUT_FILE} ${REST_ARGS}
-    ${DELPHES_CMD} ${DELPHES_CARD} ${DELPHES_OUTPUT_FILE} ${REST_ARGS}
+    if [ ${RUN_DELPHES_COMPARE} = 1 ]; then
+        ${DELPHES_CMD} ${DELPHES_CARD} ${DELPHES_OUTPUT_FILE} ${REST_ARGS}
+    fi
 fi
 
-$COMPARE ${OUTPUT_FILE} ${DELPHES_OUTPUT_FILE}
+if [ ${RUN_DELPHES_COMPARE} = 1 ]; then
+    $COMPARE ${OUTPUT_FILE} ${DELPHES_OUTPUT_FILE}
+fi
