@@ -69,7 +69,7 @@ public:
     }
 
     //load and initialize the ResonanceDecayFilterUserhook
-    bool resonanceDecayFilter = m_pythia->settings.flag("ResonanceDecayFilter:filter");
+    // bool resonanceDecayFilter = m_pythia->settings.flag("ResonanceDecayFilter:filter"); //is this needed? if statement with it as in k4gen doesnt work
     m_resonanceDecayFilterHook = new Pythia8::ResonanceDecayFilterHook(m_pythia->settings);
     m_pythia->addUserHooksPtr((Pythia8::UserHooksPtr)m_resonanceDecayFilterHook);
 
