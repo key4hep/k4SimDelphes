@@ -46,3 +46,14 @@ if(DELPHES_CARD)
 else()
   message(WARNING "Cannot find IDEA delphes card from the delphes installation. Cannot use it for testing")
 endif()
+
+#Use tester card for testing the ResonanceDecayUserHook
+find_file(DELPHES_CARD delphes_card_IDEA.tcl PATHS ${DELPHES_CARDS_DIR})
+if(DELPHES_CARD)
+  if(BUILD_PYTHIA_READER)
+    ADD_COMPARISON_TEST(PythiaResonanceDecayFilter_pp_hhbbyy DelphesPythia8_EDM4HEP ${DELPHES_CARD} ${OUTPUT_CONFIG} pythia_resonance_decay_filter_pp_hhbbyy_output.root ${CMAKE_SOURCE_DIR}/examples/data/tester_pwp8_pp_hh_5f_hhbbyy.cmd)
+  endif()
+else()
+  message(WARNING "Cannot find IDEA delphes card from the delphes installation. Cannot use it for testing")
+endif()
+
