@@ -33,7 +33,7 @@ if(BUILD_EVTGEN_READER)
   add_executable(DelphesPythia8EvtGen_EDM4HEP_k4Interface src/DelphesPythia8EvtGen_EDM4HEP_k4Interface.cpp)
 
   target_include_directories(DelphesPythia8EvtGen_EDM4HEP PRIVATE ${PYTHIA8_INCLUDE_DIRS} )
-  target_link_libraries(DelphesPythia8EvtGen_EDM4HEP 
+  target_link_libraries(DelphesPythia8EvtGen_EDM4HEP
                         DelphesEDM4HepConverter
                         podio::podioRootIO
                         ${PYTHIA8_LIBRARIES}
