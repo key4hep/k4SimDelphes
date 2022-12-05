@@ -23,7 +23,9 @@ Required for framework integration:
 
 Optional for standalone executables:
 - [`Pythia8`](https://pythia.org/)
-- [`EvtGen`](https://evtgen.hepforge.org/)
+- [`EvtGen`](https://evtgen.hepforge.org/) >= 02-02-00
+
+The [Spack recipe for k4SimDelphes](https://github.com/key4hep/key4hep-spack/blob/release/packages/k4simdelphes/package.py) has more detailed information on build requirements  and conflicts.
 
 ## Build and install
 The easiest way to build and install `k4SimDelphes` is to use an existing
