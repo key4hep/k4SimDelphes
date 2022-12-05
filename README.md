@@ -14,11 +14,11 @@ this configuration can be found [in this doc](doc/output_config.md)
 
 ## Dependencies
 Required:
-- `Delphes` >= 3.5.0
-- `EDM4hep`
+- [`Delphes`](https://github.com/delphes/delphes) >= 3.5.0
+- [`EDM4hep`](https://github.com/key4hep/edm4hep)
 
 Required for framework integration:
-- `Gaudi` >= 36.0
+- [`Gaudi`](https://gitlab.cern.ch/gaudi/Gaudi) >= 36.0
 - [`k4FWCore`](https://github.com/key4hep/k4FWCore)
 
 Optional for standalone executables:
