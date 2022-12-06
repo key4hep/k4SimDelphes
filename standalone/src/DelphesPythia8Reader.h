@@ -1,8 +1,6 @@
 #ifndef DELPHESEDM4HEP_DELPHESPYTHIA8READER
 #define DELPHESEDM4HEP_DELPHESPYTHIA8READER
 
-#include <iostream>
-
 #include "DelphesInputReader.h"
 #include "DelphesPythia8Common.h"
 
@@ -27,6 +25,7 @@
 
 #include <iostream>
 #include <memory>
+#include <sstream>
 
 class DelphesPythia8Reader : public DelphesInputReader {
 public:
