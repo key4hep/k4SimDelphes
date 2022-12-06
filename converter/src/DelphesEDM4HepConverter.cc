@@ -10,7 +10,6 @@
 #include "edm4hep/ReconstructedParticleCollection.h"
 #include "edm4hep/TrackCollection.h"
 #include "edm4hep/TrackerHitCollection.h"
-#include "edm4hep/CalorimeterHitCollection.h"
 #include "edm4hep/Vector3d.h"
 
 #include "podio/UserDataCollection.h"
