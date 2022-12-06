@@ -18,6 +18,7 @@
 #include "ExRootAnalysis/ExRootTreeWriter.h"
 
 #include <iostream>
+#include <sstream>
 
 class DelphesRootReader : public DelphesInputReader {
 public:

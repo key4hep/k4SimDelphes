@@ -1,6 +1,8 @@
 #ifndef K4GENPARTICLESDELPHESCONVERTER_H
 #define K4GENPARTICLESDELPHESCONVERTER_H
 
+#include <unordered_map>
+
 #include "edm4hep/MCParticleCollection.h"
 
 #include "classes/DelphesClasses.h"
