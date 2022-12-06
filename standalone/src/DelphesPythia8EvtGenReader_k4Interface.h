@@ -1,8 +1,6 @@
 #ifndef DELPHESEDM4HEP_DELPHESPYTHIA8EVTGENREADER_K4INTERFACE
 #define DELPHESEDM4HEP_DELPHESPYTHIA8EVTGENREADER_K4INTERFACE
 
-#include <iostream>
-
 #include "DelphesInputReader.h"
 #include "DelphesPythia8Common.h"
 
@@ -25,6 +23,7 @@
 
 #include <iostream>
 #include <memory>
+#include <sstream>
 
 #include "PythiaEvtGen_Interface.h"
 
