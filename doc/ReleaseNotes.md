@@ -1,3 +1,23 @@
+# v00-03-00
+
+* 2022-12-13 Michele Selvaggi ([PR#97](https://github.com/key4hep/k4simdelphes/pull/97))
+  - store magnetic field strength in "magFieldBz" UserData
+
+* 2022-12-06 Valentin Volkl ([PR#98](https://github.com/key4hep/k4simdelphes/pull/98))
+  - Add some missing stl includes to fix a build error on macOS.
+
+* 2022-11-23 Birgit Stapf ([PR#95](https://github.com/key4hep/k4simdelphes/pull/95))
+  -  Adding Pythia's ResonanceDecayFilter plug-in as described in issue #92
+
+* 2022-11-21 Michele Selvaggi ([PR#93](https://github.com/key4hep/k4simdelphes/pull/93))
+  - set mass to KL or Photon for neutral clusters respectively
+  - store position and time of cluster via calorimeterHit
+  - set first track hit as MC truth track vertex
+  - added vertex time to MC truth particle
+
+* 2022-11-18 Thomas Madlener ([PR#94](https://github.com/key4hep/k4simdelphes/pull/94))
+  - Fix the long(er) standing issue of having jet constituents without matching reconstructed particle.
+
 # v00-02-01
 
 * 2022-10-26 Thomas Madlener ([PR#91](https://github.com/key4hep/k4SimDelphes/pull/91))
