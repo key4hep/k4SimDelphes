@@ -189,6 +189,10 @@ namespace k4SimDelphes {
     //UserData for overflowing information
     auto* pathLengthCollection = createCollection<podio::UserDataCollection<float>>(branch + "_L");
 
+    // user data to define magnetic field (fill once per event)
+    auto* magFieldCollection = createCollection<podio::UserDataCollection<float>>("magFieldBz");
+    magFieldCollection->push_back(m_magneticFieldBz);       
+
     auto* mcRecoRelations = getCollection<edm4hep::MCRecoParticleAssociationCollection>(m_mcRecoAssocCollName);
     auto* idCollection    = getCollection<edm4hep::ParticleIDCollection>(m_particleIDName);
     auto* trackerHitColl  = getCollection<edm4hep::TrackerHitCollection>(TRACKERHIT_OUTPUT_NAME);
