@@ -39,3 +39,8 @@ Both of these test will fail with something like:
 ```
 
 The same happens also for using the ee-event generation with the new FCC-hh Delphes card, so the issue seems to be the card, not the events. 
+
+### Checking the test output files manually
+
+The tests each produce two output files, one is the direct Delphes output the other the DelphesEDM4HEP output. You will find them in `build/tests/` and they will be named 
+`<name_of_the_test>_delphes.root` and `<name_of_the_test.root`. The edm4hep output is not so easy to browse interactively, so you can use the script `check_testoutput.py` to read it and check for `nan` values. Currently it runs on one output file of the bbWW signal generated with `EventProducer`, also finding `nan`s, so the problem is not related to the test setup. 
