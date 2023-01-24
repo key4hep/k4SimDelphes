@@ -12,6 +12,10 @@ OUTPUT_FILE=${4}
 
 DELPHES_CARD=$(pwd)/test_$(basename ${DELPHES_CARD_IN})
 
+echo "printing DELPHES_CARD_IN"
+ls $DELPHES_CARD_IN
+
+
 # Keep track on whether this has been enabled from the calling site
 xtrace_on=$(shopt -qo xtrace && echo "yes")
 set +x # Don't need this explicit detailed output for these replacements
