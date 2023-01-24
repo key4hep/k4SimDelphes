@@ -98,3 +98,23 @@ else()
   message(WARNING "Cannot find old FCC-hh delphes card from the delphes installation. Cannot use it for testing")
 endif()
 
+
+# Comparison test with the new EDITED FCC-hh card replacing the EFlowTrack Collection 
+find_file(DELPHES_CARD_FCC_EDIT edited_FCChh_card.tcl PATHS ${DELPHES_CARDS_DIR_LOCAL}) #try the new FCC-hh card
+
+#need also the subdependencies of the card
+find_file(DELPHES_CARD_FCC_TRACKRESO trackMomentumResolution.tcl PATHS ${DELPHES_CARDS_DIR_LOCAL})
+find_file(DELPHES_CARD_FCC_MURESO muonMomentumResolutionVsP.tcl PATHS ${DELPHES_CARDS_DIR_LOCAL}) 
+
+#and move them to local
+if(DELPHES_CARD_FCC_EDIT AND DELPHES_CARD_FCC_TRACKRESO AND DELPHES_CARD_FCC_MURESO)
+
+  file(COPY ${DELPHES_CARD_FCC_TRACKRESO} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+  file(COPY ${DELPHES_CARD_FCC_MURESO} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
+  if(BUILD_PYTHIA_READER)
+    ADD_COMPARISON_TEST(PythiaConverter_ggHH_100TeV_FCCCard_edit DelphesPythia8_EDM4HEP ${DELPHES_CARD_FCC_EDIT} ${OUTPUT_CONFIG} pythia_converter_output_ggHH_100TeV_edit.root ${CMAKE_SOURCE_DIR}/examples/data/tester_pwp8_pp_hh_5f_hh_incl.cmd)
+  endif()
+else()
+  message(WARNING "Cannot find FCC-hh delphes card from the delphes installation. Cannot use it for testing")
+endif()
