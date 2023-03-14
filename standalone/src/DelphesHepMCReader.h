@@ -35,7 +35,7 @@ public:
 
     int i = 4;
 
-    m_reader = new DelphesHepMC2Reader;
+    m_reader = std::make_unique<DelphesHepMC2Reader>();
 
     Long64_t length = 0;
     if (i == argc || strncmp(argv[i], "-", 2) == 0) {
@@ -126,11 +126,11 @@ private:
   ExRootTreeWriter*      m_treeWriter{nullptr};
   std::unique_ptr<TTree> m_converterTree{nullptr};
 
-  FILE*                m_inputFile = 0;
-  TStopwatch           m_readStopWatch, m_procStopWatch;
-  ExRootTreeBranch *   m_branchEvent = 0, *m_branchWeight = 0;
-  DelphesHepMC2Reader* m_reader = 0;
-  Long64_t             m_eventCounter;
+  FILE*                                m_inputFile = 0;
+  TStopwatch                           m_readStopWatch, m_procStopWatch;
+  ExRootTreeBranch *                   m_branchEvent = 0, *m_branchWeight = 0;
+  std::unique_ptr<DelphesHepMC2Reader> m_reader = 0;
+  Long64_t                             m_eventCounter;
 };
 
 #endif
