@@ -95,19 +95,23 @@ public:
                  TObjArray* partonOutputArray) override {
     m_treeWriter->Clear();
     m_readStopWatch.Start();
-    auto factory = modularDelphes->GetFactory();
+    auto factory  = modularDelphes->GetFactory();
+    bool finished = false;
     do {
-      m_finished = m_reader->ReadBlock(factory, allParticleOutputArray, stableParticleOutputArray, partonOutputArray);
-    } while (m_finished && !m_reader->EventReady());
+      finished = m_reader->ReadBlock(factory, allParticleOutputArray, stableParticleOutputArray, partonOutputArray);
+    } while (finished && !m_reader->EventReady());
     m_readStopWatch.Stop();
     m_reader->AnalyzeEvent(m_branchEvent, m_eventCounter, &m_readStopWatch, &m_procStopWatch);
     m_reader->AnalyzeWeight(m_branchWeight);
     m_reader->Clear();
     m_eventCounter++;
-    return m_finished;
+    return finished;
   }
 
-  bool finished() const override { return m_finished; };
+  // For the HepMC reader there is no real way of determining on whether it is
+  // finished or not, so we return always false here, because readEvent will
+  // report on whether it wsa possible to read or not
+  bool finished() const override { return false; };
 
   TTree* converterTree() override { return m_treeWriter->GetTree(); }
 
@@ -115,7 +119,6 @@ private:
   static constexpr const char* m_appName = "DelphesHepMC";
   int                          m_numberOfEvents;
   int                          m_entry      = 0;
-  bool                         m_finished   = false;
   ExRootTreeReader*            m_treeReader = nullptr;
   TClonesArray*                m_branchParticle;
   TClonesArray*                m_branchHepMCEvent;
