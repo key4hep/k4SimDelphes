@@ -31,7 +31,7 @@ public:
     if (argc < 4) {
       return "";
     }
-    std::string outputfile = argv[2];
+    std::string outputfile = argv[3];
 
     int i = 4;
 
