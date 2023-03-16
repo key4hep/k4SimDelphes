@@ -359,6 +359,9 @@ namespace k4SimDelphes {
                                                         std::string const& branch, std::string_view const type) {
     auto* collection = createCollection<edm4hep::ReconstructedParticleCollection>(branch, true);
 
+    //add collection for the isolation variable calculated by delphes:
+    auto* isoIDColl = createCollection<podio::UserDataCollection<float>>(std::string(branch) + "_IsolationVar");
+
     for (auto iCand = 0; iCand < delphesCollection->GetEntries(); ++iCand) {
       auto* delphesCand = static_cast<DelphesT*>(delphesCollection->At(iCand));
 
@@ -375,6 +378,9 @@ namespace k4SimDelphes {
         if constexpr (!std::is_same_v<DelphesT, Photon>) {
           matchedReco->setCharge(delphesCand->Charge);
         }
+
+        //fill the isolation var
+        isoIDColl->push_back(delphesCand->IsolationVar);
 
       } else {
         std::cerr << "**** WARNING: No matching ReconstructedParticle was found for a Delphes " << type << std::endl;
