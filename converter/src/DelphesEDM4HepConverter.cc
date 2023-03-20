@@ -11,6 +11,8 @@
 #include "edm4hep/ReconstructedParticleCollection.h"
 #include "edm4hep/TrackCollection.h"
 #include "edm4hep/TrackerHitCollection.h"
+#include "edm4hep/EventHeaderCollection.h"
+#include "edm4hep/Vector3d.h"
 #include "edm4hep/Vector3d.h"
 
 #include "podio/UserDataCollection.h"
@@ -120,6 +122,12 @@ namespace k4SimDelphes {
       if (contains(outputSettings.ScalarHTCollections, branch.name.c_str())) {
         m_processFunctions.emplace(branch.name, &DelphesEDM4HepConverter::processScalarHT);
       }
+
+      // event header:
+      if (contains(outputSettings.EventHeaderCollections, branch.name.c_str())) {
+        m_processFunctions.emplace(branch.name, &DelphesEDM4HepConverter::createEventHeader);
+      }
+
     }
   }
 
@@ -151,6 +159,25 @@ namespace k4SimDelphes {
     m_genParticleIds.clear();
     m_recoParticleGenIds.clear();
     m_recoParticleIds.clear();
+  }
+
+  //convert the eventHeader with metaData
+  void DelphesEDM4HepConverter::createEventHeader(const TClonesArray* delphesCollection, std::string const& branch){
+    std::cout << "Filling event header" << std::endl;
+
+    auto* collection = createCollection<edm4hep::EventHeaderCollection>(branch);
+    auto       cand     = collection->create();
+
+    // auto* delphesCand = static_cast<Event*>(delphesCollection->At(0)); //does not yet work?
+    // cand.setWeight(delphesCand->Weight);
+ 
+    auto* delphesCand = static_cast<ScalarHT*>(delphesCollection->At(0));
+
+    
+
+    cand.setWeight(delphesCand->HT);
+    
+
   }
 
   void DelphesEDM4HepConverter::processParticles(const TClonesArray* delphesCollection, std::string const& branch) {
