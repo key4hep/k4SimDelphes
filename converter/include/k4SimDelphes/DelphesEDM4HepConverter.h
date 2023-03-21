@@ -95,7 +95,7 @@ namespace k4SimDelphes {
         const std::unordered_map<UInt_t, edm4hep::MCParticle>& mc_map);
 
   private:
-    void createEventHeader(const TClonesArray* delphesCollection, std::string const& branch); //correct here?
+    // void createEventHeader(const TClonesArray* delphesCollection, std::string const& branch); //correct here?
 
     void processParticles(const TClonesArray* delphesCollection, std::string const& branch);
     void processTracks(const TClonesArray* delphesCollection, std::string const& branch);
