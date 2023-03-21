@@ -96,21 +96,22 @@ public:
     m_treeWriter->Clear();
     m_readStopWatch.Start();
     auto factory  = modularDelphes->GetFactory();
-    bool finished = false;
-    do {
-      finished = m_reader->ReadBlock(factory, allParticleOutputArray, stableParticleOutputArray, partonOutputArray);
-    } while (finished && !m_reader->EventReady());
+    bool goodRead = false;
+    while ((goodRead =
+                m_reader->ReadBlock(factory, allParticleOutputArray, stableParticleOutputArray, partonOutputArray)) &&
+           !m_reader->EventReady()) {
+    }
     m_readStopWatch.Stop();
     m_reader->AnalyzeEvent(m_branchEvent, m_eventCounter, &m_readStopWatch, &m_procStopWatch);
     m_reader->AnalyzeWeight(m_branchWeight);
     m_reader->Clear();
     m_eventCounter++;
-    return finished;
+    return goodRead;
   }
 
   // For the HepMC reader there is no real way of determining on whether it is
   // finished or not, so we return always false here, because readEvent will
-  // report on whether it wsa possible to read or not
+  // report on whether it was possible to read or not
   bool finished() const override { return false; };
 
   TTree* converterTree() override { return m_treeWriter->GetTree(); }
