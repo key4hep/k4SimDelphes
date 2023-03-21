@@ -168,14 +168,12 @@ namespace k4SimDelphes {
     auto* collection = createCollection<edm4hep::EventHeaderCollection>(branch);
     auto       cand     = collection->create();
 
-    // auto* delphesCand = static_cast<Event*>(delphesCollection->At(0)); //does not yet work?
-    // cand.setWeight(delphesCand->Weight);
- 
-    auto* delphesCand = static_cast<ScalarHT*>(delphesCollection->At(0));
-
-    
-
-    cand.setWeight(delphesCand->HT);
+    auto* delphesCand = static_cast<LHEFEvent*>(delphesCollection->At(0)); //does not yet work?
+    cand.setWeight(delphesCand->Weight);
+  
+    //tester filling with non-sense:
+    // auto* delphesCand = static_cast<ScalarHT*>(delphesCollection->At(0));
+    // cand.setWeight(delphesCand->HT);
     
 
   }
