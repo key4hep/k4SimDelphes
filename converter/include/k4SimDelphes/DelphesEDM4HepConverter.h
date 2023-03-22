@@ -14,6 +14,7 @@
 #include "TTree.h"
 
 //Delphes
+#include "classes/DelphesClasses.h"
 #include "modules/Delphes.h"
 
 #include <array>
@@ -95,6 +96,8 @@ namespace k4SimDelphes {
         const std::unordered_map<UInt_t, edm4hep::MCParticle>& mc_map);
 
   private:
+    void createEventHeader(const HepMCEvent* delphesEvent);
+
     void processParticles(const TClonesArray* delphesCollection, std::string const& branch);
     void processTracks(const TClonesArray* delphesCollection, std::string const& branch);
     void processClusters(const TClonesArray* delphesCollection, std::string const& branch);

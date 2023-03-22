@@ -41,11 +41,6 @@ find_path(DELPHES_CARDS_DIR
 
 unset(searchpath)
 
-find_path(DELPHES_CARDS_DIR_LOCAL
-          NAMES card.tcl
-          HINTS /eos/experiment/fcc/hh/utils/delphescards/
-          PATH_SUFFIXES fcc_v05_scenarioI)
-
 set(DELPHES_INCLUDE_DIRS ${DELPHES_INCLUDE_DIR} ${DELPHES_EXTERNALS_INCLUDE_DIR})
 set(DELPHES_EXTERNALS_INCLUDE_DIRS ${DELPHES_EXTERNALS_INCLUDE_DIR})
 set(DELPHES_LIBRARIES ${DELPHES_LIBRARY})

@@ -71,6 +71,7 @@ namespace k4SimDelphes {
      */
     std::vector<std::string> ScalarHTCollections{{"ScalarHT"}};
 
+    std::vector<std::string> EventHeaderCollections{{"EventHeader"}};
     /**
      * Name of the global ReconstructedParticle collection
      */
@@ -113,6 +114,7 @@ namespace k4SimDelphes {
     os << std::setw(40) << " ScalarHTCollections: " << settings.ScalarHTCollections << "\n";
     os << std::setw(40) << " RecoParticleCollectionName: " << settings.RecoParticleCollectionName << "\n";
     os << std::setw(40) << " MCRecoAssociationCollectionName: " << settings.MCRecoAssociationCollectionName << "\n";
+    os << std::setw(40) << " EventHeaderCollections: " << settings.EventHeaderCollections << "\n";
     os << "------------------------------------------------------------\n";
 
     return os;
@@ -154,6 +156,9 @@ namespace k4SimDelphes {
 
     settings.ScalarHTCollections =
         toVecString(confReader->GetParam("EDM4HepOutput::ScalarHTCollections"), {"ScalarHT"});
+
+    settings.EventHeaderCollections =
+        toVecString(confReader->GetParam("EDM4HepOutput::EventHeaderCollections"), {"EventHeader"});
 
     settings.RecoParticleCollectionName =
         confReader->GetString("EDM4HepOutput::RecoParticleCollectionName", "ReconstructedParticles");
