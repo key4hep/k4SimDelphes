@@ -17,7 +17,7 @@
 
 #include "podio/UserDataCollection.h"
 
-#include "classes/DelphesClasses.h"
+// #include "classes/DelphesClasses.h"
 
 #include <TMatrixDSym.h>
 
@@ -123,11 +123,6 @@ namespace k4SimDelphes {
         m_processFunctions.emplace(branch.name, &DelphesEDM4HepConverter::processScalarHT);
       }
 
-      // event header:
-      // if (contains(outputSettings.EventHeaderCollections, branch.name.c_str())) {
-      //   m_processFunctions.emplace(branch.name, &DelphesEDM4HepConverter::createEventHeader);
-      // }
-
     }
   }
 
@@ -138,25 +133,16 @@ namespace k4SimDelphes {
     // Make sure the shared collections are present
     registerGlobalCollections();
 
-
-    // std::cout << "Filling event header" << std::endl;
-
-    auto* collection = createCollection<edm4hep::EventHeaderCollection>("EventHeader");
-    auto       cand     = collection->create();
+    //filling the event header
     auto* eventBranch = delphesTree->GetBranch("Event");
     
     if (eventBranch) {
-        std::cout << "Filling EventHeader" << std::endl;
-        std::cout << eventBranch->GetClassName() << std::endl;  
         auto* delphesEvents = *(TClonesArray**)eventBranch->GetAddress();
         auto* delphesEvent = static_cast<HepMCEvent*>(delphesEvents->At(0));
-
-        // auto* delphesEvent = *(HepMCEvent**)eventBranch->GetAddress();
-        std::cout << "Weight found: " << delphesEvent->Weight << std::endl;
-        cand.setWeight(delphesEvent->Weight);
+        createEventHeader(delphesEvent);
       }
     else{
-      std::cout << "Did not find Event branch .." << std::endl;
+      std::cout << "Could not find Event branch in Delphes tree. Not filling the EventHeader." << std::endl;
     }
 
     
@@ -185,21 +171,15 @@ namespace k4SimDelphes {
   }
 
   //convert the eventHeader with metaData
-  // void DelphesEDM4HepConverter::createEventHeader(const TClonesArray* delphesCollection, std::string const& branch){
-  //   std::cout << "Filling event header" << std::endl;
+  void DelphesEDM4HepConverter::createEventHeader(const HepMCEvent* delphesEvent){
+    // std::cout << "Filling event header" << std::endl;
 
-  //   auto* collection = createCollection<edm4hep::EventHeaderCollection>(branch);
-  //   auto       cand     = collection->create();
+    auto* collection = createCollection<edm4hep::EventHeaderCollection>("EventHeader");
+    auto       cand     = collection->create();
 
-  //   auto* delphesCand = static_cast<LHEFEvent*>(delphesCollection->At(0)); //does not yet work?
-  //   cand.setWeight(delphesCand->Weight);
-  
-  //   //tester filling with non-sense:
-  //   // auto* delphesCand = static_cast<ScalarHT*>(delphesCollection->At(0));
-  //   // cand.setWeight(delphesCand->HT);
-    
+    cand.setWeight(delphesEvent->Weight);
 
-  // }
+  }
 
   void DelphesEDM4HepConverter::processParticles(const TClonesArray* delphesCollection, std::string const& branch) {
     auto* collection = createCollection<edm4hep::MCParticleCollection>(branch);
