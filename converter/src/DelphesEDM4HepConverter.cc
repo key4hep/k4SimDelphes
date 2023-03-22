@@ -135,7 +135,7 @@ namespace k4SimDelphes {
 
     //filling the event header
     auto* eventBranch = delphesTree->GetBranch("Event");
-    
+
     if (eventBranch) {
         auto* delphesEvents = *(TClonesArray**)eventBranch->GetAddress();
         auto* delphesEvent = static_cast<HepMCEvent*>(delphesEvents->At(0));
@@ -145,7 +145,7 @@ namespace k4SimDelphes {
       std::cout << "Could not find Event branch in Delphes tree. Not filling the EventHeader." << std::endl;
     }
 
-    
+
 
     for (const auto& branch : m_branches) {
       // at this point it is not guaranteed that all entries in branch (which follow

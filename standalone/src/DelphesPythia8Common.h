@@ -44,7 +44,7 @@ void ConvertInput(Long64_t eventCounter, Pythia8::Pythia* pythia, ExRootTreeBran
   // element = new HepMCEvent(); // (branch->NewEntry());
 
   element = static_cast<HepMCEvent *>(branch->NewEntry());
-   
+
   element->Number = eventCounter;
 
   element->ProcessID = pythia->info.code();
