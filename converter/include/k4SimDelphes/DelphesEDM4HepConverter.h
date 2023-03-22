@@ -14,8 +14,8 @@
 #include "TTree.h"
 
 //Delphes
-#include "modules/Delphes.h"
 #include "classes/DelphesClasses.h"
+#include "modules/Delphes.h"
 
 #include <array>
 #include <memory>

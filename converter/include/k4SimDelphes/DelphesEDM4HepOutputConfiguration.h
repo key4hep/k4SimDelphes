@@ -71,7 +71,6 @@ namespace k4SimDelphes {
      */
     std::vector<std::string> ScalarHTCollections{{"ScalarHT"}};
 
-
     std::vector<std::string> EventHeaderCollections{{"EventHeader"}};
     /**
      * Name of the global ReconstructedParticle collection

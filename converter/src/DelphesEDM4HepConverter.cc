@@ -5,14 +5,13 @@
 
 #include "edm4hep/CalorimeterHitCollection.h"
 #include "edm4hep/ClusterCollection.h"
+#include "edm4hep/EventHeaderCollection.h"
 #include "edm4hep/MCParticleCollection.h"
 #include "edm4hep/MCRecoParticleAssociationCollection.h"
 #include "edm4hep/ParticleIDCollection.h"
 #include "edm4hep/ReconstructedParticleCollection.h"
 #include "edm4hep/TrackCollection.h"
 #include "edm4hep/TrackerHitCollection.h"
-#include "edm4hep/EventHeaderCollection.h"
-#include "edm4hep/Vector3d.h"
 #include "edm4hep/Vector3d.h"
 
 #include "podio/UserDataCollection.h"
@@ -122,7 +121,6 @@ namespace k4SimDelphes {
       if (contains(outputSettings.ScalarHTCollections, branch.name.c_str())) {
         m_processFunctions.emplace(branch.name, &DelphesEDM4HepConverter::processScalarHT);
       }
-
     }
   }
 
@@ -137,15 +135,12 @@ namespace k4SimDelphes {
     auto* eventBranch = delphesTree->GetBranch("Event");
 
     if (eventBranch) {
-        auto* delphesEvents = *(TClonesArray**)eventBranch->GetAddress();
-        auto* delphesEvent = static_cast<HepMCEvent*>(delphesEvents->At(0));
-        createEventHeader(delphesEvent);
-      }
-    else{
+      auto* delphesEvents = *(TClonesArray**)eventBranch->GetAddress();
+      auto* delphesEvent  = static_cast<HepMCEvent*>(delphesEvents->At(0));
+      createEventHeader(delphesEvent);
+    } else {
       std::cout << "Could not find Event branch in Delphes tree. Not filling the EventHeader." << std::endl;
     }
-
-
 
     for (const auto& branch : m_branches) {
       // at this point it is not guaranteed that all entries in branch (which follow
@@ -171,14 +166,13 @@ namespace k4SimDelphes {
   }
 
   //convert the eventHeader with metaData
-  void DelphesEDM4HepConverter::createEventHeader(const HepMCEvent* delphesEvent){
+  void DelphesEDM4HepConverter::createEventHeader(const HepMCEvent* delphesEvent) {
     // std::cout << "Filling event header" << std::endl;
 
     auto* collection = createCollection<edm4hep::EventHeaderCollection>("EventHeader");
-    auto       cand     = collection->create();
+    auto  cand       = collection->create();
 
     cand.setWeight(delphesEvent->Weight);
-
   }
 
   void DelphesEDM4HepConverter::processParticles(const TClonesArray* delphesCollection, std::string const& branch) {

@@ -43,7 +43,7 @@ void ConvertInput(Long64_t eventCounter, Pythia8::Pythia* pythia, ExRootTreeBran
   // event information
   // element = new HepMCEvent(); // (branch->NewEntry());
 
-  element = static_cast<HepMCEvent *>(branch->NewEntry());
+  element = static_cast<HepMCEvent*>(branch->NewEntry());
 
   element->Number = eventCounter;
 
