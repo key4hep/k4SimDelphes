@@ -52,6 +52,9 @@ namespace k4SimDelphes {
    */
   constexpr auto CALORIMETERHIT_OUTPUT_NAME = "CalorimeterHits";
 
+  // Testing adding Delphes ParticelFlowCandidates:
+  constexpr std::array<std::string_view, 1> RECO_CANDIDATES_OUTPUT = {"ParticleFlowCandidate"};
+
   struct BranchSettings {
     std::string input;
     std::string name;
@@ -100,6 +103,7 @@ namespace k4SimDelphes {
 
     void processParticles(const TClonesArray* delphesCollection, std::string const& branch);
     void processTracks(const TClonesArray* delphesCollection, std::string const& branch);
+    void processCandidates(const TClonesArray* delphesCollection, std::string const& branch);
     void processClusters(const TClonesArray* delphesCollection, std::string const& branch);
     void processJets(const TClonesArray* delphesCollection, std::string const& branch);
     void processPhotons(const TClonesArray* delphesCollection, std::string const& branch) {
