@@ -140,20 +140,17 @@ namespace k4SimDelphes {
     settings.GenParticleCollections =
         toVecString(confReader->GetParam("EDM4HepOutput::GenParticleCollections"), {"GenParticle"});
 
-    settings.JetCollections = toVecString(confReader->GetParam("EDM4HepOutput::JetCollections"), {"Jet"});
+    settings.JetCollections = toVecString(confReader->GetParam("EDM4HepOutput::JetCollections"), {});
 
-    settings.MuonCollections = toVecString(confReader->GetParam("EDM4HepOutput::MuonCollections"), {"Muon"});
+    settings.MuonCollections = toVecString(confReader->GetParam("EDM4HepOutput::MuonCollections"), {});
 
-    settings.ElectronCollections =
-        toVecString(confReader->GetParam("EDM4HepOutput::ElectronCollections"), {"Electron"});
+    settings.ElectronCollections = toVecString(confReader->GetParam("EDM4HepOutput::ElectronCollections"), {});
 
-    settings.PhotonCollections = toVecString(confReader->GetParam("EDM4HepOutput::PhotonCollections"), {"Photon"});
+    settings.PhotonCollections = toVecString(confReader->GetParam("EDM4HepOutput::PhotonCollections"), {});
 
-    settings.MissingETCollections =
-        toVecString(confReader->GetParam("EDM4HepOutput::MissingETCollections"), {"MissingET"});
+    settings.MissingETCollections = toVecString(confReader->GetParam("EDM4HepOutput::MissingETCollections"), {});
 
-    settings.ScalarHTCollections =
-        toVecString(confReader->GetParam("EDM4HepOutput::ScalarHTCollections"), {"ScalarHT"});
+    settings.ScalarHTCollections = toVecString(confReader->GetParam("EDM4HepOutput::ScalarHTCollections"), {});
 
     settings.RecoParticleCollectionName =
         confReader->GetString("EDM4HepOutput::RecoParticleCollectionName", "ReconstructedParticles");
