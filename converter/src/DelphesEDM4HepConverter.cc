@@ -173,6 +173,7 @@ namespace k4SimDelphes {
     auto  cand       = collection->create();
 
     cand.setWeight(delphesEvent->Weight);
+    cand.setEventNumber(delphesEvent->Number);
   }
 
   void DelphesEDM4HepConverter::processParticles(const TClonesArray* delphesCollection, std::string const& branch) {
