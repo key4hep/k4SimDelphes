@@ -31,11 +31,11 @@ public:
     if (argc < 4) {
       return "";
     }
-    std::string outputfile = argv[2];
+    std::string outputfile = argv[3];
 
     int i = 4;
 
-    m_reader = new DelphesHepMC2Reader;
+    m_reader = std::make_unique<DelphesHepMC2Reader>();
 
     Long64_t length = 0;
     if (i == argc || strncmp(argv[i], "-", 2) == 0) {
@@ -95,19 +95,24 @@ public:
                  TObjArray* partonOutputArray) override {
     m_treeWriter->Clear();
     m_readStopWatch.Start();
-    auto factory = modularDelphes->GetFactory();
-    do {
-      m_finished = m_reader->ReadBlock(factory, allParticleOutputArray, stableParticleOutputArray, partonOutputArray);
-    } while (m_finished && !m_reader->EventReady());
+    auto factory  = modularDelphes->GetFactory();
+    bool goodRead = false;
+    while ((goodRead =
+                m_reader->ReadBlock(factory, allParticleOutputArray, stableParticleOutputArray, partonOutputArray)) &&
+           !m_reader->EventReady()) {
+    }
     m_readStopWatch.Stop();
     m_reader->AnalyzeEvent(m_branchEvent, m_eventCounter, &m_readStopWatch, &m_procStopWatch);
     m_reader->AnalyzeWeight(m_branchWeight);
     m_reader->Clear();
     m_eventCounter++;
-    return m_finished;
+    return goodRead;
   }
 
-  bool finished() const override { return m_finished; };
+  // For the HepMC reader there is no real way of determining on whether it is
+  // finished or not, so we return always false here, because readEvent will
+  // report on whether it was possible to read or not
+  bool finished() const override { return false; };
 
   TTree* converterTree() override { return m_treeWriter->GetTree(); }
 
@@ -115,7 +120,6 @@ private:
   static constexpr const char* m_appName = "DelphesHepMC";
   int                          m_numberOfEvents;
   int                          m_entry      = 0;
-  bool                         m_finished   = false;
   ExRootTreeReader*            m_treeReader = nullptr;
   TClonesArray*                m_branchParticle;
   TClonesArray*                m_branchHepMCEvent;
@@ -123,11 +127,11 @@ private:
   ExRootTreeWriter*      m_treeWriter{nullptr};
   std::unique_ptr<TTree> m_converterTree{nullptr};
 
-  FILE*                m_inputFile = 0;
-  TStopwatch           m_readStopWatch, m_procStopWatch;
-  ExRootTreeBranch *   m_branchEvent = 0, *m_branchWeight = 0;
-  DelphesHepMC2Reader* m_reader = 0;
-  Long64_t             m_eventCounter;
+  FILE*                                m_inputFile = 0;
+  TStopwatch                           m_readStopWatch, m_procStopWatch;
+  ExRootTreeBranch *                   m_branchEvent = 0, *m_branchWeight = 0;
+  std::unique_ptr<DelphesHepMC2Reader> m_reader = 0;
+  Long64_t                             m_eventCounter;
 };
 
 #endif
