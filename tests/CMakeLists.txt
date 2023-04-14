@@ -58,12 +58,12 @@ else()
 endif()
 
 
-# Comparison test with the new FCC-hh card 
+# Comparison test with the new FCC-hh card
 find_file(DELPHES_CARD_FCC card.tcl PATHS ${DELPHES_CARDS_DIR_LOCAL}) #try the new FCC-hh card
 
 #need also the subdependencies of the card
 find_file(DELPHES_CARD_FCC_TRACKRESO trackMomentumResolution.tcl PATHS ${DELPHES_CARDS_DIR_LOCAL})
-find_file(DELPHES_CARD_FCC_MURESO muonMomentumResolutionVsP.tcl PATHS ${DELPHES_CARDS_DIR_LOCAL}) 
+find_file(DELPHES_CARD_FCC_MURESO muonMomentumResolutionVsP.tcl PATHS ${DELPHES_CARDS_DIR_LOCAL})
 
 #and move them to local
 if(DELPHES_CARD_FCC AND DELPHES_CARD_FCC_TRACKRESO AND DELPHES_CARD_FCC_MURESO)
@@ -78,12 +78,12 @@ else()
   message(WARNING "Cannot find FCC-hh delphes card from the delphes installation. Cannot use it for testing")
 endif()
 
-# Comparison test with the old FCC-hh card 
-find_file(DELPHES_CARD_FCC_OLD FCChh.tcl PATHS ${DELPHES_CARDS_DIR} PATH_SUFFIXES FCC) 
+# Comparison test with the old FCC-hh card
+find_file(DELPHES_CARD_FCC_OLD FCChh.tcl PATHS ${DELPHES_CARDS_DIR} PATH_SUFFIXES FCC)
 
 #need also the subdependencies of the card
 find_file(DELPHES_CARD_FCC_TRACKRESO_OLD momentumResolutionVsP.tcl PATHS ${DELPHES_CARDS_DIR} PATH_SUFFIXES FCC)
-find_file(DELPHES_CARD_FCC_MURESO_OLD muonMomentumResolutionVsP.tcl PATHS ${DELPHES_CARDS_DIR} PATH_SUFFIXES FCC) 
+find_file(DELPHES_CARD_FCC_MURESO_OLD muonMomentumResolutionVsP.tcl PATHS ${DELPHES_CARDS_DIR} PATH_SUFFIXES FCC)
 
 #and move them to local
 if(DELPHES_CARD_FCC_OLD AND DELPHES_CARD_FCC_TRACKRESO_OLD AND DELPHES_CARD_FCC_MURESO_OLD)
@@ -99,12 +99,12 @@ else()
 endif()
 
 
-# Comparison test with the new EDITED FCC-hh card replacing the EFlowTrack Collection 
+# Comparison test with the new EDITED FCC-hh card replacing the EFlowTrack Collection
 find_file(DELPHES_CARD_FCC_EDIT edited_FCChh_card.tcl PATHS ${DELPHES_CARDS_DIR_LOCAL}) #try the new FCC-hh card
 
 #need also the subdependencies of the card
 find_file(DELPHES_CARD_FCC_TRACKRESO trackMomentumResolution.tcl PATHS ${DELPHES_CARDS_DIR_LOCAL})
-find_file(DELPHES_CARD_FCC_MURESO muonMomentumResolutionVsP.tcl PATHS ${DELPHES_CARDS_DIR_LOCAL}) 
+find_file(DELPHES_CARD_FCC_MURESO muonMomentumResolutionVsP.tcl PATHS ${DELPHES_CARDS_DIR_LOCAL})
 
 #and move them to local
 if(DELPHES_CARD_FCC_EDIT AND DELPHES_CARD_FCC_TRACKRESO AND DELPHES_CARD_FCC_MURESO)
