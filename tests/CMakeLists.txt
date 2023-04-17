@@ -56,4 +56,3 @@ if(DELPHES_CARD)
 else()
   message(WARNING "Cannot find IDEA delphes card from the delphes installation. Cannot use it for testing")
 endif()
-
