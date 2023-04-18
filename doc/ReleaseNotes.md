@@ -1,3 +1,16 @@
+# v00-04
+
+* 2023-04-12 Thomas Madlener ([PR#105](https://github.com/key4hep/k4SimDelphes/pull/105))
+  - Adapt the default values of the output configuration parameters, such that it is possible to remove some output configuration parameters from the config file to skip conversions of certain collections. Fixes #100
+
+* 2023-03-21 Thomas Madlener ([PR#103](https://github.com/key4hep/k4SimDelphes/pull/103))
+  - Fix the HepMC reader that erroneously overwrote one of its input arguments. Fixes #102 
+  - Fix stopping of HepMC reader after reading only one event. Fixes #34 
+  - Fix leaking of the internal `DelphesHepMC2Reader` by using a `unique_ptr`.
+
+* 2023-03-14 Thomas Madlener ([PR#104](https://github.com/key4hep/k4SimDelphes/pull/104))
+  - Fix the pre-commit workflow and update actions to latest versions
+
 # v00-03-01
 
 # v00-03-00
