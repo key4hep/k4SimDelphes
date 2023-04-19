@@ -14,6 +14,7 @@
 #include "TTree.h"
 
 //Delphes
+#include "classes/DelphesClasses.h"
 #include "modules/Delphes.h"
 
 #include <array>
@@ -50,6 +51,11 @@ namespace k4SimDelphes {
    * * Classes that will be stored as TrackerHits
    */
   constexpr auto CALORIMETERHIT_OUTPUT_NAME = "CalorimeterHits";
+
+  /**
+   * * Eventheader class will be stored only
+   */
+  constexpr auto EVENTHEADER_NAME = "EventHeader";
 
   struct BranchSettings {
     std::string input;
@@ -95,6 +101,8 @@ namespace k4SimDelphes {
         const std::unordered_map<UInt_t, edm4hep::MCParticle>& mc_map);
 
   private:
+    void createEventHeader(const HepMCEvent* delphesEvent);
+
     void processParticles(const TClonesArray* delphesCollection, std::string const& branch);
     void processTracks(const TClonesArray* delphesCollection, std::string const& branch);
     void processClusters(const TClonesArray* delphesCollection, std::string const& branch);

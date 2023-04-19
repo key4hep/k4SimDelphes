@@ -5,6 +5,7 @@
 
 #include "edm4hep/CalorimeterHitCollection.h"
 #include "edm4hep/ClusterCollection.h"
+#include "edm4hep/EventHeaderCollection.h"
 #include "edm4hep/MCParticleCollection.h"
 #include "edm4hep/MCRecoParticleAssociationCollection.h"
 #include "edm4hep/ParticleIDCollection.h"
@@ -14,8 +15,6 @@
 #include "edm4hep/Vector3d.h"
 
 #include "podio/UserDataCollection.h"
-
-#include "classes/DelphesClasses.h"
 
 #include <TMatrixDSym.h>
 
@@ -130,6 +129,15 @@ namespace k4SimDelphes {
     // Make sure the shared collections are present
     registerGlobalCollections();
 
+    //filling the event header
+    auto* eventBranch = delphesTree->GetBranch("Event");
+
+    if (eventBranch) {
+      auto* delphesEvents = *(TClonesArray**)eventBranch->GetAddress();
+      auto* delphesEvent  = static_cast<HepMCEvent*>(delphesEvents->At(0));
+      createEventHeader(delphesEvent);
+    }
+
     for (const auto& branch : m_branches) {
       // at this point it is not guaranteed that all entries in branch (which follow
       // the input from the delphes card) are also present in the processing
@@ -151,6 +159,15 @@ namespace k4SimDelphes {
     m_genParticleIds.clear();
     m_recoParticleGenIds.clear();
     m_recoParticleIds.clear();
+  }
+
+  //convert the eventHeader with metaData
+  void DelphesEDM4HepConverter::createEventHeader(const HepMCEvent* delphesEvent) {
+    auto* collection = createCollection<edm4hep::EventHeaderCollection>(EVENTHEADER_NAME);
+    auto  cand       = collection->create();
+
+    cand.setWeight(delphesEvent->Weight);
+    cand.setEventNumber(delphesEvent->Number);
   }
 
   void DelphesEDM4HepConverter::processParticles(const TClonesArray* delphesCollection, std::string const& branch) {
