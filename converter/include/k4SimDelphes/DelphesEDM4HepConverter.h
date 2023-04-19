@@ -55,9 +55,7 @@ namespace k4SimDelphes {
   /**
    * * Eventheader class will be stored only
    */
-
   constexpr auto EVENTHEADER_NAME = "EventHeader";
-
 
   struct BranchSettings {
     std::string input;
