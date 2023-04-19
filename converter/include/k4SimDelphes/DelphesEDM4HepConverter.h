@@ -43,6 +43,11 @@ namespace k4SimDelphes {
   constexpr std::array<std::string_view, 1> RECO_CLUSTER_OUTPUT = {"Tower"};
 
   /**
+   * Classes that will be stored as particle flow candidates
+   */
+  constexpr std::array<std::string_view, 1> RECO_CANDIDATES_OUTPUT = {"ParticleFlowCandidate"};
+
+  /**
    * Classes that will be stored as TrackerHits
    */
   constexpr auto TRACKERHIT_OUTPUT_NAME = "TrackerHits";
@@ -52,8 +57,10 @@ namespace k4SimDelphes {
    */
   constexpr auto CALORIMETERHIT_OUTPUT_NAME = "CalorimeterHits";
 
-  // Testing adding Delphes ParticelFlowCandidates:
-  constexpr std::array<std::string_view, 1> RECO_CANDIDATES_OUTPUT = {"ParticleFlowCandidate"};
+  /**
+   * * Eventheader class will be stored only once
+   */
+  constexpr auto EVENTHEADER_NAME = "EventHeader";
 
   struct BranchSettings {
     std::string input;

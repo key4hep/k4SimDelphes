@@ -16,8 +16,6 @@
 
 #include "podio/UserDataCollection.h"
 
-// #include "classes/DelphesClasses.h"
-
 #include <TMatrixDSym.h>
 
 #include <iostream>
@@ -149,8 +147,6 @@ namespace k4SimDelphes {
       auto* delphesEvents = *(TClonesArray**)eventBranch->GetAddress();
       auto* delphesEvent  = static_cast<HepMCEvent*>(delphesEvents->At(0));
       createEventHeader(delphesEvent);
-    } else {
-      std::cout << "Could not find Event branch in Delphes tree. Not filling the EventHeader." << std::endl;
     }
 
     for (const auto& branch : m_branches) {
@@ -178,12 +174,11 @@ namespace k4SimDelphes {
 
   //convert the eventHeader with metaData
   void DelphesEDM4HepConverter::createEventHeader(const HepMCEvent* delphesEvent) {
-    // std::cout << "Filling event header" << std::endl;
-
-    auto* collection = createCollection<edm4hep::EventHeaderCollection>("EventHeader");
+    auto* collection = createCollection<edm4hep::EventHeaderCollection>(EVENTHEADER_NAME);
     auto  cand       = collection->create();
 
     cand.setWeight(delphesEvent->Weight);
+    cand.setEventNumber(delphesEvent->Number);
   }
 
   void DelphesEDM4HepConverter::processParticles(const TClonesArray* delphesCollection, std::string const& branch) {
