@@ -136,7 +136,7 @@ namespace k4SimDelphes {
       auto* delphesEvents = *(TClonesArray**)eventBranch->GetAddress();
       auto* delphesEvent  = static_cast<HepMCEvent*>(delphesEvents->At(0));
       createEventHeader(delphesEvent);
-    } 
+    }
 
     for (const auto& branch : m_branches) {
       // at this point it is not guaranteed that all entries in branch (which follow
