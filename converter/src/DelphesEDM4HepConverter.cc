@@ -163,7 +163,7 @@ namespace k4SimDelphes {
 
   //convert the eventHeader with metaData
   void DelphesEDM4HepConverter::createEventHeader(const HepMCEvent* delphesEvent) {
-    auto* collection = createCollection<edm4hep::EventHeaderCollection>("EventHeader");
+    auto* collection = createCollection<edm4hep::EventHeaderCollection>(EVENTHEADER_NAME);
     auto  cand       = collection->create();
 
     cand.setWeight(delphesEvent->Weight);
