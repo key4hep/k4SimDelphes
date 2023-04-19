@@ -51,6 +51,8 @@ public:
     m_treeWriter->SetTree(m_converterTree.get());
     modularDelphes->SetTreeWriter(m_treeWriter);
 
+    m_branchEvent = std::unique_ptr<ExRootTreeBranch>(m_treeWriter->NewBranch("Event", HepMCEvent::Class()));
+
     // Initialize Pythia
     m_pythia = std::make_unique<Pythia8::Pythia>();
 
