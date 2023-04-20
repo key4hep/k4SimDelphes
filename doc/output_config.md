@@ -24,7 +24,7 @@ easily reuse the `tcl` parser from delphes and to introduce a logical
 containment for the parameters. The names of the delphes branches are taken from the `TreeWriter`
 module defintion and used in the `EDM4HepOutput`.
 
-[^*]: As long as all collections requested for the conversion to `edm4hep` are defined as output branches in the `TreeWriter` section of the Delphes card. 
+[^*]: As long as all collections requested for the conversion to `edm4hep` are defined as output branches in the `TreeWriter` section of the Delphes card. If not, they need to be added there.
 
 ## Collection conversions
 
@@ -43,7 +43,7 @@ the assumption that this is a non-overlapping list of particles. It is the users
 responsibility to make sure that this is the case. (See [known
 issues](#known-issues)).
 
-`ParticleFlowCandidate` collections from Delphes can also be stored as a `ReconstructedParticleCollection` in the output, but they currently have no associations to the generated particles. 
+`ParticleFlowCandidate` collections from Delphes can also be stored as a `ReconstructedParticleCollection` in the output, but they currently have no associations to the generated particles.
 
 
 ### `GenParticleCollection`
@@ -115,22 +115,26 @@ classes. For the conversion the Delphes classes are taken from the `TreeWriter`
 
 All Delphes classes that are not listed here are currently not converted.
 
+## EventHeader Collection
+The `EventHeader` collection is used to store information from the Delphes `Event` classes. It contains one element for the `eventNumber` and one for the `weight`.
+
+
+### Isolation variable
+The isolation variable as calculated by the Delphes isolation module, will be added as a `UserDataCollection` for each collection of `Electron`, `Muon` and `Photon` during the conversion, called `<collection_name>_IsolationVar`.
+
 
 ### Known issues
 
-- [ ] Double counting of Tracks and Clusters. In Delphes it is possible that a
+<!-- - [ ] Double counting of Tracks and Clusters. In Delphes it is possible that a
       `Tower` and a `Track` point back to the same generated particle. This is
       currently not checked and each `Track` and `Tower` will be converted into
       an `edm4hep::ReconstructedParticle`. Hence, it is possible to get more
       than one per generated particle. This means that the number of jet
       constituents will be differend between Jets in the Delphes output and in
-      the `edm4hep` output.
+      the `edm4hep` output. -> solved as of April 2023? -->
 
 - [ ] Not all available information is used in the conversion. An incomplete list
       of things that are currently not available in `edm4hep`:
   - [ ] Jet substructure variables (including subjets)
-  - [ ] Isolation variables
-  - [ ] Flavor tag information
-  - [ ] Tau tag information
 
 
