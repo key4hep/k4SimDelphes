@@ -120,7 +120,7 @@ The `EventHeader` collection is used to store information from the Delphes `Even
 
 
 ## Isolation variable
-The isolation variable as calculated by the Delphes isolation module, will be added as a `UserDataCollection` for each collection of `Electron`, `Muon` and `Photon` during the conversion, called `<collection_name>_IsolationVar`. 
+The isolation variable as calculated by the Delphes isolation module, will be added as a `UserDataCollection` for each collection of `Electron`, `Muon` and `Photon` during the conversion, called `<collection_name>_IsolationVar`.
 
 
 ## Known issues
@@ -137,7 +137,7 @@ The isolation variable as calculated by the Delphes isolation module, will be ad
       of things that are currently not available in `edm4hep`:
   - [ ] Jet substructure variables (including subjets)
 
-- [ ] No conversion of `EventHeader` information for readers other than `DelphesPythia8Reader` 
+- [ ] No conversion of `EventHeader` information for readers other than `DelphesPythia8Reader`
 
 
 
