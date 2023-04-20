@@ -110,7 +110,7 @@ namespace k4SimDelphes {
 
     void processParticles(const TClonesArray* delphesCollection, std::string const& branch);
     void processTracks(const TClonesArray* delphesCollection, std::string const& branch);
-    void processCandidates(const TClonesArray* delphesCollection, std::string const& branch);
+    void processPFlowCandidates(const TClonesArray* delphesCollection, std::string const& branch);
     void processClusters(const TClonesArray* delphesCollection, std::string const& branch);
     void processJets(const TClonesArray* delphesCollection, std::string const& branch);
     void processPhotons(const TClonesArray* delphesCollection, std::string const& branch) {

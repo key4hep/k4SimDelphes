@@ -89,23 +89,18 @@ namespace k4SimDelphes {
 
     for (const auto& branch : m_branches) {
 
-      // debug:
-      std::cout << "branch name: " << branch.name.c_str() << std::endl;
-
       if (contains(outputSettings.GenParticleCollections, branch.name.c_str())) {
         m_processFunctions.emplace(branch.name, &DelphesEDM4HepConverter::processParticles);
       }
 
       if (contains(outputSettings.ReconstructedParticleCollections, branch.name.c_str()) &&
           contains(RECO_TRACK_OUTPUT, branch.className.c_str())) {
-        std::cout << "processing tracks .." << std::endl;
         m_processFunctions.emplace(branch.name, &DelphesEDM4HepConverter::processTracks);
       }
 
       if (contains(outputSettings.ReconstructedParticleCollections, branch.name.c_str()) &&
           contains(RECO_CANDIDATES_OUTPUT, branch.className.c_str())) {
-        std::cout << "processing candidates .." << std::endl;
-        m_processFunctions.emplace(branch.name, &DelphesEDM4HepConverter::processCandidates);
+        m_processFunctions.emplace(branch.name, &DelphesEDM4HepConverter::processPFlowCandidates);
       }
 
       if (contains(outputSettings.ReconstructedParticleCollections, branch.name.c_str()) &&
@@ -383,7 +378,7 @@ namespace k4SimDelphes {
   }
 
 
-  void DelphesEDM4HepConverter::processCandidates(const TClonesArray* delphesCollection, std::string const& branch) {
+  void DelphesEDM4HepConverter::processPFlowCandidates(const TClonesArray* delphesCollection, std::string const& branch) {
     auto* candidateCollection = createCollection<edm4hep::ReconstructedParticleCollection>(branch);
 
     for (auto iCand = 0; iCand < delphesCollection->GetEntries(); ++iCand) {
