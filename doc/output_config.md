@@ -116,14 +116,14 @@ classes. For the conversion the Delphes classes are taken from the `TreeWriter`
 All Delphes classes that are not listed here are currently not converted.
 
 ## EventHeader Collection
-The `EventHeader` collection is used to store information from the Delphes `Event` classes. It contains one element for the `eventNumber` and one for the `weight`.
+The `EventHeader` collection is used to store information from the Delphes `Event` classes. It contains one element for the `eventNumber` and one for the `weight`. This is currently only implemented for the `DelphesPythia8Reader`.
 
 
-### Isolation variable
-The isolation variable as calculated by the Delphes isolation module, will be added as a `UserDataCollection` for each collection of `Electron`, `Muon` and `Photon` during the conversion, called `<collection_name>_IsolationVar`.
+## Isolation variable
+The isolation variable as calculated by the Delphes isolation module, will be added as a `UserDataCollection` for each collection of `Electron`, `Muon` and `Photon` during the conversion, called `<collection_name>_IsolationVar`. 
 
 
-### Known issues
+## Known issues
 
 <!-- - [ ] Double counting of Tracks and Clusters. In Delphes it is possible that a
       `Tower` and a `Track` point back to the same generated particle. This is
@@ -136,5 +136,8 @@ The isolation variable as calculated by the Delphes isolation module, will be ad
 - [ ] Not all available information is used in the conversion. An incomplete list
       of things that are currently not available in `edm4hep`:
   - [ ] Jet substructure variables (including subjets)
+
+- [ ] No conversion of `EventHeader` information for readers other than `DelphesPythia8Reader` 
+
 
 
