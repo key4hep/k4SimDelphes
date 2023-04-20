@@ -19,7 +19,7 @@ namespace k4SimDelphes {
      * under the name specified below. These will be associated with the generated
      * particles.
      */
-    std::vector<std::string> ReconstructedParticleCollections{{"EflowTrack", "EFlowPhoton", "EFlowNeutralHadron", "ParticleFlowCandidate"}};
+    std::vector<std::string> ReconstructedParticleCollections{{"EflowTrack", "EFlowPhoton", "EFlowNeutralHadron"}};
 
     /**
      * Branches that will be considered and stored as MCParticle. Each Delphes
