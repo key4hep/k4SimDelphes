@@ -8,7 +8,7 @@ that defines the necessary parameters:
 
 [edm4hep_output_config.tcl](https://github.com/key4hep/k4SimDelphes/blob/main/examples/edm4hep_output_config.tcl). This `tcl` file has to
 be passed to the conversion executable as parameter from the command line. **No
-changes to the delphes card that is used are necessary.** An exemplary call
+changes to the delphes card that is used are necessary.**[^*] An exemplary call
 could look something like this (replacing the `delphes_card.tcl` and the
 `input_file.stdhep` with actual input files):
 
@@ -23,6 +23,8 @@ A module `EDM4HepOutput` is introduced solely for the purpose of being able to
 easily reuse the `tcl` parser from delphes and to introduce a logical
 containment for the parameters. The names of the delphes branches are taken from the `TreeWriter`
 module defintion and used in the `EDM4HepOutput`.
+
+[^*]: As long as all collections requested for the conversion to `edm4hep` are defined as output branches in the `TreeWriter` section of the Delphes card. 
 
 ## Collection conversions
 
@@ -40,6 +42,9 @@ generated particles stored as `edm4hep::MCParticle`s. The converter works under
 the assumption that this is a non-overlapping list of particles. It is the users
 responsibility to make sure that this is the case. (See [known
 issues](#known-issues)).
+
+`ParticleFlowCandidate` collections from Delphes can also be stored as a `ReconstructedParticleCollection` in the output, but they currently have no associations to the generated particles. 
+
 
 ### `GenParticleCollection`
 All Delphes `GenParticle` collections that will be considered and stored as
@@ -84,7 +89,7 @@ The filled collection contains only one element per event.
 
 The parameters **`RecoParticleCollectionName`** and
 **`MCRecoAssociationCollectionName`** control the names of the [global
-reconstructed particle colleciton](#reconstructedparticlecollections) and the
+reconstructed particle collection](#reconstructedparticlecollections) and the
 collection with the `MCRecoParticleAssociation`s that can be used to find the
 `MCParticle`s associated to `ReconstructedParticle`s (and vice versa).
 
@@ -105,6 +110,7 @@ classes. For the conversion the Delphes classes are taken from the `TreeWriter`
 | `Photon`      | `ReconstructedParticle` (subset collection)       |
 | `MissingET`   | `ReconstructedParticle`                           |
 | `ScalarHT`    | `ParticleID`                                      |
+| `ParticleFlowCandidate`       | `ReconstructedParticle`           |
 | n/a           | `MCRecoParticleAssociation`                       |
 
 All Delphes classes that are not listed here are currently not converted.
