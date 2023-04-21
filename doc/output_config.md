@@ -43,7 +43,7 @@ the assumption that this is a non-overlapping list of particles. It is the users
 responsibility to make sure that this is the case. (See [known
 issues](#known-issues)).
 
-`ParticleFlowCandidate` collections from Delphes can also be stored as a `ReconstructedParticleCollection` in the output, but they currently have no associations to the generated particles.
+`ParticleFlowCandidate` collections from Delphes can also be stored as separate `ReconstructedParticleCollection`s in the output, but they currently have no associations to the generated particles. Note that they are **not** added to the global `ReconstructedParticleCollection` described above, as that would lead to double counting. 
 
 
 ### `GenParticleCollection`
@@ -116,7 +116,7 @@ classes. For the conversion the Delphes classes are taken from the `TreeWriter`
 All Delphes classes that are not listed here are currently not converted.
 
 ## EventHeader Collection
-The `EventHeader` collection is used to store information from the Delphes `Event` classes. It contains one element for the `eventNumber` and one for the `weight`. This is currently only implemented for the `DelphesPythia8Reader`.
+The `EventHeader` collection is used to store information from the Delphes `Event` classes. It always contains one element pre event with member variables `eventNumber` and `weight`. This is currently only implemented for the `DelphesPythia8Reader`.
 
 
 ## Isolation variable
