@@ -43,6 +43,11 @@ namespace k4SimDelphes {
   constexpr std::array<std::string_view, 1> RECO_CLUSTER_OUTPUT = {"Tower"};
 
   /**
+   * Classes that will be stored as particle flow candidates
+   */
+  constexpr std::array<std::string_view, 1> RECO_CANDIDATES_OUTPUT = {"ParticleFlowCandidate"};
+
+  /**
    * Classes that will be stored as TrackerHits
    */
   constexpr auto TRACKERHIT_OUTPUT_NAME = "TrackerHits";
@@ -53,7 +58,7 @@ namespace k4SimDelphes {
   constexpr auto CALORIMETERHIT_OUTPUT_NAME = "CalorimeterHits";
 
   /**
-   * * Eventheader class will be stored only
+   * * Eventheader class will be stored only once
    */
   constexpr auto EVENTHEADER_NAME = "EventHeader";
 
@@ -105,6 +110,7 @@ namespace k4SimDelphes {
 
     void processParticles(const TClonesArray* delphesCollection, std::string const& branch);
     void processTracks(const TClonesArray* delphesCollection, std::string const& branch);
+    void processPFlowCandidates(const TClonesArray* delphesCollection, std::string const& branch);
     void processClusters(const TClonesArray* delphesCollection, std::string const& branch);
     void processJets(const TClonesArray* delphesCollection, std::string const& branch);
     void processPhotons(const TClonesArray* delphesCollection, std::string const& branch) {

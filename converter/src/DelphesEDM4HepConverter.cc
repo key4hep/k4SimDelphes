@@ -39,8 +39,9 @@ namespace k4SimDelphes {
    * NOTE: not a configuration parameter. this has to be done in this order to
    * ensure that products required by later stages are producd early enough
    */
-  constexpr std::array<std::string_view, 9> PROCESSING_ORDER = {
-      "GenParticle", "Track", "Tower", "Muon", "Electron", "Photon", "Jet", "MissingET", "SclalarHT"};
+  constexpr std::array<std::string_view, 10> PROCESSING_ORDER = {
+      "GenParticle", "Track",     "Tower",    "ParticleFlowCandidate", "Muon", "Electron", "Photon",
+      "Jet",         "MissingET", "SclalarHT"};
 
   template <size_t N>
   void sortBranchesProcessingOrder(std::vector<BranchSettings>&           branches,
@@ -95,6 +96,11 @@ namespace k4SimDelphes {
       if (contains(outputSettings.ReconstructedParticleCollections, branch.name.c_str()) &&
           contains(RECO_TRACK_OUTPUT, branch.className.c_str())) {
         m_processFunctions.emplace(branch.name, &DelphesEDM4HepConverter::processTracks);
+      }
+
+      if (contains(outputSettings.ReconstructedParticleCollections, branch.name.c_str()) &&
+          contains(RECO_CANDIDATES_OUTPUT, branch.className.c_str())) {
+        m_processFunctions.emplace(branch.name, &DelphesEDM4HepConverter::processPFlowCandidates);
       }
 
       if (contains(outputSettings.ReconstructedParticleCollections, branch.name.c_str()) &&
@@ -371,10 +377,29 @@ namespace k4SimDelphes {
     }
   }
 
+  void DelphesEDM4HepConverter::processPFlowCandidates(const TClonesArray* delphesCollection,
+                                                       std::string const&  branch) {
+    auto* candidateCollection = createCollection<edm4hep::ReconstructedParticleCollection>(branch);
+
+    for (auto iCand = 0; iCand < delphesCollection->GetEntries(); ++iCand) {
+      auto* delphesCand = static_cast<ParticleFlowCandidate*>(delphesCollection->At(iCand));
+      auto  candidate   = candidateCollection->create();
+
+      candidate.setCharge(delphesCand->Charge);
+      candidate.setMass(delphesCand->Mass);
+      const auto momentum = delphesCand->P4();
+      candidate.setEnergy(momentum.E());
+      candidate.setMomentum({(float)momentum.Px(), (float)momentum.Py(), (float)momentum.Pz()});
+    }
+  }
+
   template <typename DelphesT>
   void DelphesEDM4HepConverter::fillReferenceCollection(const TClonesArray* delphesCollection,
                                                         std::string const& branch, std::string_view const type) {
     auto* collection = createCollection<edm4hep::ReconstructedParticleCollection>(branch, true);
+
+    //add collection for the isolation variable calculated by delphes:
+    auto* isoIDColl = createCollection<podio::UserDataCollection<float>>(std::string(branch) + "_IsolationVar");
 
     for (auto iCand = 0; iCand < delphesCollection->GetEntries(); ++iCand) {
       auto* delphesCand = static_cast<DelphesT*>(delphesCollection->At(iCand));
@@ -392,6 +417,9 @@ namespace k4SimDelphes {
         if constexpr (!std::is_same_v<DelphesT, Photon>) {
           matchedReco->setCharge(delphesCand->Charge);
         }
+
+        //fill the isolation var
+        isoIDColl->push_back(delphesCand->IsolationVar);
 
       } else {
         std::cerr << "**** WARNING: No matching ReconstructedParticle was found for a Delphes " << type << std::endl;
