@@ -43,7 +43,7 @@ the assumption that this is a non-overlapping list of particles. It is the users
 responsibility to make sure that this is the case. (See [known
 issues](#known-issues)).
 
-`ParticleFlowCandidate` collections from Delphes can also be stored as separate `ReconstructedParticleCollection`s in the output, but they currently have no associations to the generated particles. Note that they are **not** added to the global `ReconstructedParticleCollection` described above, as that would lead to double counting. 
+`ParticleFlowCandidate` collections from Delphes can also be stored as separate `ReconstructedParticleCollection`s in the output, but they currently have no associations to the generated particles. Note that they are **not** added to the global `ReconstructedParticleCollection` described above, as that would lead to double counting.
 
 
 ### `GenParticleCollection`
