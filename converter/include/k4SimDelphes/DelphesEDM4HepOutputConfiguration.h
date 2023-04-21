@@ -10,81 +10,81 @@
 
 namespace k4SimDelphes {
   /**
- * The settings steering the output of the DelphesEDM4HepConverter. Default
- * values correspond to the ones found in delphes example cards.
- */
+   * The settings steering the output of the DelphesEDM4HepConverter. Default
+   * values correspond to the ones found in delphes example cards.
+   */
   struct OutputSettings {
     /**
-   * Branches that will be stored in one global ReconstructedParticle collection
-   * under the name specified below. These will be associated with the generated
-   * particles.
-   */
+     * Branches that will be stored in one global ReconstructedParticle collection
+     * under the name specified below. These will be associated with the generated
+     * particles.
+     */
     std::vector<std::string> ReconstructedParticleCollections{{"EflowTrack", "EFlowPhoton", "EFlowNeutralHadron"}};
 
     /**
-   * Branches that will be considered and stored as MCParticle. Each Delphes
-   * collection will get its own edm4hep collection, but all generated particles
-   * will be considered for the associations to reconstructed particles.
-   */
+     * Branches that will be considered and stored as MCParticle. Each Delphes
+     * collection will get its own edm4hep collection, but all generated particles
+     * will be considered for the associations to reconstructed particles.
+     */
     std::vector<std::string> GenParticleCollections{{"GenParticle"}};
 
     /**
-   * Branches that contain delphes jet collections that will be converted to
-   * ReconstructedParticle. Each delphes collection gets its own edm4hep
-   * collection. The constituents of the jets will be taken from the global
-   * ReconstructedParticle collection.
-   */
+     * Branches that contain delphes jet collections that will be converted to
+     * ReconstructedParticle. Each delphes collection gets its own edm4hep
+     * collection. The constituents of the jets will be taken from the global
+     * ReconstructedParticle collection.
+     */
     std::vector<std::string> JetCollections{{"Jet"}};
 
     /**
-   * Name of the delphes muon collections that will be converted to
-   * RecoParticleRefs that point into the global reconstructed particle
-   * collection. Each delphes collection gets its own edm4hep collection.
-   */
+     * Name of the delphes muon collections that will be converted to
+     * RecoParticleRefs that point into the global reconstructed particle
+     * collection. Each delphes collection gets its own edm4hep collection.
+     */
     std::vector<std::string> MuonCollections{{"Muon"}};
 
     /**
-   * Name of the delphes electron collections that will be converted to
-   * RecoParticleRefs that point into the global reconstructed particle
-   * collection. Each delphes collection gets its own edm4hep collection.
-   */
+     * Name of the delphes electron collections that will be converted to
+     * RecoParticleRefs that point into the global reconstructed particle
+     * collection. Each delphes collection gets its own edm4hep collection.
+     */
     std::vector<std::string> ElectronCollections{{"Electron"}};
 
     /**
-   * Name of the delphes photon collections that will be converted to
-   * RecoParticleRefs that point into the global reconstructed particle
-   * collection. Each delphes collection gets its own edm4hep collection.
-   */
+     * Name of the delphes photon collections that will be converted to
+     * RecoParticleRefs that point into the global reconstructed particle
+     * collection. Each delphes collection gets its own edm4hep collection.
+     */
     std::vector<std::string> PhotonCollections{{"Photon"}};
 
     /**
-   * Name of the delphes MissingET collections that are converted and stored as
-   * ReconstructedParticle (one per event). Each delphes collection will get its
-   * own edm4hep collection.
-   */
+     * Name of the delphes MissingET collections that are converted and stored as
+     * ReconstructedParticle (one per event). Each delphes collection will get its
+     * own edm4hep collection.
+     */
     std::vector<std::string> MissingETCollections{{"MissingET"}};
 
     /**
-   * Name of the delphes ScalarHT collections that are converted and stored as
-   * ParticleID objects (one per event). Each delphes collection will get its
-   * own edm4hep collection.
-   */
+     * Name of the delphes ScalarHT collections that are converted and stored as
+     * ParticleID objects (one per event). Each delphes collection will get its
+     * own edm4hep collection.
+     */
     std::vector<std::string> ScalarHTCollections{{"ScalarHT"}};
 
     /**
-   * Name of the global ReconstructedParticle collection
-   */
+     * Name of the global ReconstructedParticle collection
+     */
     std::string RecoParticleCollectionName{"ReconstructedParticles"};
 
     /**
-   * Name of the MCRecoParticleAssociationCollection holding the associations of
-   * generated to reconstructed particles.
-   */
+     * Name of the MCRecoParticleAssociationCollection holding the associations of
+     * generated to reconstructed particles.
+     */
     std::string MCRecoAssociationCollectionName{"MCRecoAssociations"};
 
     /**
-   * Name of the ParticleIDCollection holding the ctags / isolation variables.
-   */
+     * Name of the ParticleIDCollection holding the ctags / isolation variables.
+     */
     std::string ParticleIDCollectionName{"ParticleIDs"};
   };
 
