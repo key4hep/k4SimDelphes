@@ -47,7 +47,7 @@ if (NOT CMAKE_CONFIGURATION_TYPES)
 endif()
 
 #--- add version files ---------------------------------------------------------
-configure_file(${CMAKE_SOURCE_DIR}/k4SimDelphesVersion.h
+configure_file(${PROJECT_SOURCE_DIR}/k4SimDelphesVersion.h
                ${CMAKE_BINARY_DIR}/k4SimDelphesVersion.h )
 install(FILES ${CMAKE_BINARY_DIR}/k4SimDelphesVersion.h
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/k4SimDelphes )
