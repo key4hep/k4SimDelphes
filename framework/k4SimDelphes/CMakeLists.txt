@@ -31,16 +31,16 @@ if(BUILD_TESTING)
              WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/examples/options
              COMMAND  k4run k4simdelphesalg.py)
     # set up gaudi environment for tests
-    set_property(TEST k4SimDelphesAlgBasicTest APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}:${CMAKE_BINARY_DIR}/framework/k4SimDelphes:$<TARGET_FILE_DIR:k4Gen::k4Gen>:$<TARGET_FILE_DIR:k4FWCore::k4FWCore>:$ENV{LD_LIBRARY_PATH}"
-    "PYTHONPATH=$<TARGET_FILE_DIR:k4Gen::k4Gen>/../python:$<TARGET_FILE_DIR:k4FWCore::k4FWCore>/../python:${CMAKE_BINARY_DIR}/framework/k4SimDelphes/${GAUDI_GENCONF_DIR}:$ENV{PYTHONPATH}"
+    set_property(TEST k4SimDelphesAlgBasicTest APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=${PROJECT_BINARY_DIR}:${PROJECT_BINARY_DIR}/framework/k4SimDelphes:$<TARGET_FILE_DIR:k4Gen::k4Gen>:$<TARGET_FILE_DIR:k4FWCore::k4FWCore>:$ENV{LD_LIBRARY_PATH}"
+    "PYTHONPATH=$<TARGET_FILE_DIR:k4Gen::k4Gen>/../python:$<TARGET_FILE_DIR:k4FWCore::k4FWCore>/../python:${PROJECT_BINARY_DIR}/framework/k4SimDelphes/${GAUDI_GENCONF_DIR}:$ENV{PYTHONPATH}"
     )
 
     add_test(NAME k4SimDelphesAlgPythiaTest
              WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/examples/options
              COMMAND  k4run k4simdelphesalg_pythia.py)
     # set up gaudi environment for tests
-    set_property(TEST k4SimDelphesAlgPythiaTest APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}:${CMAKE_BINARY_DIR}/framework/k4SimDelphes:$<TARGET_FILE_DIR:k4Gen::k4Gen>:$<TARGET_FILE_DIR:k4FWCore::k4FWCore>:$ENV{LD_LIBRARY_PATH}"
-    "PYTHONPATH=$<TARGET_FILE_DIR:k4Gen::k4Gen>/../python:$<TARGET_FILE_DIR:k4FWCore::k4FWCore>/../python:${CMAKE_BINARY_DIR}/framework/k4SimDelphes/${GAUDI_GENCONF_DIR}:$ENV{PYTHONPATH}"
+    set_property(TEST k4SimDelphesAlgPythiaTest APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=${PROJECT_BINARY_DIR}:${PROJECT_BINARY_DIR}/framework/k4SimDelphes:$<TARGET_FILE_DIR:k4Gen::k4Gen>:$<TARGET_FILE_DIR:k4FWCore::k4FWCore>:$ENV{LD_LIBRARY_PATH}"
+    "PYTHONPATH=$<TARGET_FILE_DIR:k4Gen::k4Gen>/../python:$<TARGET_FILE_DIR:k4FWCore::k4FWCore>/../python:${PROJECT_BINARY_DIR}/framework/k4SimDelphes/${GAUDI_GENCONF_DIR}:$ENV{PYTHONPATH}"
     )
 
   else()

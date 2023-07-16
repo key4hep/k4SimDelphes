@@ -48,8 +48,8 @@ endif()
 
 #--- add version files ---------------------------------------------------------
 configure_file(${PROJECT_SOURCE_DIR}/k4SimDelphesVersion.h
-               ${CMAKE_BINARY_DIR}/k4SimDelphesVersion.h )
-install(FILES ${CMAKE_BINARY_DIR}/k4SimDelphesVersion.h
+               ${PROJECT_BINARY_DIR}/k4SimDelphesVersion.h )
+install(FILES ${PROJECT_BINARY_DIR}/k4SimDelphesVersion.h
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/k4SimDelphes )
 
 
