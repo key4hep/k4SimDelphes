@@ -1,3 +1,18 @@
+# v00-05
+
+* 2023-07-16 jmcarcell ([PR#109](https://github.com/key4hep/k4SimDelphes/pull/109))
+  - Rename `CMAKE_BINARY_DIR` to `PROJECT_BINARY_DIR`
+
+* 2023-07-13 jmcarcell ([PR#108](https://github.com/key4hep/k4SimDelphes/pull/108))
+  - Rename `CMAKE_{SOURCE,BIN}_DIR` to `PROJECT_{SOURCE,BIN}_DIR`
+
+* 2023-04-21 Birgit Stapf ([PR#107](https://github.com/key4hep/k4SimDelphes/pull/107))
+  -  Add the Isolation Variable as computed by Delphes to the edm4hep conversion output as a UserDataCollection
+  -  Add ParticleFlowCandidates as possible collection to converter
+
+* 2023-04-19 Birgit Stapf ([PR#106](https://github.com/key4hep/k4SimDelphes/pull/106))
+  - Add the event header to conversion from Delphes to edm4hep output. The event weight (as returned by generator) as well as the event number will be filled as members.
+
 # v00-04
 
 * 2023-04-12 Thomas Madlener ([PR#105](https://github.com/key4hep/k4SimDelphes/pull/105))
