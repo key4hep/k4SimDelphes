@@ -16,7 +16,7 @@ target_link_libraries(DelphesEDM4HepConverter
                         podio::podio
                         ROOT::MathCore
                         ROOT::EG
-                        ROOT::Physics)
+                        )
 
 install(DIRECTORY include/
         TYPE INCLUDE)
