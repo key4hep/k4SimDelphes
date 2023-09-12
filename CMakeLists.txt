@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.3)
+cmake_minimum_required(VERSION 3.16)
 
 project(k4SimDelphes)
 
@@ -78,6 +78,7 @@ endif()
 #--- Non-optional Dependencies ------------------------------------------------
 find_package(Delphes REQUIRED)
 find_package(EDM4HEP REQUIRED)
+find_package(ROOT REQUIRED)
 
 #--- optional dependencies
 if(BUILD_PYTHIA_READER OR BUILD_EVTGEN_READER)
