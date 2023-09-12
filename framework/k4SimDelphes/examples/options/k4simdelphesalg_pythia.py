@@ -1,5 +1,5 @@
 from Gaudi.Configuration import *
-from GaudiKernel import SystemOfUnits as units
+import os
 
 from Configurables import ApplicationMgr
 app = ApplicationMgr()
