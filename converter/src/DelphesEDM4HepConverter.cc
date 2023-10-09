@@ -556,6 +556,11 @@ namespace k4SimDelphes {
     trackState.phi = cand->Phi;
     // Same thing under different name in Delphes
     trackState.tanLambda = cand->CtgTheta;
+
+/*
+    // Instead of recomputing the track's omega from its pT, better take it directly
+    // from the curvature of the delphes track - see below.
+
     // Only do omega when there is actually a magnetic field.
     double varOmega = 0;
     if (magFieldBz) {
@@ -567,6 +572,7 @@ namespace k4SimDelphes {
       // constant B-field -> relative error on pT is relative error on omega
       varOmega = cand->ErrorPT * cand->ErrorPT / cand->PT / cand->PT * trackState.omega * trackState.omega;
     }
+*/
 
     // fill the covariance matrix. There is a conversion of units
     // because the covariance matrix in delphes is with the original units
@@ -578,6 +584,8 @@ namespace k4SimDelphes {
     // needs to be applied to any covariance matrix element
     // relating to curvature (index 2)
     double scale2 = -2.;  // CAREFUL: DELPHES USES THE HALF-CURVATURE
+
+    trackState.omega = cand->C * scale2  ;
 
     covMatrix[0] = covaFB(0, 0);
 
