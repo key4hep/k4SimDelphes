@@ -557,23 +557,6 @@ namespace k4SimDelphes {
     // Same thing under different name in Delphes
     trackState.tanLambda = cand->CtgTheta;
 
-/*
-    // Instead of recomputing the track's omega from its pT, better take it directly
-    // from the curvature of the delphes track - see below.
-
-    // Only do omega when there is actually a magnetic field.
-    double varOmega = 0;
-    if (magFieldBz) {
-      // conversion to have omega in [1/mm]
-      constexpr double a = c_light * 1e3 * 1e-15;
-
-      trackState.omega = a * magFieldBz / cand->PT * std::copysign(1.0, cand->Charge);
-      // calculate variation using simple error propagation, assuming
-      // constant B-field -> relative error on pT is relative error on omega
-      varOmega = cand->ErrorPT * cand->ErrorPT / cand->PT / cand->PT * trackState.omega * trackState.omega;
-    }
-*/
-
     // fill the covariance matrix. There is a conversion of units
     // because the covariance matrix in delphes is with the original units
     // from Franco Bedeschi's code so meter and GeV
