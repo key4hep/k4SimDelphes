@@ -1,3 +1,14 @@
+# v00-06
+
+* 2023-11-02 Perez ([PR#112](https://github.com/key4hep/k4SimDelphes/pull/112))
+  - The track's omega is taken directly from the curvature of the delphes track, instead of recomputing it from the track pT. Converting the curvature to pT and then back to omega leads to a worse numerical precision.
+
+* 2023-09-12 jmcarcell ([PR#111](https://github.com/key4hep/k4SimDelphes/pull/111))
+  - Fix a cmake warning by changing the minimum version to 3.5, since support for versions < 3.5 is going to be removed in the future
+  - Rename the podioDict or edm4hepDict targets to podio or edm4hep in generator expressions for when they will be removed
+  - Add ROOT libraries at link time for building k4SimDelphes together with other packages
+  - Fix a test because the steering file was missing an `import os` (behaviour changed after https://github.com/key4hep/k4FWCore/pull/134)
+
 # v00-05
 
 * 2023-07-16 jmcarcell ([PR#109](https://github.com/key4hep/k4SimDelphes/pull/109))
