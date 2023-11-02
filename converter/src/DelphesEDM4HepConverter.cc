@@ -47,7 +47,7 @@ namespace k4SimDelphes {
   void sortBranchesProcessingOrder(std::vector<BranchSettings>&           branches,
                                    std::array<std::string_view, N> const& processingOrder);
 
-  edm4hep::MutableTrack convertTrack(Track const* cand, const double magFieldBz);
+  edm4hep::MutableTrack convertTrack(Track const* cand);
 
   void setMotherDaughterRelations(GenParticle const* delphesCand, edm4hep::MutableMCParticle particle,
                                   edm4hep::MCParticleCollection& mcParticles);
@@ -224,7 +224,7 @@ namespace k4SimDelphes {
     for (auto iCand = 0; iCand < delphesCollection->GetEntries(); ++iCand) {
       auto* delphesCand = static_cast<Track*>(delphesCollection->At(iCand));
 
-      auto track = convertTrack(delphesCand, m_magneticFieldBz);
+      auto track = convertTrack(delphesCand);
 
       // this is the position/time at the IP
       auto trackerHit0 = trackerHitColl->create();
@@ -540,7 +540,7 @@ namespace k4SimDelphes {
     });
   }
 
-  edm4hep::MutableTrack convertTrack(Track const* cand, const double magFieldBz) {
+  edm4hep::MutableTrack convertTrack(Track const* cand) {
     edm4hep::MutableTrack track;
     // Delphes does not really provide any information that would go into the
     // track itself. But some information can be used to at least partially
@@ -556,17 +556,6 @@ namespace k4SimDelphes {
     trackState.phi = cand->Phi;
     // Same thing under different name in Delphes
     trackState.tanLambda = cand->CtgTheta;
-    // Only do omega when there is actually a magnetic field.
-    double varOmega = 0;
-    if (magFieldBz) {
-      // conversion to have omega in [1/mm]
-      constexpr double a = c_light * 1e3 * 1e-15;
-
-      trackState.omega = a * magFieldBz / cand->PT * std::copysign(1.0, cand->Charge);
-      // calculate variation using simple error propagation, assuming
-      // constant B-field -> relative error on pT is relative error on omega
-      varOmega = cand->ErrorPT * cand->ErrorPT / cand->PT / cand->PT * trackState.omega * trackState.omega;
-    }
 
     // fill the covariance matrix. There is a conversion of units
     // because the covariance matrix in delphes is with the original units
@@ -578,6 +567,8 @@ namespace k4SimDelphes {
     // needs to be applied to any covariance matrix element
     // relating to curvature (index 2)
     double scale2 = -2.;  // CAREFUL: DELPHES USES THE HALF-CURVATURE
+
+    trackState.omega = cand->C * scale2;
 
     covMatrix[0] = covaFB(0, 0);
 
