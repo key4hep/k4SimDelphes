@@ -47,7 +47,7 @@ namespace k4SimDelphes {
   void sortBranchesProcessingOrder(std::vector<BranchSettings>&           branches,
                                    std::array<std::string_view, N> const& processingOrder);
 
-  edm4hep::MutableTrack convertTrack(Track const* cand, const double magFieldBz);
+  edm4hep::MutableTrack convertTrack(Track const* cand);
 
   void setMotherDaughterRelations(GenParticle const* delphesCand, edm4hep::MutableMCParticle particle,
                                   edm4hep::MCParticleCollection& mcParticles);
@@ -224,7 +224,7 @@ namespace k4SimDelphes {
     for (auto iCand = 0; iCand < delphesCollection->GetEntries(); ++iCand) {
       auto* delphesCand = static_cast<Track*>(delphesCollection->At(iCand));
 
-      auto track = convertTrack(delphesCand, m_magneticFieldBz);
+      auto track = convertTrack(delphesCand);
 
       // this is the position/time at the IP
       auto trackerHit0 = trackerHitColl->create();
@@ -540,7 +540,7 @@ namespace k4SimDelphes {
     });
   }
 
-  edm4hep::MutableTrack convertTrack(Track const* cand, const double magFieldBz) {
+  edm4hep::MutableTrack convertTrack(Track const* cand) {
     edm4hep::MutableTrack track;
     // Delphes does not really provide any information that would go into the
     // track itself. But some information can be used to at least partially
