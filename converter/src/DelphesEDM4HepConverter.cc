@@ -568,7 +568,7 @@ namespace k4SimDelphes {
     // relating to curvature (index 2)
     double scale2 = -2.;  // CAREFUL: DELPHES USES THE HALF-CURVATURE
 
-    trackState.omega = cand->C * scale2  ;
+    trackState.omega = cand->C * scale2;
 
     covMatrix[0] = covaFB(0, 0);
 
