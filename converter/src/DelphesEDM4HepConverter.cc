@@ -11,7 +11,14 @@
 #include "edm4hep/ParticleIDCollection.h"
 #include "edm4hep/ReconstructedParticleCollection.h"
 #include "edm4hep/TrackCollection.h"
+#if __has_include("edm4hep/TrackerHit3DCollection.h")
+#include "edm4hep/TrackerHit3DCollection.h"
+#else
 #include "edm4hep/TrackerHitCollection.h"
+namespace edm4hep {
+  using TrackerHit3DCollection = edm4hep::TrackerHitCollection;
+}
+#endif
 #include "edm4hep/Vector3d.h"
 
 #include "podio/UserDataCollection.h"
@@ -219,7 +226,7 @@ namespace k4SimDelphes {
 
     auto* mcRecoRelations = getCollection<edm4hep::MCRecoParticleAssociationCollection>(m_mcRecoAssocCollName);
     auto* idCollection    = getCollection<edm4hep::ParticleIDCollection>(m_particleIDName);
-    auto* trackerHitColl  = getCollection<edm4hep::TrackerHitCollection>(TRACKERHIT_OUTPUT_NAME);
+    auto* trackerHitColl  = getCollection<edm4hep::TrackerHit3DCollection>(TRACKERHIT_OUTPUT_NAME);
 
     for (auto iCand = 0; iCand < delphesCollection->GetEntries(); ++iCand) {
       auto* delphesCand = static_cast<Track*>(delphesCollection->At(iCand));
@@ -513,7 +520,7 @@ namespace k4SimDelphes {
       createCollection<edm4hep::ParticleIDCollection>(m_particleIDName);
     }
     if (m_collections.find(TRACKERHIT_OUTPUT_NAME) == m_collections.end()) {
-      createCollection<edm4hep::TrackerHitCollection>(TRACKERHIT_OUTPUT_NAME);
+      createCollection<edm4hep::TrackerHit3DCollection>(TRACKERHIT_OUTPUT_NAME);
     }
     if (m_collections.find(CALORIMETERHIT_OUTPUT_NAME) == m_collections.end()) {
       createCollection<edm4hep::CalorimeterHitCollection>(CALORIMETERHIT_OUTPUT_NAME);
