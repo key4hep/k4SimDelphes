@@ -2,8 +2,10 @@ name: Key4hep build
 
 on:
   push:
-  workflow_dispatch:
+    branches:
+    - main
   pull_request:
+  workflow_dispatch:
 
 jobs:
   build:
@@ -14,7 +16,7 @@ jobs:
       fail-fast: false
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: key4hep/key4hep-actions/key4hep-build@main
       with:
         build_type: ${{ matrix.build_type }}
