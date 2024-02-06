@@ -1,3 +1,9 @@
+# v00-06-01
+
+* 2024-02-05 tmadlener ([PR#114](https://github.com/key4hep/k4SimDelphes/pull/114))
+  - Allow to build with c++20
+  - Switch to new key4hep build action and remove old workflow
+
 # v00-06
 
 * 2023-11-02 Perez ([PR#112](https://github.com/key4hep/k4SimDelphes/pull/112))
