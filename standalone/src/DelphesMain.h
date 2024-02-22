@@ -3,7 +3,15 @@
 #include "k4SimDelphes/DelphesEDM4HepOutputConfiguration.h"
 
 #include "podio/Frame.h"
+#include "podio/podioVersion.h"
+#if PODIO_BUILD_VERSION >= PODIO_VERSION(0, 99, 0)
+#include "podio/ROOTWriter.h"
+#else
 #include "podio/ROOTFrameWriter.h"
+namespace podio {
+  using ROOTWriter = podio::ROOTFrameWriter;
+}
+#endif
 
 #include "ExRootAnalysis/ExRootConfReader.h"
 #include "ExRootAnalysis/ExRootProgressBar.h"
@@ -16,7 +24,7 @@
 static bool interrupted = false;
 void        SignalHandler(int /*si*/) { interrupted = true; }
 
-template <typename WriterT = podio::ROOTFrameWriter> int doit(int argc, char* argv[], DelphesInputReader& inputReader) {
+template <typename WriterT = podio::ROOTWriter> int doit(int argc, char* argv[], DelphesInputReader& inputReader) {
   using namespace k4SimDelphes;
 
   // We can't make this a unique_ptr because it interferes with whatever ROOT is
