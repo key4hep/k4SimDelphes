@@ -8,17 +8,32 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        RELEASE: ['/cvmfs/sw-nightlies.hsf.org/key4hep']
+        SETUP: ['/cvmfs/sw-nightlies.hsf.org/key4hep/setup.sh']
         PAGE: ['doc/starterkit/k4SimDelphes/Readme.md']
     steps:
-      - uses: actions/checkout@v3
-      - uses: cvmfs-contrib/github-action-cvmfs@v3
-      - uses: aidasoft/run-lcg-view@v4
-        with:
-          container: centos7
-          view-path: ${{ matrix.RELEASE }}
-          run: |
-            mkdir testdir
-            cat .github/scripts/yamlheader.md ${{ matrix.PAGE }} > testdir/test.md
-            cd testdir
-            jupytext test.md -o test.ipynb --execute
+      - uses: actions/checkout@v4
+      - name: Start container
+        run: |
+          docker run -it --name CI_container --privileged -v ${GITHUB_WORKSPACE}:/Package -d ghcr.io/key4hep/key4hep-images/alma9-cvmfs:latest /bin/bash
+      - name: Compile
+        run: |
+          docker exec CI_container /bin/bash -c '/mount.sh;
+          cd Package;
+          source ${{ matrix.SETUP }};
+          mkdir build; cd build;
+          cmake .. -GNinja -DCMAKE_INSTALL_PREFIX=../install;
+          ninja install;
+          '
+      - name: CheckPage
+        run: |
+          docker exec CI_container /bin/bash -c '/mount.sh
+          cd ./Package;
+          source ${{ matrix.SETUP }};
+          export LD_LIBRARY_PATH=/Package/install/lib64:$LD_LIBRARY_PATH
+          export PYTHONPATH=/Package/install/python:$PYTHONPATH
+          unset KEY4HEP_STACK;
+          mkdir testdir;
+          cat .github/scripts/yamlheader.md  ${{ matrix.PAGE }}.md > testdir/test.md;
+          cd testdir;
+          jupytext test.md -o test.ipynb --execute;
+          '
