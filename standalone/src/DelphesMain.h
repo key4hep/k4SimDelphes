@@ -5,7 +5,7 @@
 #include "podio/Frame.h"
 #include "podio/podioVersion.h"
 #if PODIO_BUILD_VERSION >= PODIO_VERSION(0, 99, 0)
-#include "podio/ROOTReader.h"
+#include "podio/ROOTWriter.h"
 #else
 #include "podio/ROOTFrameWriter.h"
 namespace podio {
