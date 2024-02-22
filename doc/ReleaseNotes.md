@@ -1,3 +1,11 @@
+# v00-06-02
+
+* 2024-02-22 tmadlener ([PR#116](https://github.com/key4hep/k4simdelphes/pull/116))
+  - Switch to alma9 and key4hep image for running doctest CI workflow
+
+* 2024-02-22 jmcarcell ([PR#115](https://github.com/key4hep/k4simdelphes/pull/115))
+  - Change ROOTFrame{Writer,Reader} to ROOT{Writer,Reader} following https://github.com/AIDASoft/podio/pull/549
+
 # v00-06-01
 
 * 2024-02-05 tmadlener ([PR#114](https://github.com/key4hep/k4SimDelphes/pull/114))
