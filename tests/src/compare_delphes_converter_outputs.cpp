@@ -6,10 +6,14 @@
 #include "edm4hep/utils/kinematics.h"
 
 #include "podio/Frame.h"
-#if PODIO_VERSION_MAJOR > 0 || (PODIO_VERSION_MAJOR == 0 && PODIO_VERSION_MINOR >= 99)
+#include "podio/podioVersion.h"
+#if PODIO_BUILD_VERSION >= PODIO_VERSION(0, 99, 0)
 #include "podio/ROOTReader.h"
 #else
 #include "podio/ROOTFrameReader.h"
+namespace podio {
+  using ROOTReader = podio::ROOTFrameReader;
+}
 #endif
 
 #include "ExRootAnalysis/ExRootTreeBranch.h"
@@ -333,11 +337,7 @@ void compareMET(const TClonesArray* delphesColl, const edm4hep::ReconstructedPar
 
 int main(int argc, char* argv[]) {
   // do the necessary setup work for podio and delphes first
-#if PODIO_VERSION_MAJOR > 0 || (PODIO_VERSION_MAJOR == 0 && PODIO_VERSION_MINOR >= 99)
   podio::ROOTReader reader{};
-#else
-  podio::ROOTFrameReader reader{};
-#endif
   reader.openFile(argv[1]);
 
   auto chain = std::make_unique<TChain>("Delphes");
