@@ -279,7 +279,7 @@ namespace k4SimDelphes {
       cand.addToTracks(track);
 
       // id.addToParameters(delphesCand->IsolationVar);
-      cand.addToParticleIDs(id);
+      id.setParticle(cand);
 
       UInt_t genId = delphesCand->Particle.GetUniqueID();
       if (const auto genIt = m_genParticleIds.find(genId); genIt != m_genParticleIds.end()) {
@@ -370,7 +370,7 @@ namespace k4SimDelphes {
       // id.addToParameters(delphesCand->IsolationVar);
       id.addToParameters(delphesCand->BTag);
       id.addToParameters(delphesCand->TauTag);
-      jet.addToParticleIDs(id);
+      id.setParticle(jet);
 
       const auto& constituents = delphesCand->Constituents;
       for (auto iConst = 0; iConst < constituents.GetEntries(); ++iConst) {
