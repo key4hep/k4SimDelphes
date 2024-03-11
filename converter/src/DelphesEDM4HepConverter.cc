@@ -327,7 +327,7 @@ namespace k4SimDelphes {
       cand.setMass(delphesCand->P4().M());
       // NOTE: Particle-Flow Neutral are either photons or K_L in Delphes
       auto pid = (delphesCand->Ehad > 0.) ? 130 : 22;
-      cand.setType(pid);  // NOTE: set PID of cluster consistent with mass
+      cand.setPDG(pid);  // NOTE: set PID of cluster consistent with mass
 
       // store position and time of neutral candidate in a CalorimeterHit
       auto calorimeterHit = calorimeterHitColl->create();
