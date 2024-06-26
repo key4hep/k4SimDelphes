@@ -253,9 +253,6 @@ namespace k4SimDelphes {
       trackerHit2.setPosition(position2);
       track.addToTrackerHits(trackerHit2);
 
-      track.setRadiusOfInnermostHit(
-          sqrt(delphesCand->XFirstHit * delphesCand->XFirstHit + delphesCand->YFirstHit * delphesCand->YFirstHit));
-
       trackCollection->push_back(track);
       pathLengthCollection->push_back(delphesCand->L);
 
