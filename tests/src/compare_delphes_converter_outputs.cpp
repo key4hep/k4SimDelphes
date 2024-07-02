@@ -6,15 +6,7 @@
 #include "edm4hep/utils/kinematics.h"
 
 #include "podio/Frame.h"
-#include "podio/podioVersion.h"
-#if PODIO_BUILD_VERSION >= PODIO_VERSION(0, 99, 0)
 #include "podio/ROOTReader.h"
-#else
-#include "podio/ROOTFrameReader.h"
-namespace podio {
-  using ROOTReader = podio::ROOTFrameReader;
-}
-#endif
 
 #include "ExRootAnalysis/ExRootTreeBranch.h"
 #include "ExRootAnalysis/ExRootTreeReader.h"
