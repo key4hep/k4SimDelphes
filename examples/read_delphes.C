@@ -89,7 +89,7 @@ template <typename RecoT> int getNType(const Jet* jet) {
 
 // Following delphes/examples/Example3.C (more or less)
 void read_delphes(const char* inputfile) {
-  gSystem->Load("libDelphes.so");
+  gSystem->Load("libDelphes");
 
   auto* chain = new TChain("Delphes");
   chain->Add(inputfile);

@@ -94,11 +94,11 @@ void fillHists(TH1F* hDeltaPt, TH1F* hDeltaE, edm4hep::ConstReconstructedParticl
 }
 
 void read_edm4hep(std::string&& inputfile) {
-  gSystem->Load("libpodio.so");
-  gSystem->Load("libpodioDict.so");
-  gSystem->Load("libpodioRootIO.so");
-  gSystem->Load("libedm4hep.so");
-  gSystem->Load("libedm4hepDict.so");
+  gSystem->Load("libpodio");
+  gSystem->Load("libpodioDict");
+  gSystem->Load("libpodioRootIO");
+  gSystem->Load("libedm4hep");
+  gSystem->Load("libedm4hepDict");
 
   auto reader = podio::ROOTReader();
   reader.openFile(inputfile);
