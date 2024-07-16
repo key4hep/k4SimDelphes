@@ -9,6 +9,7 @@
 #include "edm4hep/MCParticleCollection.h"
 #include "edm4hep/MCRecoParticleAssociationCollection.h"
 #include "edm4hep/ParticleIDCollection.h"
+#include "edm4hep/RecDqdxCollection.h"
 #include "edm4hep/ReconstructedParticleCollection.h"
 #include "edm4hep/TrackCollection.h"
 #if __has_include("edm4hep/TrackerHit3DCollection.h")
@@ -26,8 +27,6 @@ namespace edm4hep {
 #include <TMatrixDSym.h>
 
 #include <iostream>
-#include <iterator>
-#include <set>
 
 namespace k4SimDelphes {
 
@@ -217,6 +216,7 @@ namespace k4SimDelphes {
   void DelphesEDM4HepConverter::processTracks(const TClonesArray* delphesCollection, std::string const& branch) {
     auto* particleCollection = getCollection<edm4hep::ReconstructedParticleCollection>(m_recoCollName);
     auto* trackCollection    = createCollection<edm4hep::TrackCollection>(branch);
+    auto* dqdxCollection     = createCollection<edm4hep::RecDqdxCollection>(branch + "_dNdx");
     //UserData for overflowing information
     auto* pathLengthCollection = createCollection<podio::UserDataCollection<float>>(branch + "_L");
 
@@ -232,6 +232,7 @@ namespace k4SimDelphes {
       auto* delphesCand = static_cast<Track*>(delphesCollection->At(iCand));
 
       auto track = convertTrack(delphesCand);
+      trackCollection->push_back(track);
 
       // this is the position/time at the IP
       auto trackerHit0 = trackerHitColl->create();
@@ -253,14 +254,11 @@ namespace k4SimDelphes {
       trackerHit2.setPosition(position2);
       track.addToTrackerHits(trackerHit2);
 
-      trackCollection->push_back(track);
       pathLengthCollection->push_back(delphesCand->L);
 
-      edm4hep::Quantity dxQuantities{};
-      dxQuantities.type  = 0;
-      dxQuantities.value = delphesCand->dNdx;
-
-      track.addToDxQuantities(dxQuantities);
+      auto dndx            = dqdxCollection->create();
+      dndx.getDQdx().value = delphesCand->dNdx;
+      dndx.setTrack(track);
 
       auto id = idCollection->create();
 
