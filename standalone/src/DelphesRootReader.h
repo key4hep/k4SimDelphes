@@ -91,7 +91,7 @@ public:
     }
     ++m_entry;
 
-    return finished();
+    return true;
   };
 
   TTree* converterTree() override { return m_treeWriter->GetTree(); }
