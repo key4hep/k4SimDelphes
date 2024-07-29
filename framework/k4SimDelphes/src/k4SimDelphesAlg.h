@@ -31,7 +31,7 @@ public:
   k4SimDelphesAlg(const std::string& name, ISvcLocator* svcLoc);
 
   virtual StatusCode initialize();
-  virtual StatusCode execute(const EventContext&);
+  virtual StatusCode execute(const EventContext&) const;
   virtual StatusCode finalize();
 
 private:
