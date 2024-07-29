@@ -11,7 +11,7 @@ DECLARE_COMPONENT(k4SimDelphesAlg)
 using namespace k4SimDelphes;
 
 k4SimDelphesAlg::k4SimDelphesAlg(const std::string& name, ISvcLocator* svcLoc)
-    : GaudiAlgorithm(name, svcLoc), m_eventDataSvc("EventDataSvc", "k4SimDelphesAlg") {
+  : Gaudi::Algorithm(name, svcLoc), m_eventDataSvc("EventDataSvc", "k4SimDelphesAlg") {
   declareProperty("GenParticles", m_InputMCParticles, "(Input) Collection of generated particles");
 }
 
