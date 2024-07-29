@@ -45,6 +45,8 @@ if(DELPHES_CARD)
 
     ADD_COMPARISON_TEST(PythiaResonanceDecayFilter_pp_hhbbyy DelphesPythia8_EDM4HEP ${DELPHES_CARD} ${OUTPUT_CONFIG} pythia_resonance_decay_filter_pp_hhbbyy_output.root ${PROJECT_SOURCE_DIR}/examples/data/tester_pwp8_pp_hh_5f_hhbbyy.cmd --no-delphes)
   endif()
+
+  ADD_COMPARISON_TEST(DelphesRootReader_ee_91gev DelphesROOT_EDM4HEP ${DELPHES_CARD} ${OUTPUT_CONFIG} delphes_root_converter_input_reader_test.root ${PROJECT_SOURCE_DIR}/tests/data/gev91ee_zboson_100events.root )
 else()
   message(WARNING "Cannot find IDEA delphes card from the delphes installation. Cannot use it for testing")
 endif()
