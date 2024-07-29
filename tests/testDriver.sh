@@ -10,7 +10,7 @@ DELPHES_CARD_IN=${2}
 OUTPUT_CONFIG=${3}
 OUTPUT_FILE=${4}
 
-DELPHES_CARD=$(pwd)/test_$(basename ${DELPHES_CARD_IN})
+DELPHES_CARD=$(pwd)/$(mktemp -u test_XXXX_$(basename ${DELPHES_CARD_IN}))
 
 # Keep track on whether this has been enabled from the calling site
 xtrace_on=$(shopt -qo xtrace && echo "yes")
