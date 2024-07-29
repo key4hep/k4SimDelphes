@@ -39,7 +39,7 @@ private:
   mutable DataHandle<edm4hep::MCParticleCollection> m_InputMCParticles{"GenParticles", Gaudi::DataHandle::Reader, this};
   /// Output from Delphes
   mutable DataHandle<edm4hep::ReconstructedParticleCollection> m_OutputRecParticles{"RecParticlesDelphes",
-                                                                            Gaudi::DataHandle::Writer, this};
+                                                                                    Gaudi::DataHandle::Writer, this};
 
   // Delphes detector card to be read in
   /// Name of Delphes tcl config file with detector and simulation parameters
@@ -51,17 +51,17 @@ private:
   std::unique_ptr<Delphes>                               m_Delphes{nullptr};
   std::unique_ptr<ExRootConfReader>                      m_confReader{nullptr};
   std::unique_ptr<k4SimDelphes::DelphesEDM4HepConverter> m_edm4hepConverter{nullptr};
-  mutable TObjArray*                                             m_allParticleOutputArray{nullptr};
-  mutable TObjArray*                                             m_stableParticleOutputArray{nullptr};
-  mutable TObjArray*                                             m_partonOutputArray{nullptr};
+  mutable TObjArray*                                     m_allParticleOutputArray{nullptr};
+  mutable TObjArray*                                     m_stableParticleOutputArray{nullptr};
+  mutable TObjArray*                                     m_partonOutputArray{nullptr};
 
   mutable ExRootTreeWriter* m_treeWriter{nullptr};
-  TTree*            m_converterTree{nullptr};
+  TTree*                    m_converterTree{nullptr};
 
   // since branch names are taken from delphes config
   // and not declared as data handles,
   // need podiodatasvc directly
-  mutable PodioDataSvc*                   m_podioDataSvc;
+  mutable PodioDataSvc*           m_podioDataSvc;
   ServiceHandle<IDataProviderSvc> m_eventDataSvc;
 };
 
