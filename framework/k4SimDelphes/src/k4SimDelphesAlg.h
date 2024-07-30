@@ -11,7 +11,7 @@
 #include "k4FWCore/DataWrapper.h"
 #include "k4FWCore/PodioDataSvc.h"
 
-#include "GaudiAlg/GaudiAlgorithm.h"
+#include "Gaudi/Algorithm.h"
 
 #include "modules/Delphes.h"
 
@@ -26,20 +26,20 @@ namespace edm4hep {
  *  Main Algorithm to run Delphes, getting MCParticle input, producing
  *  ReconstructedParticle output.
  */
-class k4SimDelphesAlg : public GaudiAlgorithm {
+class k4SimDelphesAlg : public Gaudi::Algorithm {
 public:
   k4SimDelphesAlg(const std::string& name, ISvcLocator* svcLoc);
 
   virtual StatusCode initialize();
-  virtual StatusCode execute();
+  virtual StatusCode execute(const EventContext&) const;
   virtual StatusCode finalize();
 
 private:
   /// Input from Generator
-  DataHandle<edm4hep::MCParticleCollection> m_InputMCParticles{"GenParticles", Gaudi::DataHandle::Reader, this};
+  mutable DataHandle<edm4hep::MCParticleCollection> m_InputMCParticles{"GenParticles", Gaudi::DataHandle::Reader, this};
   /// Output from Delphes
-  DataHandle<edm4hep::ReconstructedParticleCollection> m_OutputRecParticles{"RecParticlesDelphes",
-                                                                            Gaudi::DataHandle::Writer, this};
+  mutable DataHandle<edm4hep::ReconstructedParticleCollection> m_OutputRecParticles{"RecParticlesDelphes",
+                                                                                    Gaudi::DataHandle::Writer, this};
 
   // Delphes detector card to be read in
   /// Name of Delphes tcl config file with detector and simulation parameters
@@ -51,17 +51,17 @@ private:
   std::unique_ptr<Delphes>                               m_Delphes{nullptr};
   std::unique_ptr<ExRootConfReader>                      m_confReader{nullptr};
   std::unique_ptr<k4SimDelphes::DelphesEDM4HepConverter> m_edm4hepConverter{nullptr};
-  TObjArray*                                             m_allParticleOutputArray{nullptr};
-  TObjArray*                                             m_stableParticleOutputArray{nullptr};
-  TObjArray*                                             m_partonOutputArray{nullptr};
+  mutable TObjArray*                                     m_allParticleOutputArray{nullptr};
+  mutable TObjArray*                                     m_stableParticleOutputArray{nullptr};
+  mutable TObjArray*                                     m_partonOutputArray{nullptr};
 
-  ExRootTreeWriter* m_treeWriter{nullptr};
-  TTree*            m_converterTree{nullptr};
+  mutable ExRootTreeWriter* m_treeWriter{nullptr};
+  TTree*                    m_converterTree{nullptr};
 
   // since branch names are taken from delphes config
   // and not declared as data handles,
   // need podiodatasvc directly
-  PodioDataSvc*                   m_podioDataSvc;
+  mutable PodioDataSvc*           m_podioDataSvc;
   ServiceHandle<IDataProviderSvc> m_eventDataSvc;
 };
 
