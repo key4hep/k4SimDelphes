@@ -68,6 +68,8 @@ private:
 
   bool             debug;
   std::vector<int> B_ids;
+  std::vector<int> C_ids;
+  std::vector<int> Had_ids;
   bool             verbose;
 
   bool regenerate;
