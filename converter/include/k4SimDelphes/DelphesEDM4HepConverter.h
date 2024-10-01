@@ -1,13 +1,13 @@
 #ifndef DELPHESEDM4HEP_DELPHESEDM4HEP_CONVERTER_H__
 #define DELPHESEDM4HEP_DELPHESEDM4HEP_CONVERTER_H__
 
-// podio
-#include "podio/CollectionBase.h"
-
 // edm4hep
 #include "edm4hep/MCParticle.h"
-#include "edm4hep/MCRecoParticleAssociationCollection.h"
 #include "edm4hep/MutableReconstructedParticle.h"
+#include "edm4hep/RecoMCParticleLinkCollection.h"
+
+// podio
+#include "podio/CollectionBase.h"
 
 // ROOT
 #include "TClonesArray.h"
@@ -102,7 +102,7 @@ namespace k4SimDelphes {
      */
     CollectionMapT getCollections() { return std::move(m_collections); }
 
-    edm4hep::MCRecoParticleAssociationCollection* createExternalRecoAssociations(
+    edm4hep::RecoMCParticleLinkCollection* createExternalRecoAssociations(
         const std::unordered_map<UInt_t, edm4hep::MCParticle>& mc_map);
 
   private:

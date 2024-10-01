@@ -1,6 +1,6 @@
 #include "k4SimDelphesAlg.h"
 #include "ExRootAnalysis/ExRootTreeWriter.h"
-#include "edm4hep/MCRecoParticleAssociationCollection.h"
+#include "edm4hep/RecoMCParticleLinkCollection.h"
 #include "edm4hep/ReconstructedParticleCollection.h"
 #include "k4SimDelphes/DelphesEDM4HepOutputConfiguration.h"
 #include "k4SimDelphes/k4GenParticlesDelphesConverter.h"

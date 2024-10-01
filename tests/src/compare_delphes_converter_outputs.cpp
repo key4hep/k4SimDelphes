@@ -1,7 +1,7 @@
 #include "delphesHelpers.h"
 
 #include "edm4hep/MCParticleCollection.h"
-#include "edm4hep/MCRecoParticleAssociationCollection.h"
+#include "edm4hep/RecoMCParticleLinkCollection.h"
 #include "edm4hep/ReconstructedParticleCollection.h"
 #include "edm4hep/utils/kinematics.h"
 
@@ -62,15 +62,15 @@ void assertSameKinematics(const DelphesT* delphesCand, const EDM4HepT& edm4hepCa
  * Get all MCParticles related to a given ReconstructedParticle
  *
  */
-std::vector<edm4hep::MCParticle> getAssociatedMCParticles(
-    edm4hep::ReconstructedParticle reco, const edm4hep::MCRecoParticleAssociationCollection& associations) {
+std::vector<edm4hep::MCParticle> getAssociatedMCParticles(edm4hep::ReconstructedParticle               reco,
+                                                          const edm4hep::RecoMCParticleLinkCollection& associations) {
   std::vector<edm4hep::MCParticle> sims;
   // NOTE: looping over the whole collection of associations here is super
   // inefficient, but as long as there is no utility for this, implementing the
   // necessary caching is just too much work for this test case here
   for (const auto assoc : associations) {
-    if (assoc.getRec() == reco) {
-      sims.emplace_back(assoc.getSim());
+    if (assoc.getFrom() == reco) {
+      sims.emplace_back(assoc.getTo());
     }
   }
 
@@ -255,7 +255,7 @@ void compareCollectionElements(const TClonesArray*                             d
 template <typename DelphesT>
 void compareCollectionElements(const TClonesArray*                             delphesColl,
                                const edm4hep::ReconstructedParticleCollection& edm4hepColl, const std::string collName,
-                               const int startIndex, const edm4hep::MCRecoParticleAssociationCollection& associations) {
+                               const int startIndex, const edm4hep::RecoMCParticleLinkCollection& associations) {
   for (int i = 0; i < delphesColl->GetEntries(); ++i) {
     const auto* delphesCand = static_cast<DelphesT*>(delphesColl->At(i));
     const auto  edm4hepCand = edm4hepColl[i + startIndex];
@@ -397,7 +397,7 @@ int main(int argc, char* argv[]) {
       return 1;
     }
 
-    auto& mcRecoAssocColl = frame.get<edm4hep::MCRecoParticleAssociationCollection>("MCRecoAssociations");
+    auto& mcRecoAssocColl = frame.get<edm4hep::RecoMCParticleLinkCollection>("MCRecoAssociations");
 
     compareCollectionElements<Track>(tracks, recoColl, "EFlowTrack", 0, mcRecoAssocColl);
     compareCollectionElements<Tower>(ecalClusters, recoColl, "EFlowPhoton", tracks->GetEntries(), mcRecoAssocColl);
