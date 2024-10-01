@@ -159,7 +159,7 @@ namespace k4SimDelphes {
 
     std::string m_recoCollName;
     std::string m_particleIDName;
-    std::string m_mcRecoAssocCollName;
+    std::string m_recoMCLinkCollName;
 
     // map from UniqueIDs (delphes generated particles) to MCParticles
     std::unordered_map<UInt_t, edm4hep::MCParticle> m_genParticleIds;

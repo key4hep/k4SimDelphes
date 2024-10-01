@@ -80,7 +80,7 @@ namespace k4SimDelphes {
       : m_magneticFieldBz(magFieldBz),
         m_recoCollName(outputSettings.RecoParticleCollectionName),
         m_particleIDName(outputSettings.ParticleIDCollectionName),
-        m_mcRecoAssocCollName(outputSettings.RecoMCParticleLinkCollectionName) {
+        m_recoMCLinkCollName(outputSettings.RecoMCParticleLinkCollectionName) {
     for (const auto& branch : branches) {
       if (contains(PROCESSING_ORDER, branch.className)) {
         m_branches.push_back(branch);
@@ -224,7 +224,7 @@ namespace k4SimDelphes {
     auto* magFieldCollection = createCollection<podio::UserDataCollection<float>>("magFieldBz");
     magFieldCollection->push_back(m_magneticFieldBz);
 
-    auto* mcRecoRelations = getCollection<edm4hep::RecoMCParticleLinkCollection>(m_mcRecoAssocCollName);
+    auto* mcRecoRelations = getCollection<edm4hep::RecoMCParticleLinkCollection>(m_recoMCLinkCollName);
     auto* idCollection    = getCollection<edm4hep::ParticleIDCollection>(m_particleIDName);
     auto* trackerHitColl  = getCollection<edm4hep::TrackerHit3DCollection>(TRACKERHIT_OUTPUT_NAME);
 
@@ -291,7 +291,7 @@ namespace k4SimDelphes {
   void DelphesEDM4HepConverter::processClusters(const TClonesArray* delphesCollection, std::string const& branch) {
     auto* particleCollection = getCollection<edm4hep::ReconstructedParticleCollection>(m_recoCollName);
     auto* clusterCollection  = createCollection<edm4hep::ClusterCollection>(branch);
-    auto* mcRecoRelations    = getCollection<edm4hep::RecoMCParticleLinkCollection>(m_mcRecoAssocCollName);
+    auto* mcRecoRelations    = getCollection<edm4hep::RecoMCParticleLinkCollection>(m_recoMCLinkCollName);
     auto* calorimeterHitColl = getCollection<edm4hep::CalorimeterHitCollection>(CALORIMETERHIT_OUTPUT_NAME);
 
     for (auto iCand = 0; iCand < delphesCollection->GetEntries(); ++iCand) {
@@ -508,8 +508,8 @@ namespace k4SimDelphes {
     if (m_collections.find(m_recoCollName) == m_collections.end()) {
       createCollection<edm4hep::ReconstructedParticleCollection>(m_recoCollName);
     }
-    if (m_collections.find(m_mcRecoAssocCollName) == m_collections.end()) {
-      createCollection<edm4hep::RecoMCParticleLinkCollection>(m_mcRecoAssocCollName);
+    if (m_collections.find(m_recoMCLinkCollName) == m_collections.end()) {
+      createCollection<edm4hep::RecoMCParticleLinkCollection>(m_recoMCLinkCollName);
     }
     if (m_collections.find(m_particleIDName) == m_collections.end()) {
       createCollection<edm4hep::ParticleIDCollection>(m_particleIDName);
