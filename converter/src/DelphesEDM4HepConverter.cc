@@ -80,7 +80,7 @@ namespace k4SimDelphes {
       : m_magneticFieldBz(magFieldBz),
         m_recoCollName(outputSettings.RecoParticleCollectionName),
         m_particleIDName(outputSettings.ParticleIDCollectionName),
-        m_mcRecoAssocCollName(outputSettings.MCRecoAssociationCollectionName) {
+        m_mcRecoAssocCollName(outputSettings.RecoMCParticleLinkCollectionName) {
     for (const auto& branch : branches) {
       if (contains(PROCESSING_ORDER, branch.className)) {
         m_branches.push_back(branch);

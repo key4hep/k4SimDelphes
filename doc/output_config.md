@@ -88,9 +88,9 @@ The filled collection contains only one element per event.
 
 
 The parameters **`RecoParticleCollectionName`** and
-**`MCRecoAssociationCollectionName`** control the names of the [global
+**`RecoMCParticleLinkCollectionName`** control the names of the [global
 reconstructed particle collection](#reconstructedparticlecollections) and the
-collection with the `MCRecoParticleAssociation`s that can be used to find the
+collection with the `RecoMCParticleLink`s that can be used to find the
 `MCParticle`s associated to `ReconstructedParticle`s (and vice versa).
 
 ## Class conversions
@@ -99,19 +99,19 @@ The following table lists which Delphes classes correspond to which `edm4hep`
 classes. For the conversion the Delphes classes are taken from the `TreeWriter`
 (the `BranchClass` for each `Branch` defined in there)
 
-| Delphes       | `edm4hep`                                         |
-|---------------|---------------------------------------------------|
-| `GenParticle` | `MCParticle`                                      |
-| `Track`       | `ReconstructedParticle` with associated `Track`   |
-| `Tower`       | `ReconstructedParticle` with associated `Cluster` |
-| `Jet`         | `ReconstructedParticle`                           |
-| `Muon`        | `ReconstructedParticle` (subset collection)       |
-| `Electron`    | `ReconstructedParticle` (subset collection)       |
-| `Photon`      | `ReconstructedParticle` (subset collection)       |
-| `MissingET`   | `ReconstructedParticle`                           |
-| `ScalarHT`    | `ParticleID`                                      |
-| `ParticleFlowCandidate`       | `ReconstructedParticle`           |
-| n/a           | `MCRecoParticleAssociation`                       |
+| Delphes                 | `edm4hep`                                         |
+|-------------------------|---------------------------------------------------|
+| `GenParticle`           | `MCParticle`                                      |
+| `Track`                 | `ReconstructedParticle` with associated `Track`   |
+| `Tower`                 | `ReconstructedParticle` with associated `Cluster` |
+| `Jet`                   | `ReconstructedParticle`                           |
+| `Muon`                  | `ReconstructedParticle` (subset collection)       |
+| `Electron`              | `ReconstructedParticle` (subset collection)       |
+| `Photon`                | `ReconstructedParticle` (subset collection)       |
+| `MissingET`             | `ReconstructedParticle`                           |
+| `ScalarHT`              | `ParticleID`                                      |
+| `ParticleFlowCandidate` | `ReconstructedParticle`                           |
+| n/a                     | `RecoMCParticleLink`                              |
 
 All Delphes classes that are not listed here are currently not converted.
 

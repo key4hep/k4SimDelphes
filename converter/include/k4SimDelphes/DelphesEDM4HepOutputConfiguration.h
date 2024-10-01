@@ -4,6 +4,7 @@
 #include "ExRootAnalysis/ExRootConfReader.h"
 
 #include <iomanip>
+#include <iostream>
 #include <ostream>
 #include <string>
 #include <vector>
@@ -77,10 +78,10 @@ namespace k4SimDelphes {
     std::string RecoParticleCollectionName{"ReconstructedParticles"};
 
     /**
-     * Name of the MCRecoParticleAssociationCollection holding the associations of
+     * Name of the RecoMCParticleLinkCollection holding the links of
      * generated to reconstructed particles.
      */
-    std::string MCRecoAssociationCollectionName{"MCRecoAssociations"};
+    std::string RecoMCParticleLinkCollectionName{"MCRecoAssociations"};
 
     /**
      * Name of the ParticleIDCollection holding the ctags / isolation variables.
@@ -112,7 +113,7 @@ namespace k4SimDelphes {
     os << std::setw(40) << " MissingETCollections: " << settings.MissingETCollections << "\n";
     os << std::setw(40) << " ScalarHTCollections: " << settings.ScalarHTCollections << "\n";
     os << std::setw(40) << " RecoParticleCollectionName: " << settings.RecoParticleCollectionName << "\n";
-    os << std::setw(40) << " MCRecoAssociationCollectionName: " << settings.MCRecoAssociationCollectionName << "\n";
+    os << std::setw(40) << " RecoMCParticleLinkCollectionName: " << settings.RecoMCParticleLinkCollectionName << "\n";
     os << "------------------------------------------------------------\n";
 
     return os;
@@ -155,8 +156,16 @@ namespace k4SimDelphes {
     settings.RecoParticleCollectionName =
         confReader->GetString("EDM4HepOutput::RecoParticleCollectionName", "ReconstructedParticles");
 
-    settings.MCRecoAssociationCollectionName =
-        confReader->GetString("EDM4HepOutput::MCRecoAssociationCollectionName", "MCRecoAssociations");
+    const auto assocName = confReader->GetString("EDM4HepOutput::MCRecoAssociationCollectionName", "not-available");
+    if (assocName != std::string("not-available")) {
+      std::cerr << "WARNING: k4SimDelphes::getEDM4hepOutputSettings | MCRecoAssociationCollectionName is deprecated, "
+                   "use RecoMCParticleLinkCollection instead"
+                << std::endl;
+      settings.RecoMCParticleLinkCollectionName = assocName;
+    }
+
+    settings.RecoMCParticleLinkCollectionName =
+        confReader->GetString("EDM4HepOutput::RecoMCParticleLinkCollectionName", "MCRecoAssociations");
 
     return settings;
   }
