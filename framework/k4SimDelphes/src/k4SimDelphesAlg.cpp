@@ -71,7 +71,7 @@ StatusCode k4SimDelphesAlg::execute(const EventContext&) const {
   auto collections = m_edm4hepConverter->getCollections();
   for (auto& c : collections) {
     if (c.first == "MCRecoAssociations") {
-      auto                                new_c   = m_edm4hepConverter->createExternalRecoAssociations(mapSimDelphes);
+      auto                                new_c   = m_edm4hepConverter->createExternalRecoMCLinks(mapSimDelphes);
       DataWrapper<podio::CollectionBase>* wrapper = new DataWrapper<podio::CollectionBase>();
       wrapper->setData(new_c);
       m_podioDataSvc->registerObject("/Event", "/" + std::string(c.first), wrapper).ignore();

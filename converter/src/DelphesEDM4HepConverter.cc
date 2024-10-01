@@ -489,7 +489,7 @@ namespace k4SimDelphes {
     return {};
   }
 
-  edm4hep::RecoMCParticleLinkCollection* DelphesEDM4HepConverter::createExternalRecoAssociations(
+  edm4hep::RecoMCParticleLinkCollection* DelphesEDM4HepConverter::createExternalRecoMCLinks(
       const std::unordered_map<UInt_t, edm4hep::MCParticle>& mc_map) {
     auto mcRecoRelations = new edm4hep::RecoMCParticleLinkCollection();
     for (const auto& particleID : mc_map) {

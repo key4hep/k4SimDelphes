@@ -102,7 +102,7 @@ namespace k4SimDelphes {
      */
     CollectionMapT getCollections() { return std::move(m_collections); }
 
-    edm4hep::RecoMCParticleLinkCollection* createExternalRecoAssociations(
+    edm4hep::RecoMCParticleLinkCollection* createExternalRecoMCLinks(
         const std::unordered_map<UInt_t, edm4hep::MCParticle>& mc_map);
 
   private:
