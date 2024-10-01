@@ -68,7 +68,7 @@ namespace k4SimDelphes {
     std::string className;
   };
 
-  std::vector<BranchSettings> getBranchSettings(ExRootConfParam /*const&*/ treeConf) {
+  inline std::vector<BranchSettings> getBranchSettings(ExRootConfParam /*const&*/ treeConf) {
     std::vector<k4SimDelphes::BranchSettings> branches;
     for (int b = 0; b < treeConf.GetSize(); b += 3) {
       k4SimDelphes::BranchSettings branch{treeConf[b].GetString(), treeConf[b + 1].GetString(),

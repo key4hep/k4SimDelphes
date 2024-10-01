@@ -161,7 +161,7 @@ namespace k4SimDelphes {
     return settings;
   }
 
-  OutputSettings getEDM4hepOutputSettings(const char* confFile) {
+  inline OutputSettings getEDM4hepOutputSettings(const char* confFile) {
     ExRootConfReader confReader{};
     confReader.ReadFile(confFile);
     return getEDM4hepOutputSettings(&confReader);
