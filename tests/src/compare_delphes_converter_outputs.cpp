@@ -98,13 +98,25 @@ template <typename DelphesT> std::vector<GenParticle*> getAssociatedMCParticles(
  */
 template <typename DelphesT>
 bool compareMCRelations(const DelphesT* delphesCand, edm4hep::ReconstructedParticle edm4hepCand,
-                        const edm4hep::MCRecoParticleAssociationCollection& associations) {
-  const auto delphesGenParticles = getAssociatedMCParticles(delphesCand);
-  const auto edm4hepMCParticles  = getAssociatedMCParticles(edm4hepCand, associations);
+                        const edm4hep::RecoMCParticleLinkCollection& associations) {
+  auto delphesGenParticles = getAssociatedMCParticles(delphesCand);
+  auto edm4hepMCParticles  = getAssociatedMCParticles(edm4hepCand, associations);
 
   if (delphesGenParticles.size() != edm4hepMCParticles.size()) {
     return false;
   }
+
+  // In some cases the order of the vectors is not exactly the same, because
+  // Delphes(!) seems to write them in a different order from time to time even
+  // with equal random seeds. Here we sort them simply by the x coordinate of
+  // the momentum since that is easiest to do without having to wade into the
+  // subtleties of potentially small differences in energy in a four vector
+  // depending on whether energy is stored directly or whether we compute it via
+  // the momentum and the mass.
+  std::sort(delphesGenParticles.begin(), delphesGenParticles.end(),
+            [](const auto* a, const auto* b) { return a->P4().X() < b->P4().X(); });
+  std::sort(edm4hepMCParticles.begin(), edm4hepMCParticles.end(),
+            [](const auto& a, const auto& b) { return a.getMomentum().x < b.getMomentum().x; });
 
   for (size_t i = 0; i < delphesGenParticles.size(); ++i) {
     if (!compareKinematics(delphesGenParticles[i], edm4hepMCParticles[i])) {
