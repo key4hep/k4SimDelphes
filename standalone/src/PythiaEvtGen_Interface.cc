@@ -82,9 +82,7 @@ void PythiaEvtGen_Interface::add_inclusive(std::string decayfile, int seed) {
   std::list<EvtDecayBase*> extraModels = genList.getListOfModels();
   // Random engine:
 
-  EvtRandomEngine* eng = 0;
-  //eng = new EvtMTRandomEngine(seed);  // look out, this works only with C++11, OLD C++ use: eng = new EvtSimpleRandomEngine()
-  eng = new EvtSimpleRandomEngine();
+  EvtRandomEngine* eng = new EvtMTRandomEngine(seed);
   EvtRandom::setRandomEngine(eng);
 
   if (debug)
@@ -105,7 +103,7 @@ bool PythiaEvtGen_Interface::check_Signal_Appereance() {
   //signal_map= new int[NOfSignal][10];// here we assume we won't have more then 10 signal candidates
   signal_map = std::vector<std::vector<int>>(NOfSignal);  // resetting this vector//;(NOfSignal);
   //signal_map= new int*[NOfSignal];
-  for (int i = 0; i < NOfSignal; ++i) {
+  for (auto i = 0u; i < NOfSignal; ++i) {
     //    signal_map[i] = new int[10]; // here we assume we won't have more then 10 signal candidates
     signal_map[i] = std::vector<int>(10);
   }
@@ -117,7 +115,6 @@ bool PythiaEvtGen_Interface::check_Signal_Appereance() {
     pythia->event.list();
   Pythia8::Event& event = pythia->event;
 
-  double wgt(1.);
   //loop over particles to find candidates that mach what we need from the decay
   for (int iPro = 0; iPro < event.size(); ++iPro) {
     Pythia8::Particle* part = &event[iPro];
@@ -138,7 +135,7 @@ bool PythiaEvtGen_Interface::check_Signal_Appereance() {
     }
   }
   // now checking if we have all B candidates
-  int sum = 0;
+  size_t sum = 0;
   for (unsigned i = 0; i < NOfSignal_list.size(); i++) {
     if (NOfSignal_list[i] > 0)
       sum += 1;
@@ -159,7 +156,7 @@ void PythiaEvtGen_Interface::decay_signals() {
   if (debug)
     std::cout << "In decay_signals" << std::endl;
   unsigned NOfSignal = motherIDs.size();
-  for (int i_sig = 0; i_sig < NOfSignal; i_sig++)  // loop over signal B's
+  for (auto i_sig = 0u; i_sig < NOfSignal; i_sig++)  // loop over signal B's
   {
     int randomsignal = (rand() % NOfSignal_list[i_sig]);
     if (debug)
