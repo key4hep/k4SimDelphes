@@ -82,11 +82,6 @@ namespace k4SimDelphes {
      * generated to reconstructed particles.
      */
     std::string RecoMCParticleLinkCollectionName{"MCRecoAssociations"};
-
-    /**
-     * Name of the ParticleIDCollection holding the ctags / isolation variables.
-     */
-    std::string ParticleIDCollectionName{"ParticleIDs"};
   };
 
   template <typename T> std::ostream& operator<<(std::ostream& os, std::vector<T> const& container) {
