@@ -204,7 +204,6 @@ namespace k4SimDelphes {
     }
 
     // mother-daughter relations
-    const auto nElements = collection->size();
     for (int iCand = 0; iCand < delphesCollection->GetEntries(); ++iCand) {
       const auto* delphesCand = static_cast<GenParticle*>(delphesCollection->At(iCand));
       auto        cand        = collection->at(iCand);
@@ -608,7 +607,7 @@ namespace k4SimDelphes {
 
     // Mothers
     // Only set parents if not accessing out of bounds
-    const auto safeSetParent = [&mcParticles, &particle](int index) {
+    const auto safeSetParent = [&mcParticles, &particle](size_t index) {
       if (index < mcParticles.size()) {
         particle.addToParents(mcParticles[index]);
       }
@@ -637,7 +636,7 @@ namespace k4SimDelphes {
     }
 
     // Daughters
-    const auto safeSetDaughter = [&mcParticles, &particle](int index) {
+    const auto safeSetDaughter = [&mcParticles, &particle](size_t index) {
       if (index < mcParticles.size()) {
         particle.addToDaughters(mcParticles[index]);
       }

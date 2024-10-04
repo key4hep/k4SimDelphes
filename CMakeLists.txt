@@ -20,31 +20,10 @@ SET( ${PROJECT_NAME}_VERSION_PATCH 2 )
 SET( ${PROJECT_NAME}_VERSION
   "${${PROJECT_NAME}_VERSION_MAJOR}.${${PROJECT_NAME}_VERSION_MINOR}.${${PROJECT_NAME}_VERSION_PATCH}" )
 
-
-#--- Such that the binaries in install are properly linked --------------------
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE CACHE BOOL "RPATH USE LINK PATH")
-
-#--- Declare C++ Standard -----------------------------------------------------
-set(CMAKE_CXX_STANDARD 17 CACHE STRING "")
-if(NOT CMAKE_CXX_STANDARD MATCHES "17|20")
-  message(FATAL_ERROR "Unsupported C++ standard: ${CMAKE_CXX_STANDARD}")
-endif()
-message (STATUS "C++ standard: ${CMAKE_CXX_STANDARD}")
-
+include(cmake/Key4hepConfig.cmake)
 
 #-- Use GNU-style hierarchy for installing build products ----------------------
 include(GNUInstallDirs)
-
-#--- setup build type (and default) if supported -------------------------------
-if (NOT CMAKE_CONFIGURATION_TYPES)
-  if (NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE RelWithDebInfo
-      CACHE STRING "Choose the type of build, options are: None|Release|MinSizeRel|Debug|RelWithDebInfo" FORCE)
-  else()
-    set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE}
-      CACHE STRING "Choose the type of build, options are: None|Release|MinSizeRel|Debug|RelWithDebInfo" FORCE)
-  endif()
-endif()
 
 #--- add version files ---------------------------------------------------------
 configure_file(${PROJECT_SOURCE_DIR}/k4SimDelphesVersion.h
