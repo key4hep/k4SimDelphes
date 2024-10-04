@@ -1,13 +1,13 @@
 #ifndef DELPHESEDM4HEP_DELPHESEDM4HEP_CONVERTER_H__
 #define DELPHESEDM4HEP_DELPHESEDM4HEP_CONVERTER_H__
 
-// podio
-#include "podio/CollectionBase.h"
-
 // edm4hep
 #include "edm4hep/MCParticle.h"
-#include "edm4hep/MCRecoParticleAssociationCollection.h"
 #include "edm4hep/MutableReconstructedParticle.h"
+#include "edm4hep/RecoMCParticleLinkCollection.h"
+
+// podio
+#include "podio/CollectionBase.h"
 
 // ROOT
 #include "TClonesArray.h"
@@ -68,7 +68,7 @@ namespace k4SimDelphes {
     std::string className;
   };
 
-  std::vector<BranchSettings> getBranchSettings(ExRootConfParam /*const&*/ treeConf) {
+  inline std::vector<BranchSettings> getBranchSettings(ExRootConfParam /*const&*/ treeConf) {
     std::vector<k4SimDelphes::BranchSettings> branches;
     for (int b = 0; b < treeConf.GetSize(); b += 3) {
       k4SimDelphes::BranchSettings branch{treeConf[b].GetString(), treeConf[b + 1].GetString(),
@@ -102,7 +102,7 @@ namespace k4SimDelphes {
      */
     CollectionMapT getCollections() { return std::move(m_collections); }
 
-    edm4hep::MCRecoParticleAssociationCollection* createExternalRecoAssociations(
+    edm4hep::RecoMCParticleLinkCollection* createExternalRecoMCLinks(
         const std::unordered_map<UInt_t, edm4hep::MCParticle>& mc_map);
 
   private:
@@ -159,7 +159,7 @@ namespace k4SimDelphes {
 
     std::string m_recoCollName;
     std::string m_particleIDName;
-    std::string m_mcRecoAssocCollName;
+    std::string m_recoMCLinkCollName;
 
     // map from UniqueIDs (delphes generated particles) to MCParticles
     std::unordered_map<UInt_t, edm4hep::MCParticle> m_genParticleIds;

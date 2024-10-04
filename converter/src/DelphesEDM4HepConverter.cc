@@ -7,9 +7,9 @@
 #include "edm4hep/ClusterCollection.h"
 #include "edm4hep/EventHeaderCollection.h"
 #include "edm4hep/MCParticleCollection.h"
-#include "edm4hep/MCRecoParticleAssociationCollection.h"
 #include "edm4hep/ParticleIDCollection.h"
 #include "edm4hep/RecDqdxCollection.h"
+#include "edm4hep/RecoMCParticleLinkCollection.h"
 #include "edm4hep/ReconstructedParticleCollection.h"
 #include "edm4hep/TrackCollection.h"
 #if __has_include("edm4hep/TrackerHit3DCollection.h")
@@ -80,7 +80,7 @@ namespace k4SimDelphes {
       : m_magneticFieldBz(magFieldBz),
         m_recoCollName(outputSettings.RecoParticleCollectionName),
         m_particleIDName(outputSettings.ParticleIDCollectionName),
-        m_mcRecoAssocCollName(outputSettings.MCRecoAssociationCollectionName) {
+        m_recoMCLinkCollName(outputSettings.RecoMCParticleLinkCollectionName) {
     for (const auto& branch : branches) {
       if (contains(PROCESSING_ORDER, branch.className)) {
         m_branches.push_back(branch);
@@ -224,7 +224,7 @@ namespace k4SimDelphes {
     auto* magFieldCollection = createCollection<podio::UserDataCollection<float>>("magFieldBz");
     magFieldCollection->push_back(m_magneticFieldBz);
 
-    auto* mcRecoRelations = getCollection<edm4hep::MCRecoParticleAssociationCollection>(m_mcRecoAssocCollName);
+    auto* mcRecoRelations = getCollection<edm4hep::RecoMCParticleLinkCollection>(m_recoMCLinkCollName);
     auto* idCollection    = getCollection<edm4hep::ParticleIDCollection>(m_particleIDName);
     auto* trackerHitColl  = getCollection<edm4hep::TrackerHit3DCollection>(TRACKERHIT_OUTPUT_NAME);
 
@@ -279,8 +279,8 @@ namespace k4SimDelphes {
       UInt_t genId = delphesCand->Particle.GetUniqueID();
       if (const auto genIt = m_genParticleIds.find(genId); genIt != m_genParticleIds.end()) {
         auto relation = mcRecoRelations->create();
-        relation.setSim(genIt->second);
-        relation.setRec(cand);
+        relation.setTo(genIt->second);
+        relation.setFrom(cand);
       }
 
       m_recoParticleGenIds.emplace(genId, cand);
@@ -291,7 +291,7 @@ namespace k4SimDelphes {
   void DelphesEDM4HepConverter::processClusters(const TClonesArray* delphesCollection, std::string const& branch) {
     auto* particleCollection = getCollection<edm4hep::ReconstructedParticleCollection>(m_recoCollName);
     auto* clusterCollection  = createCollection<edm4hep::ClusterCollection>(branch);
-    auto* mcRecoRelations    = getCollection<edm4hep::MCRecoParticleAssociationCollection>(m_mcRecoAssocCollName);
+    auto* mcRecoRelations    = getCollection<edm4hep::RecoMCParticleLinkCollection>(m_recoMCLinkCollName);
     auto* calorimeterHitColl = getCollection<edm4hep::CalorimeterHitCollection>(CALORIMETERHIT_OUTPUT_NAME);
 
     for (auto iCand = 0; iCand < delphesCollection->GetEntries(); ++iCand) {
@@ -335,8 +335,8 @@ namespace k4SimDelphes {
       for (const auto genId : getAllParticleIDs(delphesCand)) {
         if (const auto genIt = m_genParticleIds.find(genId); genIt != m_genParticleIds.end()) {
           auto relation = mcRecoRelations->create();
-          relation.setSim(genIt->second);
-          relation.setRec(cand);
+          relation.setTo(genIt->second);
+          relation.setFrom(cand);
         }
 
         m_recoParticleGenIds.emplace(genId, cand);
@@ -489,15 +489,15 @@ namespace k4SimDelphes {
     return {};
   }
 
-  edm4hep::MCRecoParticleAssociationCollection* DelphesEDM4HepConverter::createExternalRecoAssociations(
+  edm4hep::RecoMCParticleLinkCollection* DelphesEDM4HepConverter::createExternalRecoMCLinks(
       const std::unordered_map<UInt_t, edm4hep::MCParticle>& mc_map) {
-    auto mcRecoRelations = new edm4hep::MCRecoParticleAssociationCollection();
+    auto mcRecoRelations = new edm4hep::RecoMCParticleLinkCollection();
     for (const auto& particleID : mc_map) {
       const auto [recoBegin, recoEnd] = m_recoParticleGenIds.equal_range(particleID.first);
       for (auto it = recoBegin; it != recoEnd; ++it) {
         auto relation = mcRecoRelations->create();
-        relation.setSim(particleID.second);
-        relation.setRec(it->second);
+        relation.setTo(particleID.second);
+        relation.setFrom(it->second);
       }
     }
     return mcRecoRelations;
@@ -508,8 +508,8 @@ namespace k4SimDelphes {
     if (m_collections.find(m_recoCollName) == m_collections.end()) {
       createCollection<edm4hep::ReconstructedParticleCollection>(m_recoCollName);
     }
-    if (m_collections.find(m_mcRecoAssocCollName) == m_collections.end()) {
-      createCollection<edm4hep::MCRecoParticleAssociationCollection>(m_mcRecoAssocCollName);
+    if (m_collections.find(m_recoMCLinkCollName) == m_collections.end()) {
+      createCollection<edm4hep::RecoMCParticleLinkCollection>(m_recoMCLinkCollName);
     }
     if (m_collections.find(m_particleIDName) == m_collections.end()) {
       createCollection<edm4hep::ParticleIDCollection>(m_particleIDName);
