@@ -345,12 +345,14 @@ namespace k4SimDelphes {
 
   void DelphesEDM4HepConverter::processJets(const TClonesArray* delphesCollection, std::string const& branch) {
     auto* jetCollection = createCollection<edm4hep::ReconstructedParticleCollection>(branch);
-    auto* idCollection  = createCollection<edm4hep::ParticleIDCollection>(branch + "_tags");
+    auto* idCollection_HF_tags  = createCollection<edm4hep::ParticleIDCollection>(branch + "_HF_tags");
+    auto* idCollection_tau_tags  = createCollection<edm4hep::ParticleIDCollection>(branch + "_tau_tags");
 
     for (auto iCand = 0; iCand < delphesCollection->GetEntries(); ++iCand) {
       auto* delphesCand = static_cast<Jet*>(delphesCollection->At(iCand));
       auto  jet         = jetCollection->create();
-      auto  id          = idCollection->create();
+      auto  id_HF_tag   = idCollection_HF_tags->create();
+      auto  id_tau_tag  = idCollection_tau_tags->create();
 
       // NOTE: Filling the jet with the information delievered by Delphes, which
       // is not necessarily the same as the sum of its constituents (filled below)
@@ -361,9 +363,10 @@ namespace k4SimDelphes {
       jet.setMomentum({(float)momentum.Px(), (float)momentum.Py(), (float)momentum.Pz()});
 
       // id.addToParameters(delphesCand->IsolationVar);
-      id.addToParameters(delphesCand->BTag);
-      id.addToParameters(delphesCand->TauTag);
-      id.setParticle(jet);
+      id_HF_tag.addToParameters(delphesCand->BTag);
+      id_tau_tag.addToParameters(delphesCand->TauTag);
+      id_HF_tag.setParticle(jet);
+      id_tau_tag.setParticle(jet);
 
       const auto& constituents = delphesCand->Constituents;
       for (auto iConst = 0; iConst < constituents.GetEntries(); ++iConst) {
