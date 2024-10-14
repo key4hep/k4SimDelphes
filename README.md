@@ -10,7 +10,9 @@ framework](https://github.com/key4hep) via Gaudi.
 this configuration can be found [in this doc](doc/output_config.md)
 
 ## Build status
-[![linux](https://github.com/key4hep/k4SimDelphes/actions/workflows/test.yml/badge.svg)](https://github.com/key4hep/k4SimDelphes/actions/workflows/test.yml)
+[![Key4hep build](https://github.com/key4hep/k4SimDelphes/actions/workflows/key4hep-build.yaml/badge.svg)](https://github.com/key4hep/k4SimDelphes/actions/workflows/key4hep-build.yaml)
+[![DOI](https://zenodo.org/badge/311063193.svg)](https://doi.org/10.5281/zenodo.4564683)
+
 
 ## Dependencies
 Required:
