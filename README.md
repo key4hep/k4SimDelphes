@@ -11,7 +11,7 @@ this configuration can be found [in this doc](doc/output_config.md)
 
 ## Build status
 [![Key4hep build](https://github.com/key4hep/k4SimDelphes/actions/workflows/key4hep-build.yaml/badge.svg)](https://github.com/key4hep/k4SimDelphes/actions/workflows/key4hep-build.yaml)
-[![DOI](https://zenodo.org/badge/311063193.svg)](https://doi.org/10.5281/zenodo.7256903)
+[![DOI](https://zenodo.org/badge/311063193.svg)](https://doi.org/10.5281/zenodo.4564683)
 
 
 ## Dependencies
