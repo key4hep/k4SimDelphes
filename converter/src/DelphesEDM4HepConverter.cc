@@ -344,9 +344,9 @@ namespace k4SimDelphes {
   }
 
   void DelphesEDM4HepConverter::processJets(const TClonesArray* delphesCollection, std::string const& branch) {
-    auto* jetCollection = createCollection<edm4hep::ReconstructedParticleCollection>(branch);
+    auto* jetCollection         = createCollection<edm4hep::ReconstructedParticleCollection>(branch);
     auto* idCollection_HF_tags  = createCollection<edm4hep::ParticleIDCollection>(branch + "_HF_tags");
-    auto* idCollection_tau_tags  = createCollection<edm4hep::ParticleIDCollection>(branch + "_tau_tags");
+    auto* idCollection_tau_tags = createCollection<edm4hep::ParticleIDCollection>(branch + "_tau_tags");
 
     for (auto iCand = 0; iCand < delphesCollection->GetEntries(); ++iCand) {
       auto* delphesCand = static_cast<Jet*>(delphesCollection->At(iCand));
