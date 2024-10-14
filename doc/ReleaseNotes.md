@@ -1,3 +1,9 @@
+# v00-07-01
+
+* 2024-10-14 Thomas Madlener ([PR#133](https://github.com/key4hep/k4SimDelphes/pull/133))
+  - Update the CI README bagde
+  - Add a zenodo badge
+
 # v00-07
 
 * 2024-10-04 tmadlener ([PR#130](https://github.com/key4hep/k4SimDelphes/pull/130))
