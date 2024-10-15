@@ -19,7 +19,7 @@
 
 void PrintXS(Pythia8::Pythia* pythia) {
   // convert mb to pb
-  float xsec = pythia->info.sigmaGen() * 1.e09;
+  float xsec     = pythia->info.sigmaGen() * 1.e09;
   float xsec_err = pythia->info.sigmaErr() * 1.e09;
 
   std::cout << "------------------------------------------------------------------------" << std::endl;
