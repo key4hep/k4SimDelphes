@@ -24,27 +24,18 @@ void PrintXS(Pythia8::Pythia* pythia) {
 
   std::cout << "------------------------------------------------------------------------" << std::endl;
   std::cout << std::endl;
-  std::cout << "Pythia8 Cross-section ("
-            << pythia->info.name()
-            << "): "
-            << xsec
-            << " +/- "
-            << xsec_err
-            << " pb\n";
+  std::cout << "Pythia8 Cross-section (" << pythia->info.name() << "): " << xsec << " +/- " << xsec_err << " pb\n";
   std::cout << std::endl;
   if (pythia->info.nProcessesLHEF()) {
     std::cout << "Input LHEF Cross-section:\n";
     for (int i = 0; i < pythia->info.nProcessesLHEF(); ++i) {
-      std::cout << " - "
-                << pythia->info.nameProc(i)
-                << ": "
-                << pythia->info.sigmaLHEF(i) << "\n";
+      std::cout << " - " << pythia->info.nameProc(i) << ": " << pythia->info.sigmaLHEF(i) << "\n";
     }
     std::cout << std::endl;
     if (size(pythia->info.headerKeys())) {
       std::cout << "Information from LHEF file:\n";
 
-      for (const auto& key: pythia->info.headerKeys()) {
+      for (const auto& key : pythia->info.headerKeys()) {
         if (key == "MGGenerationInfo") {
           std::cout << pythia->info.header(key) << std::endl;
         }
