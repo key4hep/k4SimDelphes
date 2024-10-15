@@ -79,7 +79,6 @@ namespace k4SimDelphes {
                                                    OutputSettings const& outputSettings, double magFieldBz)
       : m_magneticFieldBz(magFieldBz),
         m_recoCollName(outputSettings.RecoParticleCollectionName),
-        m_particleIDName(outputSettings.ParticleIDCollectionName),
         m_recoMCLinkCollName(outputSettings.RecoMCParticleLinkCollectionName) {
     for (const auto& branch : branches) {
       if (contains(PROCESSING_ORDER, branch.className)) {
@@ -224,7 +223,7 @@ namespace k4SimDelphes {
     magFieldCollection->push_back(m_magneticFieldBz);
 
     auto* mcRecoRelations = getCollection<edm4hep::RecoMCParticleLinkCollection>(m_recoMCLinkCollName);
-    auto* idCollection    = getCollection<edm4hep::ParticleIDCollection>(m_particleIDName);
+    auto* idCollection    = createCollection<edm4hep::ParticleIDCollection>(branch + "_PID");
     auto* trackerHitColl  = getCollection<edm4hep::TrackerHit3DCollection>(TRACKERHIT_OUTPUT_NAME);
 
     for (auto iCand = 0; iCand < delphesCollection->GetEntries(); ++iCand) {
@@ -345,13 +344,15 @@ namespace k4SimDelphes {
   }
 
   void DelphesEDM4HepConverter::processJets(const TClonesArray* delphesCollection, std::string const& branch) {
-    auto* jetCollection = createCollection<edm4hep::ReconstructedParticleCollection>(branch);
-    auto* idCollection  = getCollection<edm4hep::ParticleIDCollection>(m_particleIDName);
+    auto* jetCollection         = createCollection<edm4hep::ReconstructedParticleCollection>(branch);
+    auto* idCollection_HF_tags  = createCollection<edm4hep::ParticleIDCollection>(branch + "_HF_tags");
+    auto* idCollection_tau_tags = createCollection<edm4hep::ParticleIDCollection>(branch + "_tau_tags");
 
     for (auto iCand = 0; iCand < delphesCollection->GetEntries(); ++iCand) {
       auto* delphesCand = static_cast<Jet*>(delphesCollection->At(iCand));
       auto  jet         = jetCollection->create();
-      auto  id          = idCollection->create();
+      auto  id_HF_tag   = idCollection_HF_tags->create();
+      auto  id_tau_tag  = idCollection_tau_tags->create();
 
       // NOTE: Filling the jet with the information delievered by Delphes, which
       // is not necessarily the same as the sum of its constituents (filled below)
@@ -362,9 +363,10 @@ namespace k4SimDelphes {
       jet.setMomentum({(float)momentum.Px(), (float)momentum.Py(), (float)momentum.Pz()});
 
       // id.addToParameters(delphesCand->IsolationVar);
-      id.addToParameters(delphesCand->BTag);
-      id.addToParameters(delphesCand->TauTag);
-      id.setParticle(jet);
+      id_HF_tag.addToParameters(delphesCand->BTag);
+      id_tau_tag.addToParameters(delphesCand->TauTag);
+      id_HF_tag.setParticle(jet);
+      id_tau_tag.setParticle(jet);
 
       const auto& constituents = delphesCand->Constituents;
       for (auto iConst = 0; iConst < constituents.GetEntries(); ++iConst) {
@@ -509,9 +511,6 @@ namespace k4SimDelphes {
     }
     if (m_collections.find(m_recoMCLinkCollName) == m_collections.end()) {
       createCollection<edm4hep::RecoMCParticleLinkCollection>(m_recoMCLinkCollName);
-    }
-    if (m_collections.find(m_particleIDName) == m_collections.end()) {
-      createCollection<edm4hep::ParticleIDCollection>(m_particleIDName);
     }
     if (m_collections.find(TRACKERHIT_OUTPUT_NAME) == m_collections.end()) {
       createCollection<edm4hep::TrackerHit3DCollection>(TRACKERHIT_OUTPUT_NAME);

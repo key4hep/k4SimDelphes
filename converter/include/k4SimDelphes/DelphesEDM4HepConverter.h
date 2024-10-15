@@ -158,7 +158,6 @@ namespace k4SimDelphes {
     double m_magneticFieldBz;  // necessary for determining track parameters
 
     std::string m_recoCollName;
-    std::string m_particleIDName;
     std::string m_recoMCLinkCollName;
 
     // map from UniqueIDs (delphes generated particles) to MCParticles
