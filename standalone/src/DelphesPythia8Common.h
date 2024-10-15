@@ -19,12 +19,30 @@
 
 void PrintXS(Pythia8::Pythia* pythia) {
   // convert mb to pb
-  float xsec = pythia->info.sigmaGen() * 1.e09;
+  float xsec     = pythia->info.sigmaGen() * 1.e09;
+  float xsec_err = pythia->info.sigmaErr() * 1.e09;
 
   std::cout << "------------------------------------------------------------------------" << std::endl;
-  std::cout << "" << std::endl;
-  std::cout << "Pythia8 Cross-section: " << xsec << " pb" << std::endl;
-  std::cout << "" << std::endl;
+  std::cout << std::endl;
+  std::cout << "Pythia8 Cross-section (" << pythia->info.name() << "): " << xsec << " +/- " << xsec_err << " pb\n";
+  std::cout << std::endl;
+  if (pythia->info.nProcessesLHEF()) {
+    std::cout << "Input LHEF Cross-section:\n";
+    for (int i = 0; i < pythia->info.nProcessesLHEF(); ++i) {
+      std::cout << " - " << pythia->info.nameProc(i) << ": " << pythia->info.sigmaLHEF(i) << "\n";
+    }
+    std::cout << std::endl;
+    if (size(pythia->info.headerKeys())) {
+      std::cout << "Information from LHEF file:\n";
+
+      for (const auto& key : pythia->info.headerKeys()) {
+        if (key == "MGGenerationInfo") {
+          std::cout << pythia->info.header(key) << std::endl;
+        }
+      }
+    }
+  }
+  std::cout << "------------------------------------------------------------------------" << std::endl;
 }
 
 void ConvertInput(Long64_t eventCounter, Pythia8::Pythia* pythia, ExRootTreeBranch* branch, DelphesFactory* factory,
