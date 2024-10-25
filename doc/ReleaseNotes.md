@@ -1,3 +1,15 @@
+# v00-07-02
+
+* 2024-10-23 tmadlener ([PR#131](https://github.com/key4hep/k4SimDelphes/pull/131))
+  - Split the global `ParticleIDs` collection into several smaller collections to facilitate downstream usage after the reversal of the `ParticleID` - `ReconstructedParticle` relation direction in [EDM4hep#268](https://github.com/key4hep/EDM4hep/pull/268).
+    - `Tracks` will get a `ParticleIDCollection` with the suffix `_PID`
+    - `Jets` will get a `ParticleIDCollection` with the suffix `_HF_tags` for any heavy flavor tags, and `_tau_tags` for any tau tags.
+
+* 2024-10-15 Juraj Smiesko ([PR#134](https://github.com/key4hep/k4SimDelphes/pull/134))
+  - Print x-sec error for Pythia process
+  - Print info from LHEF file, if used
+  - Print info from MadGraph LHEF file, if used
+
 # v00-07-01
 
 * 2024-10-14 Thomas Madlener ([PR#133](https://github.com/key4hep/k4SimDelphes/pull/133))
