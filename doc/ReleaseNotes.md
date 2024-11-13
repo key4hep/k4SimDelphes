@@ -1,3 +1,8 @@
+# v00-07-03
+
+* 2024-11-13 Juraj Smiesko ([PR#137](https://github.com/key4hep/k4SimDelphes/pull/137))
+  - Make sure to not crash in cases where the LHEF reader has not been initialized in the Pythia reader
+
 # v00-07-02
 
 * 2024-10-23 tmadlener ([PR#131](https://github.com/key4hep/k4SimDelphes/pull/131))
