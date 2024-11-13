@@ -152,7 +152,9 @@ public:
         return false;
       }
       modularDelphes->Clear();
-      reader->Clear();
+      if (reader) {
+        reader->Clear();
+      }
     }
     m_readStopWatch.Stop();
     m_procStopWatch.Start();
