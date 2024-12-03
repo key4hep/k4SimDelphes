@@ -397,7 +397,7 @@ int main(int, char* argv[]) {
       return 1;
     }
 
-    auto& mcRecoAssocColl = frame.get<edm4hep::RecoMCParticleLinkCollection>("MCRecoAssociations");
+    auto& mcRecoAssocColl = frame.get<edm4hep::RecoMCParticleLinkCollection>("RecoMCLink");
 
     compareCollectionElements<Track>(tracks, recoColl, "EFlowTrack", 0, mcRecoAssocColl);
     compareCollectionElements<Tower>(ecalClusters, recoColl, "EFlowPhoton", tracks->GetEntries(), mcRecoAssocColl);

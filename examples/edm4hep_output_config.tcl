@@ -9,5 +9,5 @@ module EDM4HepOutput EDM4HepOutput {
     add MissingETCollections             MissingET
     add ScalarHTCollections              ScalarHT
     set RecoParticleCollectionName       ReconstructedParticles
-    set RecoMCParticleLinkCollectionName  MCRecoAssociations
+    set RecoMCParticleLinkCollectionName  RecoMCLink
 }
