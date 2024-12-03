@@ -81,7 +81,7 @@ namespace k4SimDelphes {
      * Name of the RecoMCParticleLinkCollection holding the links of
      * generated to reconstructed particles.
      */
-    std::string RecoMCParticleLinkCollectionName{"MCRecoAssociations"};
+    std::string RecoMCParticleLinkCollectionName{"RecoMCLink"};
   };
 
   template <typename T> std::ostream& operator<<(std::ostream& os, std::vector<T> const& container) {
@@ -160,7 +160,7 @@ namespace k4SimDelphes {
     }
 
     settings.RecoMCParticleLinkCollectionName =
-        confReader->GetString("EDM4HepOutput::RecoMCParticleLinkCollectionName", "MCRecoAssociations");
+        confReader->GetString("EDM4HepOutput::RecoMCParticleLinkCollectionName", "RecoMCLink");
 
     return settings;
   }
