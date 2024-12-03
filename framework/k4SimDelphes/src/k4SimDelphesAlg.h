@@ -48,6 +48,7 @@ private:
   Gaudi::Property<std::string> m_DelphesOutputSettings{
       this, "DelphesOutputSettings", "", "Name of config file with k4simdelphes specific output settings"};
 
+  k4SimDelphes::OutputSettings                           m_outputConfig{};
   std::unique_ptr<Delphes>                               m_Delphes{nullptr};
   std::unique_ptr<ExRootConfReader>                      m_confReader{nullptr};
   std::unique_ptr<k4SimDelphes::DelphesEDM4HepConverter> m_edm4hepConverter{nullptr};

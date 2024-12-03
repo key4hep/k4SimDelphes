@@ -38,10 +38,10 @@ StatusCode k4SimDelphesAlg::initialize() {
   m_eventDataSvc.retrieve().ignore();
   m_podioDataSvc = dynamic_cast<PodioDataSvc*>(m_eventDataSvc.get());
 
-  const auto branches       = getBranchSettings(m_confReader->GetParam("TreeWriter::Branch"));
-  const auto outputSettings = getEDM4hepOutputSettings(m_DelphesOutputSettings.value().c_str());
-  m_edm4hepConverter        = std::make_unique<k4SimDelphes::DelphesEDM4HepConverter>(
-      branches, outputSettings, m_confReader->GetDouble("ParticlePropagator::Bz", 0));
+  const auto branches = getBranchSettings(m_confReader->GetParam("TreeWriter::Branch"));
+  m_outputConfig      = getEDM4hepOutputSettings(m_DelphesOutputSettings.value().c_str());
+  m_edm4hepConverter  = std::make_unique<k4SimDelphes::DelphesEDM4HepConverter>(
+      branches, m_outputConfig, m_confReader->GetDouble("ParticlePropagator::Bz", 0));
 
   return StatusCode::SUCCESS;
 }
@@ -70,7 +70,7 @@ StatusCode k4SimDelphesAlg::execute(const EventContext&) const {
 
   auto collections = m_edm4hepConverter->getCollections();
   for (auto& c : collections) {
-    if (c.first == "MCRecoAssociations") {
+    if (c.first == m_outputConfig.RecoMCParticleLinkCollectionName) {
       auto                                new_c   = m_edm4hepConverter->createExternalRecoMCLinks(mapSimDelphes);
       DataWrapper<podio::CollectionBase>* wrapper = new DataWrapper<podio::CollectionBase>();
       wrapper->setData(new_c);
