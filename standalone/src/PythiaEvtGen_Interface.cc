@@ -48,6 +48,10 @@ PythiaEvtGen_Interface::PythiaEvtGen_Interface(Pythia8::Pythia* p, std::string p
   //  int arr[] = {511,521,531,541,5122,5132,5142,5232,5242,5332,5342,5412,5414,5422,5424,5432,5434,5442,5444,5512,5514,5522,5524,5532,5534,5542,5544,5544};
   B_ids = std::vector<int>{511,  521,  531,  541,  5122, 5132, 5142, 5232, 5242, 5332, 5342, 5412, 5414, 5422,
                            5424, 5432, 5434, 5442, 5444, 5512, 5514, 5522, 5524, 5532, 5534, 5542, 5544, 5544};
+  C_ids = std::vector<int>{411,  421,  431,  4122, 4222, 4212, 4112, 4224, 4214, 4114, 4232, 4132, 4322,
+                           4312, 4324, 4314, 4332, 4334, 4412, 4422, 4414, 4424, 4432, 4434, 4444};
+  Had_ids = B_ids;
+  Had_ids.insert(Had_ids.end(), C_ids.begin(), C_ids.end());
   std::cout << "Finished Initialization" << std::endl;
   n_rehadronize = 1e4;
 }
@@ -256,7 +260,7 @@ void PythiaEvtGen_Interface::decay() {
     if (part->status() == 93 || part->status() == 94)
       continue;
 
-    if (std::find(B_ids.begin(), B_ids.end(), abs(part->id())) != B_ids.end()) {
+    if (std::find(Had_ids.begin(), Had_ids.end(), abs(part->id())) != Had_ids.end()) {
       /* v contains x */
 
       if (debug)
