@@ -12,14 +12,7 @@
 #include "edm4hep/RecoMCParticleLinkCollection.h"
 #include "edm4hep/ReconstructedParticleCollection.h"
 #include "edm4hep/TrackCollection.h"
-#if __has_include("edm4hep/TrackerHit3DCollection.h")
 #include "edm4hep/TrackerHit3DCollection.h"
-#else
-#include "edm4hep/TrackerHitCollection.h"
-namespace edm4hep {
-  using TrackerHit3DCollection = edm4hep::TrackerHitCollection;
-}
-#endif
 #include "edm4hep/Vector3d.h"
 
 #include "podio/UserDataCollection.h"
