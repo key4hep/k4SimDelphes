@@ -58,14 +58,14 @@ public:
 
     // jet matching
 #if PYTHIA_VERSION_INTEGER < 8300
-    Pythia8::CombineMatchingInput* combined   = 0;
-    Pythia8::UserHooks*            m_matching = 0;
+    Pythia8::CombineMatchingInput* combined = 0;
+    Pythia8::UserHooks*            matching = 0;
 
-    m_matching = combined->getHook(*m_pythia);
-    if (!m_matching) {
+    matching = combined->getHook(*m_pythia);
+    if (!matching) {
       throw std::runtime_error("can't do matching");
     }
-    m_pythia->setUserHooksPtr(m_matching);
+    m_pythia->setUserHooksPtr(matching);
 #else
     Pythia8::CombineMatchingInput combined;
     combined.setHook(*m_pythia);
