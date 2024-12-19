@@ -39,8 +39,8 @@ namespace k4SimDelphes {
    * ensure that products required by later stages are producd early enough
    */
   constexpr std::array<std::string_view, 10> PROCESSING_ORDER = {
-      "GenParticle", "Track",     "Tower",    "ParticleFlowCandidate", "Muon", "Electron", "Photon",
-      "Jet",         "MissingET", "SclalarHT"};
+      "GenParticle", "Track",     "Tower",   "ParticleFlowCandidate", "Muon", "Electron", "Photon",
+      "Jet",         "MissingET", "ScalarHT"};
 
   template <size_t N>
   void sortBranchesProcessingOrder(std::vector<BranchSettings>&           branches,
