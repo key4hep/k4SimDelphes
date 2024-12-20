@@ -435,11 +435,9 @@ namespace k4SimDelphes {
   }
 
   void DelphesEDM4HepConverter::processScalarHT(const TClonesArray* delphesCollection, std::string const& branch) {
-    auto* collection  = createCollection<edm4hep::ParticleIDCollection>(branch);
+    auto* collection  = createCollection<podio::UserDataCollection<float>>(branch);
     auto* delphesCand = static_cast<ScalarHT*>(delphesCollection->At(0));
-
-    auto cand = collection->create();
-    cand.addToParameters(delphesCand->HT);
+    collection->push_back(delphesCand->HT);
   }
 
   template <typename DelphesT>
