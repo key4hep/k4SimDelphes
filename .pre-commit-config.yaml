@@ -4,7 +4,7 @@ repos:
     hooks:
       - id: mixed-line-ending
       - id: trailing-whitespace
-        exclude: (doc/ReleaseNotes.md)
+        exclude: (doc/ReleaseNotes.md|examples/data/events.lhe)
   - repo: local
     hooks:
       - id: clang-format
