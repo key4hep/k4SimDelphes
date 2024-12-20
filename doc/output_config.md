@@ -109,7 +109,7 @@ classes. For the conversion the Delphes classes are taken from the `TreeWriter`
 | `Electron`              | `ReconstructedParticle` (subset collection)       |
 | `Photon`                | `ReconstructedParticle` (subset collection)       |
 | `MissingET`             | `ReconstructedParticle`                           |
-| `ScalarHT`              | `ParticleID`                                      |
+| `ScalarHT`              | `UserDataCollection<float>`                       |
 | `ParticleFlowCandidate` | `ReconstructedParticle`                           |
 | n/a                     | `RecoMCParticleLink`                              |
 
