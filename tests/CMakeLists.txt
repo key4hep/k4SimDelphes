@@ -47,6 +47,16 @@ if(DELPHES_CARD)
   endif()
 
   ADD_COMPARISON_TEST(DelphesRootReader_ee_91gev DelphesROOT_EDM4HEP ${DELPHES_CARD} ${OUTPUT_CONFIG} delphes_root_converter_input_reader_test.root ${PROJECT_SOURCE_DIR}/tests/data/gev91ee_zboson_100events.root )
+
+  # From a physics point of view this doesn't make a lot of sense, but we just
+  # want to see if jet matching is properly turned on
+  ADD_COMPARISON_TEST(DelphesPythiaJetMatching DelphesPythia8_EDM4HEP ${DELPHES_CARD} ${OUTPUT_CONFIG} pythia_jet_matching_technical_check.root ${PROJECT_SOURCE_DIR}/examples/data/p8_pp_tt012j_5f_HT_25000_35000.cmd --no-delphes)
+
+  set_tests_properties(DelphesPythiaJetMatching
+    PROPERTIES
+      PASS_REGULAR_EXPRESSION "JetMatching Error and Warning Messages Statistics"
+  )
+
 else()
   message(WARNING "Cannot find IDEA delphes card from the delphes installation. Cannot use it for testing")
 endif()
