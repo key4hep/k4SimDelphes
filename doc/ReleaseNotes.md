@@ -1,3 +1,22 @@
+# v00-07-04
+
+* 2024-12-20 Birgit Stapf ([PR#144](https://github.com/key4hep/k4SimDelphes/pull/144))
+  - Add the missing `else` block to the  `DelphesPythia8Reader` to make jet matching also work with Pythia Versions later than 8.3. Use same code as in the equivalent [Delphes reader](https://github.com/delphes/delphes/blob/master/readers/DelphesPythia8.cpp#L301).
+
+* 2024-12-20 Birgit Stapf ([PR#138](https://github.com/key4hep/k4SimDelphes/pull/138))
+  - Use a `UserDataCollection<float>` to store the `ScalarHT` output from Delphes instead of a `ParticleIDCollection`.
+  - Fix a typo in the converter source code that prevented the `ScalarHT` collection from Delphes from being converted, even if explicitly requested in the output config.
+
+* 2024-12-10 jmcarcell ([PR#142](https://github.com/key4hep/k4SimDelphes/pull/142))
+  - Remove the check for TrackerHit3D from edm4hep
+
+* 2024-12-05 Thomas Madlener ([PR#141](https://github.com/key4hep/k4SimDelphes/pull/141))
+  - Use the non-deprecated `MCRecoParticleLinkCollectionName` in the example output configuration
+
+* 2024-12-03 Thomas Madlener ([PR#140](https://github.com/key4hep/k4SimDelphes/pull/140))
+  - Change the Reco - MC link name in the example EDM4hep output configuration to follow the from - to convention that is used in EDM4hep.
+  - Fix a minor bug in the framework algorithm to properly take into account the output configuration.
+
 # v00-07-03
 
 * 2024-11-13 Juraj Smiesko ([PR#137](https://github.com/key4hep/k4SimDelphes/pull/137))
