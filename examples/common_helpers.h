@@ -30,8 +30,8 @@ TH1F* logXScaleBinned(const char* name, const int nBins, const float min, const 
 
   const float lmin = std::log10(min);
   const float lmax = std::log10(max);
-  const float dx   = (lmax - lmin) / nBins;
-  const float l10  = std::log(10);
+  const float dx = (lmax - lmin) / nBins;
+  const float l10 = std::log(10);
 
   for (int i = 0; i < nBins + 1; ++i) {
     xBinning.push_back(std::exp(l10 * (lmin + i * dx)));
@@ -41,20 +41,20 @@ TH1F* logXScaleBinned(const char* name, const int nBins, const float min, const 
 }
 
 void defineHists() {
-  muonDeltaPt      = new TH1F("muonDeltaPt", "muonDeltaPt", 100, -10, 10);
-  muonDeltaE       = new TH1F("muonDeltaE", "muonDeltaE", 100, -10, 10);
-  electronDeltaPt  = new TH1F("electronDeltaPt", "electronDeltaPt", 100, -10, 10);
-  electronDeltaE   = new TH1F("electronDeltaE", "electronDeltaE", 100, -10, 10);
-  photonDeltaPt    = new TH1F("photonDeltaPt", "photonDeltaPt", 100, -10, 10);
-  photonDeltaE     = new TH1F("photonDeltaE", "photonDeltaE", 100, -10, 10);
-  jetDeltaPt       = new TH1F("jetDeltaPt", "jetDeltaPt", 100, -10, 10);
-  jetDeltaE        = new TH1F("jetDeltaE", "jetDeltaE", 100, -10, 10);
-  jetRecoE         = logXScaleBinned("jetRecoE", 100, 2, 2000);
-  jetGenE          = logXScaleBinned("jetGenE", 100, 2, 2000);
-  jetRecoM         = new TH1F("jetRecoM", "jetRecoM", 100, 2, 150);
-  jetGenM          = new TH1F("jetGenM", "jetGenM", 100, 2, 150);
-  jetNTracks       = new TH1I("jetNTracks", "jetNTracks", 30, 0, 30);
-  jetNClusters     = new TH1I("jetNClusters", "jetNClusters", 30, 0, 30);
+  muonDeltaPt = new TH1F("muonDeltaPt", "muonDeltaPt", 100, -10, 10);
+  muonDeltaE = new TH1F("muonDeltaE", "muonDeltaE", 100, -10, 10);
+  electronDeltaPt = new TH1F("electronDeltaPt", "electronDeltaPt", 100, -10, 10);
+  electronDeltaE = new TH1F("electronDeltaE", "electronDeltaE", 100, -10, 10);
+  photonDeltaPt = new TH1F("photonDeltaPt", "photonDeltaPt", 100, -10, 10);
+  photonDeltaE = new TH1F("photonDeltaE", "photonDeltaE", 100, -10, 10);
+  jetDeltaPt = new TH1F("jetDeltaPt", "jetDeltaPt", 100, -10, 10);
+  jetDeltaE = new TH1F("jetDeltaE", "jetDeltaE", 100, -10, 10);
+  jetRecoE = logXScaleBinned("jetRecoE", 100, 2, 2000);
+  jetGenE = logXScaleBinned("jetGenE", 100, 2, 2000);
+  jetRecoM = new TH1F("jetRecoM", "jetRecoM", 100, 2, 150);
+  jetGenM = new TH1F("jetGenM", "jetGenM", 100, 2, 150);
+  jetNTracks = new TH1I("jetNTracks", "jetNTracks", 30, 0, 30);
+  jetNClusters = new TH1I("jetNClusters", "jetNClusters", 30, 0, 30);
   jetNConstituents = new TH1I("jetNConstituents", "jetNConstituents", 60, 0, 60);
 }
 

@@ -41,7 +41,7 @@ public:
     if (i == argc || strncmp(argv[i], "-", 2) == 0) {
       std::cout << "** Reading standard input" << std::endl;
       m_inputFile = stdin;
-      length      = -1;
+      length = -1;
     } else {
       std::cout << "** Reading " << argv[i] << std::endl;
       m_inputFile = fopen(argv[i], "r");
@@ -59,20 +59,20 @@ public:
       if (length <= 0) {
         fclose(m_inputFile);
         ++i;
-        //continue;
+        // continue;
       }
     }
 
     m_reader->SetInputFile(m_inputFile);
 
-    m_treeWriter    = new ExRootTreeWriter(nullptr, "Delphes");
+    m_treeWriter = new ExRootTreeWriter(nullptr, "Delphes");
     m_converterTree = std::make_unique<TTree>("ConverterTree", "Analysis");
     // avoid having any connection with a TFile that might be opened later
     m_converterTree->SetDirectory(nullptr);
     m_treeWriter->SetTree(m_converterTree.get());
     modularDelphes->SetTreeWriter(m_treeWriter);
 
-    m_branchEvent  = m_treeWriter->NewBranch("Event", HepMCEvent::Class());
+    m_branchEvent = m_treeWriter->NewBranch("Event", HepMCEvent::Class());
     m_branchWeight = m_treeWriter->NewBranch("Weight", Weight::Class());
 
     return outputfile;
@@ -95,7 +95,7 @@ public:
                  TObjArray* partonOutputArray) override {
     m_treeWriter->Clear();
     m_readStopWatch.Start();
-    auto factory  = modularDelphes->GetFactory();
+    auto factory = modularDelphes->GetFactory();
     bool goodRead = false;
     while ((goodRead =
                 m_reader->ReadBlock(factory, allParticleOutputArray, stableParticleOutputArray, partonOutputArray)) &&
@@ -118,20 +118,20 @@ public:
 
 private:
   static constexpr const char* m_appName = "DelphesHepMC";
-  int                          m_numberOfEvents;
-  int                          m_entry      = 0;
-  ExRootTreeReader*            m_treeReader = nullptr;
-  TClonesArray*                m_branchParticle;
-  TClonesArray*                m_branchHepMCEvent;
+  int m_numberOfEvents;
+  int m_entry = 0;
+  ExRootTreeReader* m_treeReader = nullptr;
+  TClonesArray* m_branchParticle;
+  TClonesArray* m_branchHepMCEvent;
 
-  ExRootTreeWriter*      m_treeWriter{nullptr};
+  ExRootTreeWriter* m_treeWriter{nullptr};
   std::unique_ptr<TTree> m_converterTree{nullptr};
 
-  FILE*                                m_inputFile = 0;
-  TStopwatch                           m_readStopWatch, m_procStopWatch;
-  ExRootTreeBranch *                   m_branchEvent = 0, *m_branchWeight = 0;
+  FILE* m_inputFile = 0;
+  TStopwatch m_readStopWatch, m_procStopWatch;
+  ExRootTreeBranch *m_branchEvent = 0, *m_branchWeight = 0;
   std::unique_ptr<DelphesHepMC2Reader> m_reader = 0;
-  Long64_t                             m_eventCounter;
+  Long64_t m_eventCounter;
 };
 
 #endif

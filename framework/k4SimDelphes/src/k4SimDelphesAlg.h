@@ -18,7 +18,7 @@
 #include <memory>
 
 namespace edm4hep {
-  class MCParticleCollection;
+class MCParticleCollection;
 }
 
 /** @class k4SimDelphesAlg
@@ -48,22 +48,22 @@ private:
   Gaudi::Property<std::string> m_DelphesOutputSettings{
       this, "DelphesOutputSettings", "", "Name of config file with k4simdelphes specific output settings"};
 
-  k4SimDelphes::OutputSettings                           m_outputConfig{};
-  std::unique_ptr<Delphes>                               m_Delphes{nullptr};
-  std::unique_ptr<ExRootConfReader>                      m_confReader{nullptr};
+  k4SimDelphes::OutputSettings m_outputConfig{};
+  std::unique_ptr<Delphes> m_Delphes{nullptr};
+  std::unique_ptr<ExRootConfReader> m_confReader{nullptr};
   std::unique_ptr<k4SimDelphes::DelphesEDM4HepConverter> m_edm4hepConverter{nullptr};
-  mutable TObjArray*                                     m_allParticleOutputArray{nullptr};
-  mutable TObjArray*                                     m_stableParticleOutputArray{nullptr};
-  mutable TObjArray*                                     m_partonOutputArray{nullptr};
+  mutable TObjArray* m_allParticleOutputArray{nullptr};
+  mutable TObjArray* m_stableParticleOutputArray{nullptr};
+  mutable TObjArray* m_partonOutputArray{nullptr};
 
   mutable ExRootTreeWriter* m_treeWriter{nullptr};
-  TTree*                    m_converterTree{nullptr};
+  TTree* m_converterTree{nullptr};
 
   // since branch names are taken from delphes config
   // and not declared as data handles,
   // need podiodatasvc directly
-  mutable PodioDataSvc*           m_podioDataSvc;
+  mutable PodioDataSvc* m_podioDataSvc;
   ServiceHandle<IDataProviderSvc> m_eventDataSvc;
 };
 
-#endif  // _K4SIMDELPHESALG_H
+#endif // _K4SIMDELPHESALG_H

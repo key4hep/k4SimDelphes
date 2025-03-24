@@ -32,15 +32,15 @@ public:
     m_chain = new TChain("Delphes");
 
     for (int i = 4; i < argc; ++i) {
-      //std::cout << argv[i] << std::endl;
+      // std::cout << argv[i] << std::endl;
       m_chain->Add(argv[i]);
     }
-    m_treeReader       = new ExRootTreeReader(m_chain);
-    m_numberOfEvents   = m_treeReader->GetEntries();
-    m_branchParticle   = m_treeReader->UseBranch("Particle");
+    m_treeReader = new ExRootTreeReader(m_chain);
+    m_numberOfEvents = m_treeReader->GetEntries();
+    m_branchParticle = m_treeReader->UseBranch("Particle");
     m_branchHepMCEvent = m_treeReader->UseBranch("Event");
 
-    m_treeWriter    = new ExRootTreeWriter(nullptr, "Delphes");
+    m_treeWriter = new ExRootTreeWriter(nullptr, "Delphes");
     m_converterTree = std::make_unique<TTree>("ConverterTree", "Analysis");
     // avoid having any connection with a TFile that might be opened later
     m_converterTree->SetDirectory(nullptr);
@@ -50,7 +50,7 @@ public:
     return outputfile;
   }
 
-  int  getNumberOfEvents() const override { return m_numberOfEvents; }
+  int getNumberOfEvents() const override { return m_numberOfEvents; }
   bool finished() const override { return m_entry >= m_numberOfEvents; }
 
   std::string getUsage() const override {
@@ -68,19 +68,19 @@ public:
     m_treeWriter->Clear();
     m_treeReader->ReadEntry(m_entry);
     for (Int_t j = 0; j < m_branchParticle->GetEntriesFast(); j++) {
-      gen                      = (GenParticle*)m_branchParticle->At(j);
-      candidate                = modularDelphes->GetFactory()->NewCandidate();
-      candidate->Momentum      = gen->P4();
+      gen = (GenParticle*)m_branchParticle->At(j);
+      candidate = modularDelphes->GetFactory()->NewCandidate();
+      candidate->Momentum = gen->P4();
       constexpr double c_light = 2.99792458e+8;
       candidate->Position.SetXYZT(gen->X, gen->Y, gen->Z, gen->T * 1.0E3 * c_light);
-      candidate->PID    = gen->PID;
+      candidate->PID = gen->PID;
       candidate->Status = gen->Status;
-      candidate->M1     = gen->M1;
-      candidate->M2     = gen->M2;
-      candidate->D1     = gen->D1;
-      candidate->D2     = gen->D2;
+      candidate->M1 = gen->M1;
+      candidate->M2 = gen->M2;
+      candidate->D1 = gen->D1;
+      candidate->D2 = gen->D2;
       candidate->Charge = gen->Charge;
-      candidate->Mass   = gen->Mass;
+      candidate->Mass = gen->Mass;
       allParticleOutputArray->Add(candidate);
       pdgCode = TMath::Abs(gen->PID);
       if (gen->Status == 1) {
@@ -98,18 +98,18 @@ public:
 
 private:
   static constexpr const char* m_appName = "DelphesROOT";
-  int                          m_numberOfEvents;
-  int                          m_entry = 0;
-  TChain*                      m_chain;
-  ExRootTreeReader*            m_treeReader = nullptr;
-  TClonesArray*                m_branchParticle;
-  TClonesArray*                m_branchHepMCEvent;
-  ExRootTreeWriter*            m_treeWriter{nullptr};
-  std::unique_ptr<TTree>       m_converterTree{nullptr};
+  int m_numberOfEvents;
+  int m_entry = 0;
+  TChain* m_chain;
+  ExRootTreeReader* m_treeReader = nullptr;
+  TClonesArray* m_branchParticle;
+  TClonesArray* m_branchHepMCEvent;
+  ExRootTreeWriter* m_treeWriter{nullptr};
+  std::unique_ptr<TTree> m_converterTree{nullptr};
 
   GenParticle* gen;
-  Candidate*   candidate;
-  int          pdgCode;
+  Candidate* candidate;
+  int pdgCode;
 };
 
 #endif

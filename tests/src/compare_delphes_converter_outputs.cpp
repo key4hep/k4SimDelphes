@@ -62,7 +62,7 @@ void assertSameKinematics(const DelphesT* delphesCand, const EDM4HepT& edm4hepCa
  * Get all MCParticles related to a given ReconstructedParticle
  *
  */
-std::vector<edm4hep::MCParticle> getAssociatedMCParticles(edm4hep::ReconstructedParticle               reco,
+std::vector<edm4hep::MCParticle> getAssociatedMCParticles(edm4hep::ReconstructedParticle reco,
                                                           const edm4hep::RecoMCParticleLinkCollection& associations) {
   std::vector<edm4hep::MCParticle> sims;
   // NOTE: looping over the whole collection of associations here is super
@@ -77,12 +77,13 @@ std::vector<edm4hep::MCParticle> getAssociatedMCParticles(edm4hep::Reconstructed
   return sims;
 }
 
-template <typename DelphesT> std::vector<GenParticle*> getAssociatedMCParticles(const DelphesT* delphesCand) {
+template <typename DelphesT>
+std::vector<GenParticle*> getAssociatedMCParticles(const DelphesT* delphesCand) {
   if constexpr (std::is_same_v<DelphesT, Muon> || std::is_same_v<DelphesT, Electron> ||
                 std::is_same_v<DelphesT, Track>) {
     return {static_cast<GenParticle*>(delphesCand->Particle.GetObject())};
   } else {
-    const auto&               refArray = delphesCand->Particles;
+    const auto& refArray = delphesCand->Particles;
     std::vector<GenParticle*> genParts;
     genParts.reserve(refArray.GetEntries());
     for (int i = 0; i < refArray.GetEntries(); ++i) {
@@ -100,7 +101,7 @@ template <typename DelphesT>
 bool compareMCRelations(const DelphesT* delphesCand, edm4hep::ReconstructedParticle edm4hepCand,
                         const edm4hep::RecoMCParticleLinkCollection& associations) {
   auto delphesGenParticles = getAssociatedMCParticles(delphesCand);
-  auto edm4hepMCParticles  = getAssociatedMCParticles(edm4hepCand, associations);
+  auto edm4hepMCParticles = getAssociatedMCParticles(edm4hepCand, associations);
 
   if (delphesGenParticles.size() != edm4hepMCParticles.size()) {
     return false;
@@ -176,7 +177,7 @@ void compareCollectionElements(const TClonesArray* delphesColl, const edm4hep::M
                                const std::string& collName) {
   for (int i = 0; i < delphesColl->GetEntries(); ++i) {
     const auto* delphesCand = static_cast<GenParticle*>(delphesColl->At(i));
-    const auto  edm4hepCand = edm4hepColl[i];
+    const auto edm4hepCand = edm4hepColl[i];
     assertSameKinematics(delphesCand, edm4hepCand, stdErrorMessage, collName, i);
 
     const auto expParents = expectedDaughtersParents(delphesCand->M1, delphesCand->M2);
@@ -224,12 +225,12 @@ void compareCollectionElements(const TClonesArray* delphesColl, const edm4hep::M
  * Electron, Photon) element by element
  */
 template <typename DelphesT>
-void compareCollectionElements(const TClonesArray*                             delphesColl,
+void compareCollectionElements(const TClonesArray* delphesColl,
                                const edm4hep::ReconstructedParticleCollection& edm4hepColl,
-                               const std::string                               collName) {
+                               const std::string collName) {
   for (int i = 0; i < delphesColl->GetEntries(); ++i) {
     const auto* delphesCand = static_cast<DelphesT*>(delphesColl->At(i));
-    const auto  edm4hepCand = edm4hepColl[i];
+    const auto edm4hepCand = edm4hepColl[i];
     assertSameKinematics(delphesCand, edm4hepCand, stdErrorMessage, collName, i);
 
     // Photons have no charge, so nothing to compare here
@@ -253,12 +254,12 @@ void compareCollectionElements(const TClonesArray*                             d
  * and not for other collections (e.g. Jet and RecoParticlRefs) again.
  */
 template <typename DelphesT>
-void compareCollectionElements(const TClonesArray*                             delphesColl,
+void compareCollectionElements(const TClonesArray* delphesColl,
                                const edm4hep::ReconstructedParticleCollection& edm4hepColl, const std::string collName,
                                const int startIndex, const edm4hep::RecoMCParticleLinkCollection& associations) {
   for (int i = 0; i < delphesColl->GetEntries(); ++i) {
     const auto* delphesCand = static_cast<DelphesT*>(delphesColl->At(i));
-    const auto  edm4hepCand = edm4hepColl[i + startIndex];
+    const auto edm4hepCand = edm4hepColl[i + startIndex];
     assertSameKinematics(delphesCand, edm4hepCand, stdErrorMessage, collName, i);
 
     if (!compareMCRelations(delphesCand, edm4hepCand, associations)) {
@@ -287,7 +288,7 @@ void compareJets(const TClonesArray* delphesColl, const edm4hep::ReconstructedPa
                  const std::string collName) {
   for (int i = 0; i < delphesColl->GetEntries(); ++i) {
     const auto* delphesCand = static_cast<Jet*>(delphesColl->At(i));
-    const auto  edm4hepCand = edm4hepColl[i];
+    const auto edm4hepCand = edm4hepColl[i];
     assertSameKinematics(delphesCand, edm4hepCand, stdErrorMessage, collName, i);
 
     if (delphesCand->Constituents.GetEntries() != static_cast<int>(edm4hepCand.getParticles().size())) {
@@ -317,7 +318,7 @@ void compareJets(const TClonesArray* delphesColl, const edm4hep::ReconstructedPa
 
     // Use the energy for comparisons here, since we set the mass for the tracks
     // (potentially differently to what delphes is doing)
-    const auto edm4hepJetP4   = edm4hep::utils::p4(edm4hepCand, edm4hep::utils::UseEnergy);
+    const auto edm4hepJetP4 = edm4hep::utils::p4(edm4hepCand, edm4hep::utils::UseEnergy);
     const auto edm4hepConstP4 = std::transform_reduce(
         edm4hepCand.getParticles().begin(), edm4hepCand.getParticles().end(), edm4hep::LorentzVectorE{}, std::plus{},
         [](const auto& cand) { return edm4hep::utils::p4(cand, edm4hep::utils::UseEnergy); });
@@ -349,14 +350,14 @@ int main(int, char* argv[]) {
   auto treeReader = std::make_unique<ExRootTreeReader>(chain.get());
 
   auto* genParticleCollDelphes = treeReader->UseBranch("Particle");
-  auto* electronCollDelphes    = treeReader->UseBranch("Electron");
-  auto* muonCollDelphes        = treeReader->UseBranch("Muon");
-  auto* photonCollDelphes      = treeReader->UseBranch("Photon");
-  auto* tracks                 = treeReader->UseBranch("EFlowTrack");
-  auto* ecalClusters           = treeReader->UseBranch("EFlowPhoton");
-  auto* hcalClusters           = treeReader->UseBranch("EFlowNeutralHadron");
-  auto* delphesJetColl         = treeReader->UseBranch("Jet");
-  auto* delphesMET             = treeReader->UseBranch("MissingET");
+  auto* electronCollDelphes = treeReader->UseBranch("Electron");
+  auto* muonCollDelphes = treeReader->UseBranch("Muon");
+  auto* photonCollDelphes = treeReader->UseBranch("Photon");
+  auto* tracks = treeReader->UseBranch("EFlowTrack");
+  auto* ecalClusters = treeReader->UseBranch("EFlowPhoton");
+  auto* hcalClusters = treeReader->UseBranch("EFlowNeutralHadron");
+  auto* delphesJetColl = treeReader->UseBranch("Jet");
+  auto* delphesMET = treeReader->UseBranch("MissingET");
 
   // now start comparing the contents of the files
   const auto nEntries = treeReader->GetEntries();
@@ -388,8 +389,8 @@ int main(int, char* argv[]) {
     compareCollectionsBasic(photonCollDelphes, photonColl, "Photon");
     compareCollectionElements<Photon>(photonCollDelphes, photonColl, "Photon");
 
-    auto&          recoColl = frame.get<edm4hep::ReconstructedParticleCollection>("ReconstructedParticles");
-    const unsigned nRecos   = tracks->GetEntries() + ecalClusters->GetEntries() + hcalClusters->GetEntries();
+    auto& recoColl = frame.get<edm4hep::ReconstructedParticleCollection>("ReconstructedParticles");
+    const unsigned nRecos = tracks->GetEntries() + ecalClusters->GetEntries() + hcalClusters->GetEntries();
 
     if (nRecos != recoColl.size()) {
       std::cerr << "The global ReconstructedParticle collection and the original delphes collections differ in size: "

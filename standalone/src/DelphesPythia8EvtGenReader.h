@@ -61,14 +61,14 @@ public:
     }
 
     // Extract settings to be used in the main program
-    m_numberOfEvents  = m_pythia->mode("Main:numberOfEvents");
+    m_numberOfEvents = m_pythia->mode("Main:numberOfEvents");
     m_timeAllowErrors = m_pythia->mode("Main:m_timeAllowErrors");
-    m_spareFlag1      = m_pythia->flag("Main:m_spareFlag1");
-    m_spareMode1      = m_pythia->mode("Main:m_spareMode1");
-    m_spareParm1      = m_pythia->parm("Main:m_spareParm1");
-    m_spareParm2      = m_pythia->parm("Main:m_spareParm2");
+    m_spareFlag1 = m_pythia->flag("Main:m_spareFlag1");
+    m_spareMode1 = m_pythia->mode("Main:m_spareMode1");
+    m_spareParm1 = m_pythia->parm("Main:m_spareParm1");
+    m_spareParm2 = m_pythia->parm("Main:m_spareParm2");
 
-    m_treeWriter    = new ExRootTreeWriter(nullptr, "Delphes");
+    m_treeWriter = new ExRootTreeWriter(nullptr, "Delphes");
     m_converterTree = std::make_unique<TTree>("ConverterTree", "Analysis");
     // avoid having any connection with a TFile that might be opened later
     m_converterTree->SetDirectory(nullptr);
@@ -82,27 +82,28 @@ public:
         m_reader = std::make_unique<DelphesLHEFReader>();
         m_reader->SetInputFile(m_inputFile);
 
-        m_branchEventLHEF  = m_treeWriter->NewBranch("EventLHEF", LHEFEvent::Class());
+        m_branchEventLHEF = m_treeWriter->NewBranch("EventLHEF", LHEFEvent::Class());
         m_branchWeightLHEF = m_treeWriter->NewBranch("WeightLHEF", LHEFWeight::Class());
 
-        m_allParticleOutputArrayLHEF    = modularDelphes->ExportArray("allParticlesLHEF");
+        m_allParticleOutputArrayLHEF = modularDelphes->ExportArray("allParticlesLHEF");
         m_stableParticleOutputArrayLHEF = modularDelphes->ExportArray("stableParticlesLHEF");
-        m_partonOutputArrayLHEF         = modularDelphes->ExportArray("partonsLHEF");
+        m_partonOutputArrayLHEF = modularDelphes->ExportArray("partonsLHEF");
       }
     }
 
     // Initialize EvtGen.
     m_evtgen = std::make_unique<Pythia8::EvtGenDecays>(
-        m_pythia.get(),  // a pointer to the PYTHIA generator
-        argv[5],         // the EvtGen decay file name
-        argv[6],         // the EvtGen particle data file name
-        nullptr,  // the optional EvtExternalGenList pointer (must be be provided if the next argument is provided to avoid double initializations)
-        nullptr,  // the EvtAbsRadCorr pointer to pass to EvtGen
-        1,        // the mixing type to pass to EvtGen
-        false,    // a flag to use XML files to pass to EvtGen
-        true,     // a flag to limit decays based on the Pythia criteria (based on the particle decay vertex)
-        true,     // a flag to use external models with EvtGen
-        false);   // a flag if an FSR model should be passed to EvtGen (pay attention to this, default is true)
+        m_pythia.get(), // a pointer to the PYTHIA generator
+        argv[5],        // the EvtGen decay file name
+        argv[6],        // the EvtGen particle data file name
+        nullptr, // the optional EvtExternalGenList pointer (must be be provided if the next argument is provided to
+                 // avoid double initializations)
+        nullptr, // the EvtAbsRadCorr pointer to pass to EvtGen
+        1,       // the mixing type to pass to EvtGen
+        false,   // a flag to use XML files to pass to EvtGen
+        true,    // a flag to limit decays based on the Pythia criteria (based on the particle decay vertex)
+        true,    // a flag to use external models with EvtGen
+        false);  // a flag if an FSR model should be passed to EvtGen (pay attention to this, default is true)
 
     m_evtgen->readDecayFile(argv[7]);
     m_pythia->init();
@@ -173,30 +174,30 @@ public:
   TTree* converterTree() override { return m_treeWriter->GetTree(); }
 
 private:
-  static constexpr const char*           m_appName = "DelphesPythia8EvtGen";
-  std::unique_ptr<Pythia8::Pythia>       m_pythia{nullptr};
+  static constexpr const char* m_appName = "DelphesPythia8EvtGen";
+  std::unique_ptr<Pythia8::Pythia> m_pythia{nullptr};
   std::unique_ptr<Pythia8::EvtGenDecays> m_evtgen{nullptr};
-  FILE*                                  m_inputFile = 0;
-  TStopwatch                             m_readStopWatch, m_procStopWatch;
-  ExRootTreeWriter*                      m_treeWriter{nullptr};
-  std::unique_ptr<TTree>                 m_converterTree{nullptr};
+  FILE* m_inputFile = 0;
+  TStopwatch m_readStopWatch, m_procStopWatch;
+  ExRootTreeWriter* m_treeWriter{nullptr};
+  std::unique_ptr<TTree> m_converterTree{nullptr};
 
-  ExRootTreeBranch* m_branchEvent     = 0;
+  ExRootTreeBranch* m_branchEvent = 0;
   ExRootTreeBranch *m_branchEventLHEF = 0, *m_branchWeightLHEF = 0;
   TObjArray *m_stableParticleOutputArrayLHEF = 0, *m_allParticleOutputArrayLHEF = 0, *m_partonOutputArrayLHEF = 0;
   std::unique_ptr<DelphesLHEFReader> m_reader = 0;
-  Long64_t                           m_eventCounter{0}, m_errorCounter{0};
-  Long64_t                           m_numberOfEvents{0}, m_timeAllowErrors{0};
-  Bool_t                             m_spareFlag1;
-  Int_t                              m_spareMode1;
-  Double_t                           m_spareParm1, m_spareParm2;
+  Long64_t m_eventCounter{0}, m_errorCounter{0};
+  Long64_t m_numberOfEvents{0}, m_timeAllowErrors{0};
+  Bool_t m_spareFlag1;
+  Int_t m_spareMode1;
+  Double_t m_spareParm1, m_spareParm2;
 
   TClonesArray* m_branchParticle;
   TClonesArray* m_branchHepMCEvent;
 
   // for matching
-  Pythia8::CombineMatchingInput* combined   = 0;
-  Pythia8::UserHooks*            m_matching = 0;
+  Pythia8::CombineMatchingInput* combined = 0;
+  Pythia8::UserHooks* m_matching = 0;
 };
 
 #endif

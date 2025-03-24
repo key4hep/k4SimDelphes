@@ -29,7 +29,7 @@
 
 class DelphesPythia8Reader : public DelphesInputReader {
 public:
-  DelphesPythia8Reader(){};
+  DelphesPythia8Reader() {};
 
   ~DelphesPythia8Reader() {
     if (m_pythia)
@@ -44,7 +44,7 @@ public:
 
     // simply pass the nullptr here for the TFile argument, we will in any case
     // define a different TTree that the TreeWriter will use internally
-    m_treeWriter    = new ExRootTreeWriter(nullptr, "Delphes");
+    m_treeWriter = new ExRootTreeWriter(nullptr, "Delphes");
     m_converterTree = std::make_unique<TTree>("ConverterTree", "Analysis");
     // avoid having any connection with a TFile that might be opened later
     m_converterTree->SetDirectory(nullptr);
@@ -59,7 +59,7 @@ public:
     // jet matching
 #if PYTHIA_VERSION_INTEGER < 8300
     Pythia8::CombineMatchingInput* combined = 0;
-    Pythia8::UserHooks*            matching = 0;
+    Pythia8::UserHooks* matching = 0;
 
     matching = combined->getHook(*m_pythia);
     if (!matching) {
@@ -75,7 +75,7 @@ public:
       throw std::runtime_error("can't create Pythia instance");
     }
 
-    //load and initialize the ResonanceDecayFilterUserhook
+    // load and initialize the ResonanceDecayFilterUserhook
     m_resonanceDecayFilterHook = new Pythia8::ResonanceDecayFilterHook(m_pythia->settings);
     m_pythia->addUserHooksPtr((Pythia8::UserHooksPtr)m_resonanceDecayFilterHook);
 
@@ -88,12 +88,12 @@ public:
     }
 
     // Extract settings to be used in the main program
-    m_numberOfEvents   = m_pythia->mode("Main:numberOfEvents");
+    m_numberOfEvents = m_pythia->mode("Main:numberOfEvents");
     m_timesAllowErrors = m_pythia->mode("Main:timesAllowErrors");
-    m_spareFlag1       = m_pythia->flag("Main:spareFlag1");
-    m_spareMode1       = m_pythia->mode("Main:spareMode1");
-    m_spareParm1       = m_pythia->parm("Main:spareParm1");
-    m_spareParm2       = m_pythia->parm("Main:spareParm2");
+    m_spareFlag1 = m_pythia->flag("Main:spareFlag1");
+    m_spareMode1 = m_pythia->mode("Main:spareMode1");
+    m_spareParm1 = m_pythia->parm("Main:spareParm1");
+    m_spareParm2 = m_pythia->parm("Main:spareParm2");
 
     // Check if particle gun
     if (!m_spareFlag1) {
@@ -105,9 +105,9 @@ public:
         m_brancheEventLHEF = m_treeWriter->NewBranch("EventLHEF", LHEFEvent::Class());
         m_branchWeightLHEF = m_treeWriter->NewBranch("WeightLHEF", LHEFWeight::Class());
 
-        m_allParticleOutputArrayLHEF    = modularDelphes->ExportArray("allParticlesLHEF");
+        m_allParticleOutputArrayLHEF = modularDelphes->ExportArray("allParticlesLHEF");
         m_stableParticleOutputArrayLHEF = modularDelphes->ExportArray("stableParticlesLHEF");
-        m_partonOutputArrayLHEF         = modularDelphes->ExportArray("partonsLHEF");
+        m_partonOutputArrayLHEF = modularDelphes->ExportArray("partonsLHEF");
       }
     }
 
@@ -175,28 +175,28 @@ public:
   TTree* converterTree() override { return m_treeWriter->GetTree(); }
 
 private:
-  static constexpr const char*     m_appName = "DelphesPythia8";
+  static constexpr const char* m_appName = "DelphesPythia8";
   std::unique_ptr<Pythia8::Pythia> m_pythia{nullptr};
 
-  FILE*                             m_inputFile = 0;
-  TStopwatch                        m_readStopWatch, m_procStopWatch;
-  ExRootTreeWriter*                 m_treeWriter{nullptr};
+  FILE* m_inputFile = 0;
+  TStopwatch m_readStopWatch, m_procStopWatch;
+  ExRootTreeWriter* m_treeWriter{nullptr};
   std::unique_ptr<ExRootTreeBranch> m_branchEvent{nullptr};
-  std::unique_ptr<TTree>            m_converterTree{nullptr};
+  std::unique_ptr<TTree> m_converterTree{nullptr};
 
   ExRootTreeBranch *m_brancheEventLHEF = 0, *m_branchWeightLHEF = 0;
   TObjArray *m_stableParticleOutputArrayLHEF = 0, *m_allParticleOutputArrayLHEF = 0, *m_partonOutputArrayLHEF = 0;
   DelphesLHEFReader* reader = 0;
-  Long64_t           m_eventCounter{0}, m_errorCounter{0};
-  Long64_t           m_numberOfEvents, m_timesAllowErrors;
-  Bool_t             m_spareFlag1;
-  Int_t              m_spareMode1;
-  Double_t           m_spareParm1, m_spareParm2;
+  Long64_t m_eventCounter{0}, m_errorCounter{0};
+  Long64_t m_numberOfEvents, m_timesAllowErrors;
+  Bool_t m_spareFlag1;
+  Int_t m_spareMode1;
+  Double_t m_spareParm1, m_spareParm2;
 
   TClonesArray* m_branchParticle;
   TClonesArray* m_branchHepMCEvent;
 
-  //resonance decayfilter
+  // resonance decayfilter
   Pythia8::ResonanceDecayFilterHook* m_resonanceDecayFilterHook{nullptr};
 };
 

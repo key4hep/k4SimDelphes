@@ -17,8 +17,8 @@ public:
   /** Usage message to be displayed if initialization is not successful */
   virtual std::string getUsage() const = 0;
 
-  virtual int  getNumberOfEvents() const = 0;
-  virtual bool finished() const          = 0;
+  virtual int getNumberOfEvents() const = 0;
+  virtual bool finished() const = 0;
 
   virtual bool readEvent(Delphes* modularDelphes, TObjArray* allParticleOutputArray,
                          TObjArray* stableParticleOutputArray, TObjArray* partonOutputArray) = 0;

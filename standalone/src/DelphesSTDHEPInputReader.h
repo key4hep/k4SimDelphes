@@ -26,7 +26,7 @@
 
 class DelphesSTDHEPInputReader : public DelphesInputReader {
 public:
-  DelphesSTDHEPInputReader(){};
+  DelphesSTDHEPInputReader() {};
 
   std::string init(Delphes* modularDelphes, int argc, char* argv[]) override {
     if (argc < 4) {
@@ -38,14 +38,14 @@ public:
     int i = 4;
 
     m_branchEvent = std::make_unique<ExRootTreeBranch>("Event", LHEFEvent::Class());
-    m_reader      = std::make_unique<DelphesSTDHEPReader>();
+    m_reader = std::make_unique<DelphesSTDHEPReader>();
 
     Long64_t length = 0;
 
     if (i == argc || strncmp(argv[i], "-", 2) == 0) {
       std::cout << "** Reading standard input" << std::endl;
       m_inputFile = stdin;
-      length      = -1;
+      length = -1;
     } else {
       std::cout << "** Reading " << argv[i] << std::endl;
       m_inputFile = fopen(argv[i], "r");
@@ -63,13 +63,13 @@ public:
       if (length <= 0) {
         fclose(m_inputFile);
         ++i;
-        //continue;
+        // continue;
       }
     }
     // TODO: multiple input files
     m_reader->SetInputFile(m_inputFile);
 
-    m_treeWriter    = new ExRootTreeWriter(nullptr, "Delphes");
+    m_treeWriter = new ExRootTreeWriter(nullptr, "Delphes");
     m_converterTree = std::make_unique<TTree>("ConverterTree", "Analysis");
     // avoid having any connection with a TFile that might be opened later
     m_converterTree->SetDirectory(nullptr);
@@ -106,7 +106,7 @@ public:
         return true;
       }
     }
-    m_finished = true;  // ?
+    m_finished = true; // ?
     return false;
   }
 
@@ -116,15 +116,15 @@ public:
 
 private:
   static constexpr const char* m_appName = "DelphesHepMC";
-  int                          m_numberOfEvents;
-  int                          m_entry      = 0;
-  bool                         m_finished   = false;
-  ExRootTreeWriter*            m_treeReader = nullptr;
+  int m_numberOfEvents;
+  int m_entry = 0;
+  bool m_finished = false;
+  ExRootTreeWriter* m_treeReader = nullptr;
 
-  FILE*                             m_inputFile = 0;
-  TStopwatch                        m_readStopWatch, m_procStopWatch;
-  ExRootTreeWriter*                 m_treeWriter{nullptr};
-  std::unique_ptr<TTree>            m_converterTree{nullptr};
+  FILE* m_inputFile = 0;
+  TStopwatch m_readStopWatch, m_procStopWatch;
+  ExRootTreeWriter* m_treeWriter{nullptr};
+  std::unique_ptr<TTree> m_converterTree{nullptr};
   std::unique_ptr<ExRootTreeBranch> m_branchEvent{nullptr};
 
   std::unique_ptr<DelphesSTDHEPReader> m_reader{nullptr};
