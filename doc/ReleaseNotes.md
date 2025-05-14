@@ -1,3 +1,8 @@
+# v00-07-05
+
+* 2025-02-14 jmcarcell ([PR#145](https://github.com/key4hep/k4SimDelphes/pull/145))
+  - Add LANGUAGES CXX to CMakeLists.txt to disable checks for a C compiler
+
 # v00-07-04
 
 * 2024-12-20 Birgit Stapf ([PR#144](https://github.com/key4hep/k4SimDelphes/pull/144))
