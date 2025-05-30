@@ -36,10 +36,11 @@ public:
 
 private:
   /// Input from Generator
-  mutable DataHandle<edm4hep::MCParticleCollection> m_InputMCParticles{"GenParticles", Gaudi::DataHandle::Reader, this};
+  mutable k4FWCore::DataHandle<edm4hep::MCParticleCollection> m_InputMCParticles{"GenParticles",
+                                                                                 Gaudi::DataHandle::Reader, this};
   /// Output from Delphes
-  mutable DataHandle<edm4hep::ReconstructedParticleCollection> m_OutputRecParticles{"RecParticlesDelphes",
-                                                                                    Gaudi::DataHandle::Writer, this};
+  mutable k4FWCore::DataHandle<edm4hep::ReconstructedParticleCollection> m_OutputRecParticles{
+      "RecParticlesDelphes", Gaudi::DataHandle::Writer, this};
 
   // Delphes detector card to be read in
   /// Name of Delphes tcl config file with detector and simulation parameters
