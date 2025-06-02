@@ -80,7 +80,7 @@ add_subdirectory(examples)
 
 if(BUILD_FRAMEWORK)
   find_package(Gaudi REQUIRED) # Do not depend on implicit find via k4FWCore
-  find_package(k4FWCore REQUIRED)
+  find_package(k4FWCore 1.3 REQUIRED)
   if (BUILD_TESTING)
     find_package(k4Gen REQUIRED) # Finds Gaudi, etc. again
   endif()
