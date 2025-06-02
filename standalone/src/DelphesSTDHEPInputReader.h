@@ -26,7 +26,7 @@
 
 class DelphesSTDHEPInputReader : public DelphesInputReader {
 public:
-  DelphesSTDHEPInputReader() {};
+  DelphesSTDHEPInputReader() = default;
 
   std::string init(Delphes* modularDelphes, int argc, char* argv[]) override {
     if (argc < 4) {

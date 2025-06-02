@@ -29,7 +29,7 @@
 
 class DelphesPythia8Reader : public DelphesInputReader {
 public:
-  DelphesPythia8Reader() {};
+  DelphesPythia8Reader() = default;
 
   ~DelphesPythia8Reader() {
     if (m_pythia)
