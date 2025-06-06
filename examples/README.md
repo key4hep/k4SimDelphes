@@ -83,3 +83,88 @@ After this the files `histograms_delphes.root` and `histograms_edm4hep.root`
 should be present and filled with some histograms that can be compared. The
 differences in the Jet energy and momentum are caused by a potential double
 counting of tracks and towers (see [known issues](../README.md#known-issues)).
+
+
+# Another example: Invariant Mass of Isolated Muons in ILD 
+
+First of all, we need to download a `stdhep` file [`here`](https://syncandshare.desy.de/index.php/s/Kx7ygmgejpmnSwE) and put it into `data` folder.
+
+Now, we are ready to launch our container;
+
+```console
+engin@local:$ pwd
+ ~/k4SimDelphes/examples 
+```
+```bash
+docker run -it -p 8888:8888 -v $PWD:/home/ilc/wdir ilcsoft/k4simdelphes:latest bash
+## you're inside the container now
+conda init bash
+```
+
+
+```console
+no change     /opt/conda/condabin/conda
+...
+...
+no change     /opt/conda/etc/profile.d/conda.csh
+modified      /home/ilc/.bashrc
+...
+```
+```bash
+source .bashrc 
+conda activate root_env
+source init_env.sh 
+cd wdir
+```
+Ready to generate output file
+```bash
+DelphesSTDHEP_EDM4HEP $DELPHES_DIR/cards/delphes_card_ILD.tcl \
+         ./edm4hep_output_config.tcl \ 
+          edm4hep_output.root \
+         ./data/E250-TDR_ws.P4f_zzorww_l.Gwhizard-1_95.eL.pR.I106721.003.stdhep
+
+```
+```console
+...
+** Reading ./data/E250-TDR_ws.P4f_zzorww_l.Gwhizard-1_95.eL.pR.I106721.003.stdhep
+...
+** 179910 events processed
+** Exiting ...
+
+```
+
+Now we have output root file.. Let us open jupyter-notebook from our container:
+```console
+(root_env) root@a19e37608dbf::~/wdir# jupyter notebook --port=8888 --ip=0.0.0.0 --allow-root 
+...
+ To access the notebook, open this file in a browser:
+        file:///home/ilc/.local/share/jupyter/runtime/nbserver-2220-open.html
+    Or copy and paste one of these URLs:
+        http://c5a7dd737b14:8888/?token=daaea35f4d34fcc7206035d94a677474f6294d1ba95b886e
+     or http://127.0.0.1:8888/?token=daaea35f4d34fcc7206035d94a677474f6294d1ba95b886e
+...
+```
+
+Copy paste `http://127.0.0.1:8888/?token` to your browser. You may have a look at the notebook `edm4hep_IsoM.ipynb`
+
+
+## Working Group Servers with Singularity via cvmfs
+
+The docker image for this example was also deployed to `unpacked.cern.ch`, where images are unpacked. Then, it is easy for singularity to use this images via cvmfs.
+
+As usual; pull the repo, place the data folder, go to example folder
+```console
+-bash-4.2$ pwd
+/your-working-directory/k4SimDelphes/examples
+```
+
+Now ready to go inside the container
+```bash
+singularity shell -H $PWD --bind $(pwd):/home/ilc/data /cvmfs/unpacked.cern.ch/registry.hub.docker.com/ilcsoft/k4simdelphes:latest bash
+conda init bash
+source .bashrc
+conda activate root_env
+source /home/ilc/init_env.sh
+cd $home
+```
+After this stage, commands are the same. Just watch out: You might need to tunnel working groups server's network (i.e cern.ch)

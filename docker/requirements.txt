@@ -1,0 +1,12 @@
+scikit-learn 
+uproot 
+matplotlib 
+pandas
+notebook
+metakernel
+awkward
+mplhep
+scipy
+h5py
+pyyaml
+jinja2
