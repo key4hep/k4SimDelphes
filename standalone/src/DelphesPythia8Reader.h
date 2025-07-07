@@ -101,7 +101,6 @@ public:
     // Check if particle gun
     if (!m_spareFlag1) {
       m_inputFile = fopen(m_pythia->word("Beams:LHEF").c_str(), "r");
-      
       if (m_inputFile) {
         reader = new DelphesLHEFReader;
         reader->SetInputFile(m_inputFile);
