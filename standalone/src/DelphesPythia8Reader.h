@@ -98,6 +98,14 @@ public:
     // Check if particle gun
     if (!m_spareFlag1) {
       m_inputFile = fopen(m_pythia->word("Beams:LHEF").c_str(), "r");
+      std::vector<std::string> weightNames = getWeightNames(m_pythia->word("Beams:LHEF"));
+
+      std::cout << "Found " << weightNames.size() << " weight names in initrwgt:\n";
+      for (const auto& id : weightNames) {
+        std::cout << "  " << id << "\n";
+      }
+
+      
       if (m_inputFile) {
         reader = new DelphesLHEFReader;
         reader->SetInputFile(m_inputFile);
@@ -202,6 +210,10 @@ private:
   std::unique_ptr<TTree> m_converterTree{nullptr};
 
   ExRootTreeBranch *m_brancheEventLHEF = 0, *m_branchWeightLHEF = 0;
+  // arrays to store weight names
+  std::vector<std::string> m_reweightingDescriptions;
+  TTree* m_reweightTree = nullptr;
+  std::string m_currentWeightStr;
   TObjArray *m_stableParticleOutputArrayLHEF = 0, *m_allParticleOutputArrayLHEF = 0, *m_partonOutputArrayLHEF = 0;
   DelphesLHEFReader* reader = 0;
   Long64_t m_eventCounter{0}, m_errorCounter{0};

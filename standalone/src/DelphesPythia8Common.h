@@ -190,4 +190,35 @@ void fillPartons(int id, double pMax, double etaMax, Pythia8::Event& event, Pyth
   }
 }
 
+std::vector<std::string> getWeightNames(const std::string& lheFilePath) {
+  std::ifstream lheFile(lheFilePath);
+  std::vector<std::string> weightIDs;
+
+  if (!lheFile.is_open()) {
+    std::cerr << "Failed to open LHE file: " << lheFilePath << std::endl;
+    return weightIDs;
+  }
+
+  std::string line;
+  while (std::getline(lheFile, line)) {
+    // Stop after the initrwgt block
+    if (line.find("</initrwgt>") != std::string::npos) {
+      break;
+    }
+
+    size_t idPos = line.find("weight id='");
+    if (idPos != std::string::npos) {
+      size_t start = line.find("'", idPos);
+      size_t end = line.find("'", start + 1);
+      if (start != std::string::npos && end != std::string::npos) {
+        std::string id = line.substr(start + 1, end - start - 1);
+        weightIDs.push_back(id);
+      }
+    }
+  }
+
+  lheFile.close();
+  return weightIDs;
+}
+
 #endif
