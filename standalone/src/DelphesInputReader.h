@@ -24,6 +24,10 @@ public:
                          TObjArray* stableParticleOutputArray, TObjArray* partonOutputArray) = 0;
 
   virtual TTree* converterTree() = 0;
+  virtual const std::vector<std::string>& getWeightNames() const {
+    static const std::vector<std::string> empty;
+    return empty;
+  }
 };
 
 #endif

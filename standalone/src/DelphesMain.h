@@ -74,6 +74,16 @@ int doit(int argc, char* argv[], DelphesInputReader& inputReader) {
       for (auto& [name, coll] : edm4hepConverter.getCollections()) {
         frame.put(std::move(coll), name);
       }
+      // write out LHEF weights once (if available)
+      static bool weightNames_stored = false;
+      if (!weightNames_stored) {
+        const auto& weightNames = inputReader.getWeightNames();
+        if (!weightNames.empty()) {
+          std::cout << "Writing LHEF weight ID vector of strings with size " << weightNames.size() << std::endl;
+          frame.putParameter<std::vector<std::string>>(edm4hep::labels::EventWeightsNames, weightNames);
+          weightNames_stored = true;
+        }
+      }
       podioWriter.writeFrame(frame, "events");
 
       modularDelphes->Clear();
