@@ -213,6 +213,7 @@ std::vector<std::string> getWeightNames(const std::string& lheFilePath) {
       if (start != std::string::npos && end != std::string::npos) {
         std::string id = line.substr(start + 1, end - start - 1);
         weightIDs.push_back(id);
+        std::cout << "Found weight ID: " << id << std::endl;
       }
     }
   }
