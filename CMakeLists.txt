@@ -5,7 +5,7 @@ project(k4SimDelphes LANGUAGES CXX)
 #--- Declare options -----------------------------------------------------------
 
 option(BUILD_PYTHIA_READER "Build the EDM4hep plugin for Gaudi" ON)
-option(BUILD_EVTGEN_READER "Build the DELPHES plugin for Gaudi" OFF)
+option(BUILD_EVTGEN_READER "Build the DELPHES plugin for Gaudi" ON)
 option(BUILD_HEPMC_READER "Build the DELPHES plugin for Gaudi" ON)
 option(BUILD_FRAMEWORK "Build the DELPHES plugin for Gaudi" ON)
 option(K4SIMDELPHES_DOCUMENTATION "Whether or not to create doxygen doc target." OFF)
