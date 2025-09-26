@@ -37,7 +37,7 @@ void Example1(const char *inputFile)
     // Load selected branches with data from specified event
     treeReader->ReadEntry(entry);
 
-    
+
 
     // If event contains at least 2 electrons
     if(branchElectron->GetEntries() > 0)

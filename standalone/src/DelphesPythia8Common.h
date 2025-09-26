@@ -1,37 +1,57 @@
 #ifndef DELPHESEDM4HEP_DELPHESPYTHIA8COMMON
 #define DELPHESEDM4HEP_DELPHESPYTHIA8COMMON
 
-#include "TObjArray.h"
 #include "TChain.h"
 #include "TClonesArray.h"
+#include "TDatabasePDG.h"
+#include "TObjArray.h"
 #include "TParticlePDG.h"
 #include "TStopwatch.h"
-#include "TDatabasePDG.h"
 
+#include "ExRootAnalysis/ExRootTreeBranch.h"
 #include "classes/DelphesClasses.h"
 #include "classes/DelphesFactory.h"
-#include "ExRootAnalysis/ExRootTreeBranch.h"
 
 #include "Pythia.h"
 #include "Pythia8Plugins/CombineMatchingInput.h"
 
 #include <iostream>
 
+void PrintXS(Pythia8::Pythia* pythia) {
+  // convert mb to pb
+  float xsec = pythia->info.sigmaGen() * 1.e09;
+  float xsec_err = pythia->info.sigmaErr() * 1.e09;
 
-void ConvertInput(Long64_t eventCounter,
-                  Pythia8::Pythia *pythia,
-                  ExRootTreeBranch *branch,
-                  DelphesFactory *factory,
-                  TObjArray *allParticleOutputArray,
-                  TObjArray *stableParticleOutputArray,
-                  TObjArray *partonOutputArray,
-                  TStopwatch *readStopWatch,
-                  TStopwatch *procStopWatch) {
+  std::cout << "------------------------------------------------------------------------" << std::endl;
+  std::cout << std::endl;
+  std::cout << "Pythia8 Cross-section (" << pythia->info.name() << "): " << xsec << " +/- " << xsec_err << " pb\n";
+  std::cout << std::endl;
+  if (pythia->info.nProcessesLHEF()) {
+    std::cout << "Input LHEF Cross-section:\n";
+    for (int i = 0; i < pythia->info.nProcessesLHEF(); ++i) {
+      std::cout << " - " << pythia->info.nameProc(i) << ": " << pythia->info.sigmaLHEF(i) << "\n";
+    }
+    std::cout << std::endl;
+    if (size(pythia->info.headerKeys())) {
+      std::cout << "Information from LHEF file:\n";
 
-  HepMCEvent *element;
-  Candidate *candidate;
-  TDatabasePDG *pdg;
-  TParticlePDG *pdgParticle;
+      for (const auto& key : pythia->info.headerKeys()) {
+        if (key == "MGGenerationInfo") {
+          std::cout << pythia->info.header(key) << std::endl;
+        }
+      }
+    }
+  }
+  std::cout << "------------------------------------------------------------------------" << std::endl;
+}
+
+void ConvertInput(Long64_t eventCounter, Pythia8::Pythia* pythia, ExRootTreeBranch* branch, DelphesFactory* factory,
+                  TObjArray* allParticleOutputArray, TObjArray* stableParticleOutputArray, TObjArray* partonOutputArray,
+                  TStopwatch* readStopWatch, TStopwatch* procStopWatch) {
+  HepMCEvent* element;
+  Candidate* candidate;
+  TDatabasePDG* pdg;
+  TParticlePDG* pdgParticle;
   Int_t pdgCode;
 
   Int_t pid, status;
@@ -39,7 +59,7 @@ void ConvertInput(Long64_t eventCounter,
   Double_t x, y, z, t;
 
   // event information
-  element = new HepMCEvent(); //(branch->NewEntry());
+  element = static_cast<HepMCEvent*>(branch->NewEntry());
 
   element->Number = eventCounter;
 
@@ -63,8 +83,8 @@ void ConvertInput(Long64_t eventCounter,
 
   pdg = TDatabasePDG::Instance();
 
-  for(int i = 1; i < pythia->event.size(); ++i) {
-    Pythia8::Particle &particle = pythia->event[i];
+  for (int i = 1; i < pythia->event.size(); ++i) {
+    Pythia8::Particle& particle = pythia->event[i];
 
     pid = particle.id();
     status = particle.statusHepMC();
@@ -101,14 +121,12 @@ void ConvertInput(Long64_t eventCounter,
 
     allParticleOutputArray->Add(candidate);
 
-    if(!pdgParticle) continue;
+    if (!pdgParticle)
+      continue;
 
-    if(status == 1)
-    {
+    if (status == 1) {
       stableParticleOutputArray->Add(candidate);
-    }
-    else if(pdgCode <= 5 || pdgCode == 21 || pdgCode == 15)
-    {
+    } else if (pdgCode <= 5 || pdgCode == 21 || pdgCode == 15) {
       partonOutputArray->Add(candidate);
     }
   }
@@ -122,9 +140,8 @@ Optional final argument to put particle at rest => E = m.
 from pythia8 example 21
 */
 
-void fillParticle(int id, double pMax, double etaMax,
-  Pythia8::Event &event, Pythia8::ParticleData &pdt, Pythia8::Rndm &rndm)
-{
+void fillParticle(int id, double pMax, double etaMax, Pythia8::Event& event, Pythia8::ParticleData& pdt,
+                  Pythia8::Rndm& rndm) {
   // Reset event record to allow for new event.
   event.reset();
 
@@ -145,9 +162,8 @@ void fillParticle(int id, double pMax, double etaMax,
 
 //---------------------------------------------------------------------------
 
-void fillPartons(int id, double pMax, double etaMax,
-  Pythia8::Event &event, Pythia8::ParticleData &pdt, Pythia8::Rndm &rndm)
-{
+void fillPartons(int id, double pMax, double etaMax, Pythia8::Event& event, Pythia8::ParticleData& pdt,
+                 Pythia8::Rndm& rndm) {
   // Reset event record to allow for new event.
   event.reset();
 
@@ -162,15 +178,13 @@ void fillPartons(int id, double pMax, double etaMax,
   ee = Pythia8::sqrtpos(pp * pp + mm * mm);
   pt = pp / cosh(eta);
 
-  if((id == 4 || id == 5) && pt < 10.0) return;
+  if ((id == 4 || id == 5) && pt < 10.0)
+    return;
 
-  if(id == 21)
-  {
+  if (id == 21) {
     event.append(21, 23, 101, 102, pt * cos(phi), pt * sin(phi), pt * sinh(eta), ee);
     event.append(21, 23, 102, 101, -pt * cos(phi), -pt * sin(phi), -pt * sinh(eta), ee);
-  }
-  else
-  {
+  } else {
     event.append(id, 23, 101, 0, pt * cos(phi), pt * sin(phi), pt * sinh(eta), ee, mm);
     event.append(-id, 23, 0, 101, -pt * cos(phi), -pt * sin(phi), -pt * sinh(eta), ee, mm);
   }

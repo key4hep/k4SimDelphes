@@ -13,17 +13,17 @@ import sys, math
 #from sixlcio.moves import range
 
 def generateEvents(inputFileName, outputFileName, nEvents=-1, nSplit=-1):
-    
+
     fin = r.TFile(inputFileName)
     ttree = fin.events
 
     # define a detector with positions for the tracker planes
     detectorName = 'ToyTracker'
-    
+
     # create a writer and open the output file
     writer = IOIMPL.LCFactory.getInstance().createLCWriter()
     writer.open( outputFileName, EVENT.LCIO.WRITE_NEW )
-    
+
     # create a run header and add it to the file (optional)
     run = IMPL.LCRunHeaderImpl()
     run.setRunNumber( 1 )
@@ -79,7 +79,7 @@ def generateEvents(inputFileName, outputFileName, nEvents=-1, nSplit=-1):
             if e.ReconstructedParticles.at(rp).tracks_begin<e.EFlowTrack_1.size():
                 track = IMPL.TrackImpl()
                 trkind=e.ReconstructedParticles.at(rp).tracks_begin
-            
+
                 track.setD0(e.EFlowTrack_1.at(trkind).D0)
                 track.setPhi(e.EFlowTrack_1.at(trkind).phi)
                 track.setOmega(e.EFlowTrack_1.at(trkind).omega)
@@ -94,11 +94,11 @@ def generateEvents(inputFileName, outputFileName, nEvents=-1, nSplit=-1):
                 vec[5]  = e.EFlowTrack_1.at(trkind).covMatrix[9]
                 vec[9]  = e.EFlowTrack_1.at(trkind).covMatrix[12]
                 vec[14] = e.EFlowTrack_1.at(trkind).covMatrix[14]
-                
+
                 track.setCovMatrix(vec)
-            
+
                 tracks.addElement(track)
-            
+
                 recp.addTrack(track)
                 recops.addElement(recp)
 
@@ -109,7 +109,7 @@ def generateEvents(inputFileName, outputFileName, nEvents=-1, nSplit=-1):
         iEvent+=1
     writer.flush()
     writer.close()
-        
+
 
 def usage():
     print('Generates an MCParticle with associated SimTrackerHits for each event')
@@ -130,9 +130,9 @@ if __name__ == '__main__':
         nentriesTmp=0
         count=0
         while nentriesTmp<nentries:
-            
+
             generateEvents( sys.argv[1],sys.argv[2]+'_{}'.format(count), nentriesTmp+1000, nentriesTmp)
             count+=1
             nentriesTmp+=1000
-            
+
     else: print ('bad argument')

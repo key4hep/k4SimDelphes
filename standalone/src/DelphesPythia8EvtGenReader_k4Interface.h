@@ -1,24 +1,21 @@
 #ifndef DELPHESEDM4HEP_DELPHESPYTHIA8EVTGENREADER_K4INTERFACE
 #define DELPHESEDM4HEP_DELPHESPYTHIA8EVTGENREADER_K4INTERFACE
 
-#include <iostream>
-
 #include "DelphesInputReader.h"
 #include "DelphesPythia8Common.h"
 
-
-#include "TObjArray.h"
 #include "TChain.h"
 #include "TClonesArray.h"
+#include "TDatabasePDG.h"
+#include "TObjArray.h"
 #include "TParticlePDG.h"
 #include "TStopwatch.h"
-#include "TDatabasePDG.h"
 
+#include "ExRootAnalysis/ExRootTreeWriter.h"
 #include "classes/DelphesClasses.h"
-#include "classes/DelphesStream.h"
 #include "classes/DelphesLHEFReader.h"
+#include "classes/DelphesStream.h"
 #include "modules/Delphes.h"
-#include "ExRootTreeWriter.h" // use local copy
 
 #include "Pythia.h"
 #include "Pythia8Plugins/CombineMatchingInput.h"
@@ -26,20 +23,16 @@
 
 #include <iostream>
 #include <memory>
-
+#include <sstream>
 
 #include "PythiaEvtGen_Interface.h"
 
 //---------------------------------------------------------------------------
 
-
-class DelphesPythia8EvtGenReader_k4Interface: public DelphesInputReader {
-  public:
-
-  std::string init(Delphes* modularDelphes, int argc, char *argv[]) override {
-
-    if (argc!=11) {
-
+class DelphesPythia8EvtGenReader_k4Interface : public DelphesInputReader {
+public:
+  std::string init(Delphes* modularDelphes, int argc, char* argv[]) override {
+    if ((argc != 11) && (argc != 7)) {
       return "";
     }
     std::string outputfile = argv[4];
@@ -49,22 +42,19 @@ class DelphesPythia8EvtGenReader_k4Interface: public DelphesInputReader {
     // jet matching
 #if PYTHIA_VERSION_INTEGER < 8300
     matching = combined->getHook(*m_pythia);
-    if(!m_matching)
-    {
+    if (!m_matching) {
       throw std::runtime_error("can't do matching");
     }
     m_pythia->setUserHooksPtr(m_matching);
 #endif
 
-    if(!m_pythia)
-    {
+    if (!m_pythia) {
       throw std::runtime_error("can't create Pythia instance");
     }
 
     // Read in commands from configuration file
     std::string pythia8configname(argv[3]);
-    if(!m_pythia->readFile(pythia8configname))
-    {
+    if (!m_pythia->readFile(pythia8configname)) {
       std::stringstream message;
       message << "can't read Pythia8 configuration file " << pythia8configname << std::endl;
       throw std::runtime_error(message.str());
@@ -86,9 +76,9 @@ class DelphesPythia8EvtGenReader_k4Interface: public DelphesInputReader {
     modularDelphes->SetTreeWriter(m_treeWriter);
 
     // Check if particle gun
-    if(!m_spareFlag1) {
+    if (!m_spareFlag1) {
       m_inputFile = fopen(m_pythia->word("Beams:LHEF").c_str(), "r");
-      if(m_inputFile) {
+      if (m_inputFile) {
         m_reader = std::make_unique<DelphesLHEFReader>();
         m_reader->SetInputFile(m_inputFile);
 
@@ -106,39 +96,43 @@ class DelphesPythia8EvtGenReader_k4Interface: public DelphesInputReader {
     m_evtgen = std::make_unique<Pythia8::EvtGenDecays>(m_pythia.get(), // a pointer to the PYTHIA generator
                                                        argv[5], // the EvtGen decay file name
                                                        argv[6], // the EvtGen particle data file name
-                                                       nullptr, // the optional EvtExternalGenList pointer (must be be provided if the next argument is provided to avoid double initializations)
-                                                       nullptr, // the EvtAbsRadCorr pointer to pass to EvtGen
-                                                       1, // the mixing type to pass to EvtGen
-                                                       false, // a flag to use XML files to pass to EvtGen
-                                                       true, // a flag to limit decays based on the Pythia criteria (based on the particle decay vertex)
-                                                       true, // a flag to use external models with EvtGen
-                                                       false); // a flag if an FSR model should be passed to EvtGen (pay attention to this, default is true)
+                                                       nullptr, // the optional EvtExternalGenList pointer (must be be
+    provided if the next argument is provided to avoid double initializations) nullptr, // the EvtAbsRadCorr pointer to
+    pass to EvtGen 1, // the mixing type to pass to EvtGen false, // a flag to use XML files to pass to EvtGen true, //
+    a flag to limit decays based on the Pythia criteria (based on the particle decay vertex) true, // a flag to use
+    external models with EvtGen false); // a flag if an FSR model should be passed to EvtGen (pay attention to this,
+    default is true)
 
     m_evtgen->readDecayFile(argv[7]);
     */
     m_pythia->init();
-    
 
     // new interface:
-    //Pythia8::Pythia *pythia=m_pythia.get();
+    // Pythia8::Pythia *pythia=m_pythia.get();
 
-    int regenerate=atoi(argv[10]);
-    
-    m_evtgen2= new PythiaEvtGen_Interface(m_pythia.get(), argv[5], argv[6], 1000);
-    m_evtgen2->add_decays(argv[7], atoi(argv[8]), argv[9]);
-    m_evtgen2->set_verbose();
-    //m_evtgen2->set_debug();
-    if(regenerate) m_evtgen2->set_regenerate();
+    int regenerate = 0; //=atoi(argv[10]);
+
+    m_evtgen2 = new PythiaEvtGen_Interface(m_pythia.get(), argv[5], argv[6], 1000);
+
+    // m_evtgen2->set_verbose();
+    // m_evtgen2->set_debug();
+
+    if (argc == 11) {
+      m_evtgen2->add_decays(argv[7], atoi(argv[8]), argv[9]);
+      regenerate = atoi(argv[10]);
+    }
+    if (regenerate)
+      m_evtgen2->set_regenerate();
 
     return outputfile;
   };
 
-
-  int getNumberOfEvents() const override {return m_numberOfEvents;}
+  int getNumberOfEvents() const override { return m_numberOfEvents; }
 
   std::string getUsage() const override {
     std::stringstream sstr;
-    sstr << "Usage: " << m_appName << "config_file output_config_file pythia_card output_file DECAY.DEC evt.pdl user.dec\n"
+    sstr << "Usage: " << m_appName
+         << "config_file output_config_file pythia_card output_file DECAY.DEC evt.pdl user.dec\n"
          << "config_file - configuration file in Tcl format,\n"
          << "output_config_file - configuration file steering the content of the edm4hep output in Tcl format,\n"
          << "pythia_card - Pythia8 configuration file,\n"
@@ -149,51 +143,53 @@ class DelphesPythia8EvtGenReader_k4Interface: public DelphesInputReader {
     return sstr.str();
   };
 
-  bool readEvent(Delphes* modularDelphes, TObjArray* allParticleOutputArray,
-  TObjArray* stableParticleOutputArray, TObjArray* partonOutputArray) override {
-    
+  bool readEvent(Delphes* modularDelphes, TObjArray* allParticleOutputArray, TObjArray* stableParticleOutputArray,
+                 TObjArray* partonOutputArray) override {
     m_treeWriter->Clear();
     auto factory = modularDelphes->GetFactory();
-      while(m_reader && m_reader->ReadBlock(factory, m_allParticleOutputArrayLHEF, m_stableParticleOutputArrayLHEF, m_partonOutputArrayLHEF) && !m_reader->EventReady()) ;
+    while (m_reader &&
+           m_reader->ReadBlock(factory, m_allParticleOutputArrayLHEF, m_stableParticleOutputArrayLHEF,
+                               m_partonOutputArrayLHEF) &&
+           !m_reader->EventReady())
+      ;
 
-      if(m_spareFlag1) {
-        if((m_spareMode1 >= 1 && m_spareMode1 <= 5) || m_spareMode1 == 21) {
-          fillPartons(m_spareMode1, m_spareParm1, m_spareParm2, m_pythia->event, m_pythia->particleData, m_pythia->rndm);
-        } else {
-          fillParticle(m_spareMode1, m_spareParm1, m_spareParm2, m_pythia->event, m_pythia->particleData, m_pythia->rndm);
-        }
+    if (m_spareFlag1) {
+      if ((m_spareMode1 >= 1 && m_spareMode1 <= 5) || m_spareMode1 == 21) {
+        fillPartons(m_spareMode1, m_spareParm1, m_spareParm2, m_pythia->event, m_pythia->particleData, m_pythia->rndm);
+      } else {
+        fillParticle(m_spareMode1, m_spareParm1, m_spareParm2, m_pythia->event, m_pythia->particleData, m_pythia->rndm);
       }
+    }
 
-      if(!m_pythia->next()) {
-        // If failure because reached end of file then exit event loop
-        if(m_pythia->info.atEndOfFile()) {
-          std::cerr << "Aborted since reached end of Les Houches Event File" << std::endl;
-          return false;
-        }
-        // First few failures write off as "acceptable" errors, then quit
-        if(++m_errorCounter > m_timeAllowErrors) {
-          std::cerr << "Event generation aborted prematurely, owing to error!" << std::endl;
-          return false;
-        }
-        modularDelphes->Clear();
-        m_reader->Clear();
+    if (!m_pythia->next()) {
+      // If failure because reached end of file then exit event loop
+      if (m_pythia->info.atEndOfFile()) {
+        std::cerr << "Aborted since reached end of Les Houches Event File" << std::endl;
+        return false;
       }
-      
-      m_evtgen2->decay();
-      //  else{
-      //   m_evtgen->decay();
-	// }
-       
-      m_readStopWatch.Stop();
-      m_procStopWatch.Start();
-      ConvertInput(m_eventCounter, m_pythia.get(), m_branchEvent, factory,
-        allParticleOutputArray, stableParticleOutputArray, partonOutputArray,
-        &m_readStopWatch, &m_procStopWatch);
-      ++m_eventCounter;
+      // First few failures write off as "acceptable" errors, then quit
+      if (++m_errorCounter > m_timeAllowErrors) {
+        std::cerr << "Event generation aborted prematurely, owing to error!" << std::endl;
+        return false;
+      }
+      modularDelphes->Clear();
+      m_reader->Clear();
+    }
+
+    m_evtgen2->decay();
+    //  else{
+    //   m_evtgen->decay();
+    // }
+
+    m_readStopWatch.Stop();
+    m_procStopWatch.Start();
+    ConvertInput(m_eventCounter, m_pythia.get(), m_branchEvent, factory, allParticleOutputArray,
+                 stableParticleOutputArray, partonOutputArray, &m_readStopWatch, &m_procStopWatch);
+    ++m_eventCounter;
     return true;
   };
 
-  bool finished() const override {return m_eventCounter >= m_numberOfEvents;};
+  bool finished() const override { return m_eventCounter >= m_numberOfEvents; };
 
   TTree* converterTree() override { return m_treeWriter->GetTree(); }
 
@@ -201,13 +197,13 @@ private:
   static constexpr const char* m_appName = "DelphesPythia8EvtGen";
   std::unique_ptr<Pythia8::Pythia> m_pythia{nullptr};
   std::unique_ptr<Pythia8::EvtGenDecays> m_evtgen{nullptr};
-PythiaEvtGen_Interface *m_evtgen2;
-  FILE *m_inputFile = 0;
+  PythiaEvtGen_Interface* m_evtgen2;
+  FILE* m_inputFile = 0;
   TStopwatch m_readStopWatch, m_procStopWatch;
-  ExRootTreeWriter *m_treeWriter{nullptr};
+  ExRootTreeWriter* m_treeWriter{nullptr};
   std::unique_ptr<TTree> m_converterTree{nullptr};
 
-  ExRootTreeBranch *m_branchEvent = 0;
+  ExRootTreeBranch* m_branchEvent = 0;
   ExRootTreeBranch *m_branchEventLHEF = 0, *m_branchWeightLHEF = 0;
   TObjArray *m_stableParticleOutputArrayLHEF = 0, *m_allParticleOutputArrayLHEF = 0, *m_partonOutputArrayLHEF = 0;
   std::unique_ptr<DelphesLHEFReader> m_reader = 0;
@@ -221,9 +217,8 @@ PythiaEvtGen_Interface *m_evtgen2;
   TClonesArray* m_branchHepMCEvent;
 
   // for matching
-  Pythia8::CombineMatchingInput *combined = 0;
-  Pythia8::UserHooks *m_matching = 0;
+  Pythia8::CombineMatchingInput* combined = 0;
+  Pythia8::UserHooks* m_matching = 0;
 };
-
 
 #endif

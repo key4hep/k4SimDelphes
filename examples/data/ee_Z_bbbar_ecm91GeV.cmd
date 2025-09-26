@@ -25,7 +25,7 @@ Beams:idB = -11                   ! second beam, e = 2212, pbar = -2212
 ! 4) Hard process : Z->qqbar at Ecm=91 GeV
 Beams:eCM = 91  ! CM energy of collision
 
-!WeakSingleBoson:ffbar2ffbar(s:gmZ) = on 
+!WeakSingleBoson:ffbar2ffbar(s:gmZ) = on
 !WeakZ0:gmZmode = 2
 !23:onMode = off
 !23:onIfMatch = 5 5

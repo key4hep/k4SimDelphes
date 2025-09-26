@@ -33,14 +33,14 @@
 if (NOT TARGET uninstall)
     configure_file(
       "${CMAKE_CURRENT_LIST_DIR}/k4SimDelphes_uninstall.cmake.in"
-      "${CMAKE_BINARY_DIR}/k4SimDelphes_uninstall.cmake"
+      "${PROJECT_BINARY_DIR}/k4SimDelphes_uninstall.cmake"
         IMMEDIATE
         @ONLY
     )
 
     add_custom_target(uninstall
-      COMMAND "${CMAKE_COMMAND}" -P "${CMAKE_BINARY_DIR}/k4SimDelphes_uninstall.cmake"
-      WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+      COMMAND "${CMAKE_COMMAND}" -P "${PROJECT_BINARY_DIR}/k4SimDelphes_uninstall.cmake"
+      WORKING_DIRECTORY "${PROJECT_BINARY_DIR}"
     )
 endif()
 

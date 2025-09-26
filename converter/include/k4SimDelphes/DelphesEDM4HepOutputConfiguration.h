@@ -3,24 +3,24 @@
 
 #include "ExRootAnalysis/ExRootConfReader.h"
 
-#include <vector>
-#include <string>
-#include <ostream>
 #include <iomanip>
+#include <iostream>
+#include <ostream>
+#include <string>
+#include <vector>
 
 namespace k4SimDelphes {
-   /**
+/**
  * The settings steering the output of the DelphesEDM4HepConverter. Default
  * values correspond to the ones found in delphes example cards.
  */
 struct OutputSettings {
-
   /**
    * Branches that will be stored in one global ReconstructedParticle collection
    * under the name specified below. These will be associated with the generated
    * particles.
    */
-  std::vector<std::string> ReconstructedParticleCollections{{"EflowTrack", "EFlowPhoton","EFlowNeutralHadron"}};
+  std::vector<std::string> ReconstructedParticleCollections{{"EflowTrack", "EFlowPhoton", "EFlowNeutralHadron"}};
 
   /**
    * Branches that will be considered and stored as MCParticle. Each Delphes
@@ -78,20 +78,13 @@ struct OutputSettings {
   std::string RecoParticleCollectionName{"ReconstructedParticles"};
 
   /**
-   * Name of the MCRecoParticleAssociationCollection holding the associations of
+   * Name of the RecoMCParticleLinkCollection holding the links of
    * generated to reconstructed particles.
    */
-  std::string MCRecoAssociationCollectionName{"MCRecoAssociations"};
-
-
-  /**
-   * Name of the ParticleIDCollection holding the ctags / isolation variables.
-   */
-  std::string ParticleIDCollectionName{"ParticleIDs"};
+  std::string RecoMCParticleLinkCollectionName{"RecoMCLink"};
 };
 
-
-template<typename T>
+template <typename T>
 std::ostream& operator<<(std::ostream& os, std::vector<T> const& container) {
   if (container.empty()) {
     os << " -empty- ";
@@ -116,14 +109,13 @@ std::ostream& operator<<(std::ostream& os, OutputSettings const& settings) {
   os << std::setw(40) << " MissingETCollections: " << settings.MissingETCollections << "\n";
   os << std::setw(40) << " ScalarHTCollections: " << settings.ScalarHTCollections << "\n";
   os << std::setw(40) << " RecoParticleCollectionName: " << settings.RecoParticleCollectionName << "\n";
-  os << std::setw(40) << " MCRecoAssociationCollectionName: " << settings.MCRecoAssociationCollectionName << "\n";
+  os << std::setw(40) << " RecoMCParticleLinkCollectionName: " << settings.RecoMCParticleLinkCollectionName << "\n";
   os << "------------------------------------------------------------\n";
 
   return os;
 }
 
-std::vector<std::string> toVecString(ExRootConfParam param, std::vector<std::string>&& defVals)
-{
+std::vector<std::string> toVecString(ExRootConfParam param, std::vector<std::string>&& defVals) {
   if (!param.GetSize()) {
     return std::move(defVals);
   }
@@ -135,56 +127,51 @@ std::vector<std::string> toVecString(ExRootConfParam param, std::vector<std::str
   return paramVals;
 }
 
-OutputSettings getEDM4hepOutputSettings(ExRootConfReader* confReader)
-{
+OutputSettings getEDM4hepOutputSettings(ExRootConfReader* confReader) {
   OutputSettings settings;
 
-  settings.ReconstructedParticleCollections = toVecString(
-    confReader->GetParam("EDM4HepOutput::ReconstructedParticleCollections"),
-    {"EFlowTrack", "EFlowPhoton", "EFlowNeutralHadron"});
+  settings.ReconstructedParticleCollections =
+      toVecString(confReader->GetParam("EDM4HepOutput::ReconstructedParticleCollections"),
+                  {"EFlowTrack", "EFlowPhoton", "EFlowNeutralHadron"});
 
-  settings.GenParticleCollections = toVecString(
-    confReader->GetParam("EDM4HepOutput::GenParticleCollections"),
-    {"GenParticle"});
+  settings.GenParticleCollections =
+      toVecString(confReader->GetParam("EDM4HepOutput::GenParticleCollections"), {"GenParticle"});
 
-  settings.JetCollections = toVecString(
-    confReader->GetParam("EDM4HepOutput::JetCollections"),
-    {"Jet"});
+  settings.JetCollections = toVecString(confReader->GetParam("EDM4HepOutput::JetCollections"), {});
 
-  settings.MuonCollections = toVecString(
-    confReader->GetParam("EDM4HepOutput::MuonCollections"),
-    {"Muon"});
+  settings.MuonCollections = toVecString(confReader->GetParam("EDM4HepOutput::MuonCollections"), {});
 
-  settings.ElectronCollections = toVecString(
-    confReader->GetParam("EDM4HepOutput::ElectronCollections"),
-    {"Electron"});
+  settings.ElectronCollections = toVecString(confReader->GetParam("EDM4HepOutput::ElectronCollections"), {});
 
-  settings.PhotonCollections = toVecString(
-    confReader->GetParam("EDM4HepOutput::PhotonCollections"),
-    {"Photon"});
+  settings.PhotonCollections = toVecString(confReader->GetParam("EDM4HepOutput::PhotonCollections"), {});
 
-  settings.MissingETCollections = toVecString(
-    confReader->GetParam("EDM4HepOutput::MissingETCollections"),
-    {"MissingET"});
+  settings.MissingETCollections = toVecString(confReader->GetParam("EDM4HepOutput::MissingETCollections"), {});
 
-   settings.ScalarHTCollections = toVecString(
-    confReader->GetParam("EDM4HepOutput::ScalarHTCollections"),
-    {"ScalarHT"});
+  settings.ScalarHTCollections = toVecString(confReader->GetParam("EDM4HepOutput::ScalarHTCollections"), {});
 
-   settings.RecoParticleCollectionName = confReader->GetString("EDM4HepOutput::RecoParticleCollectionName", "ReconstructedParticles");
+  settings.RecoParticleCollectionName =
+      confReader->GetString("EDM4HepOutput::RecoParticleCollectionName", "ReconstructedParticles");
 
-   settings.MCRecoAssociationCollectionName = confReader->GetString("EDM4HepOutput::MCRecoAssociationCollectionName", "MCRecoAssociations");
+  const auto assocName = confReader->GetString("EDM4HepOutput::MCRecoAssociationCollectionName", "not-available");
+  if (assocName != std::string("not-available")) {
+    std::cerr << "WARNING: k4SimDelphes::getEDM4hepOutputSettings | MCRecoAssociationCollectionName is deprecated, "
+                 "use RecoMCParticleLinkCollection instead"
+              << std::endl;
+    settings.RecoMCParticleLinkCollectionName = assocName;
+  }
+
+  settings.RecoMCParticleLinkCollectionName =
+      confReader->GetString("EDM4HepOutput::RecoMCParticleLinkCollectionName", "RecoMCLink");
 
   return settings;
 }
 
-OutputSettings getEDM4hepOutputSettings(const char* confFile) {
+inline OutputSettings getEDM4hepOutputSettings(const char* confFile) {
   ExRootConfReader confReader{};
   confReader.ReadFile(confFile);
   return getEDM4hepOutputSettings(&confReader);
 }
 
-
-}
+} // namespace k4SimDelphes
 
 #endif

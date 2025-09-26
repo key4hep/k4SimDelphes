@@ -1,14 +1,16 @@
 
-add_subdirectory(unittests)
+if(BUILD_UNITTESTS)
+  add_subdirectory(unittests)
+endif()
 
 add_executable(compare_delphes_converter_outputs src/compare_delphes_converter_outputs.cpp)
 target_include_directories(compare_delphes_converter_outputs
   PRIVATE
   ${DELPHES_INCLUDE_DIRS}
-  ${CMAKE_SOURCE_DIR}/converter/src #for delphesHelpers
-  ${CMAKE_SOURCE_DIR}/converter/include
+  ${PROJECT_SOURCE_DIR}/converter/src #for delphesHelpers
+  ${PROJECT_SOURCE_DIR}/converter/include
   )
-target_link_libraries(compare_delphes_converter_outputs PRIVATE EDM4HEP::edm4hep ${DELPHES_LIBRARY} podio::podioRootIO ROOT::Physics)
+target_link_libraries(compare_delphes_converter_outputs PRIVATE EDM4HEP::edm4hep EDM4HEP::kinematics ${DELPHES_LIBRARY} podio::podioRootIO ROOT::Core ROOT::MathCore ROOT::Physics)
 
 function(ADD_COMPARISON_TEST name converter)
   # Check if we have the standalone Delphes application available for the
@@ -24,26 +26,37 @@ function(ADD_COMPARISON_TEST name converter)
   endif()
 
   add_test(NAME ${name}
-    COMMAND bash -x ${CMAKE_SOURCE_DIR}/tests/testDriver.sh ${converter} ${ARGN})
+    COMMAND bash -x ${PROJECT_SOURCE_DIR}/tests/testDriver.sh ${converter} ${ARGN})
 
   set_property(TEST ${name} PROPERTY ENVIRONMENT
-    LD_LIBRARY_PATH=$<TARGET_FILE_DIR:DelphesEDM4HepConverter>:$<TARGET_FILE_DIR:EDM4HEP::edm4hepDict>:$<TARGET_FILE_DIR:podio::podioDict>:$ENV{LD_LIBRARY_PATH}
+    LD_LIBRARY_PATH=$<TARGET_FILE_DIR:DelphesEDM4HepConverter>:$<TARGET_FILE_DIR:EDM4HEP::edm4hep>:$<TARGET_FILE_DIR:podio::podio>:$<TARGET_FILE_DIR:ROOT::RIO>:$ENV{LD_LIBRARY_PATH}
     PATH=$<TARGET_FILE_DIR:${converter}>:${DELPHES_BINARY_DIR}:$ENV{PATH}
     COMPARE=$<TARGET_FILE:compare_delphes_converter_outputs>
     )
 endfunction()
 
-# Verbatim copy of the one shipped with delphes, except that we fix the
-# RandomSeed to get repeatable outcomes and also limit the number of events
-set(DELPHES_CARD ${CMAKE_SOURCE_DIR}/tests/data/delphes_card_IDEA.tcl)
-set(OUTPUT_CONFIG ${CMAKE_SOURCE_DIR}/examples/edm4hep_output_config.tcl)
+set(OUTPUT_CONFIG ${PROJECT_SOURCE_DIR}/examples/edm4hep_output_config.tcl)
 
-if(BUILD_PYTHIA_READER)
-  ADD_COMPARISON_TEST(PythiaConverter DelphesPythia8_EDM4HEP ${DELPHES_CARD} ${OUTPUT_CONFIG} pythia_converter_output_ee_Z_bbbar.root ${CMAKE_SOURCE_DIR}/examples/data/ee_Z_bbbar_ecm91GeV.cmd)
+# Get the delphes card from the Delphes installation
+find_file(DELPHES_CARD delphes_card_IDEA.tcl PATHS ${DELPHES_CARDS_DIR})
+if(DELPHES_CARD)
+  if(BUILD_PYTHIA_READER)
+    ADD_COMPARISON_TEST(PythiaConverter_ee_Z_bbbar DelphesPythia8_EDM4HEP ${DELPHES_CARD} ${OUTPUT_CONFIG} pythia_converter_output_ee_Z_bbbar.root ${PROJECT_SOURCE_DIR}/examples/data/ee_Z_bbbar_ecm91GeV.cmd)
 
-  # Only run tests using the TrackCovariance if it is actually available
-  if (DELPHES_TRACK_COV_HEADER)
-    set(DELPHES_TRK_COV_CARD ${CMAKE_SOURCE_DIR}/tests/data/delphes_card_IDEAtrkCov.tcl)
-    ADD_COMPARISON_TEST(PythiaConverter_TrkCov DelphesPythia8_EDM4HEP ${DELPHES_TRK_COV_CARD} ${OUTPUT_CONFIG} pythia_converter_output_ee_Z_ccbar.root ${CMAKE_SOURCE_DIR}/examples/data/ee_Z_bbbar_ecm91GeV.cmd)
+    ADD_COMPARISON_TEST(PythiaResonanceDecayFilter_pp_hhbbyy DelphesPythia8_EDM4HEP ${DELPHES_CARD} ${OUTPUT_CONFIG} pythia_resonance_decay_filter_pp_hhbbyy_output.root ${PROJECT_SOURCE_DIR}/examples/data/tester_pwp8_pp_hh_5f_hhbbyy.cmd --no-delphes)
   endif()
+
+  ADD_COMPARISON_TEST(DelphesRootReader_ee_91gev DelphesROOT_EDM4HEP ${DELPHES_CARD} ${OUTPUT_CONFIG} delphes_root_converter_input_reader_test.root ${PROJECT_SOURCE_DIR}/tests/data/gev91ee_zboson_100events.root )
+
+  # From a physics point of view this doesn't make a lot of sense, but we just
+  # want to see if jet matching is properly turned on
+  ADD_COMPARISON_TEST(DelphesPythiaJetMatching DelphesPythia8_EDM4HEP ${DELPHES_CARD} ${OUTPUT_CONFIG} pythia_jet_matching_technical_check.root ${PROJECT_SOURCE_DIR}/examples/data/p8_pp_tt012j_5f_HT_25000_35000.cmd --no-delphes)
+
+  set_tests_properties(DelphesPythiaJetMatching
+    PROPERTIES
+      PASS_REGULAR_EXPRESSION "JetMatching Error and Warning Messages Statistics"
+  )
+
+else()
+  message(WARNING "Cannot find IDEA delphes card from the delphes installation. Cannot use it for testing")
 endif()

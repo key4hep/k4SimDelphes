@@ -1,4 +1,4 @@
-#       
+#
 #######################################
 # Order of execution of various modules
 #######################################
@@ -45,7 +45,7 @@ module ParticlePropagator ParticlePropagator {
 
 module TreeWriter TreeWriter {
     # add Branch InputArray BranchName BranchClass
-    
+
     add Branch Delphes/allParticles Particle GenParticle
     add Branch ParticlePropagator/electrons Electron Electron
 }
