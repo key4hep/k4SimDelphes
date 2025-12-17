@@ -5,9 +5,13 @@ install(TARGETS DelphesROOT_EDM4HEP DESTINATION bin)
 
 if(BUILD_HEPMC_READER)
   # build executable and put it into bin/
-  add_executable(DelphesHepMC_EDM4HEP src/DelphesHepMC_EDM4HEP.cpp)
-  target_link_libraries(DelphesHepMC_EDM4HEP DelphesEDM4HepConverter podio::podioRootIO)
-  install(TARGETS DelphesHepMC_EDM4HEP DESTINATION bin)
+  add_executable(DelphesHepMC2_EDM4HEP src/DelphesHepMC2_EDM4HEP.cpp)
+  target_link_libraries(DelphesHepMC2_EDM4HEP DelphesEDM4HepConverter podio::podioRootIO)
+  install(TARGETS DelphesHepMC2_EDM4HEP DESTINATION bin)
+
+  add_executable(DelphesHepMC3_EDM4HEP src/DelphesHepMC3_EDM4HEP.cpp)
+  target_link_libraries(DelphesHepMC3_EDM4HEP DelphesEDM4HepConverter podio::podioRootIO)
+  install(TARGETS DelphesHepMC3_EDM4HEP DESTINATION bin)
 endif()
 
 # build executable and put it into bin/
