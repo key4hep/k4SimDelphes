@@ -1,6 +1,6 @@
 # Running Delphes fast simulation with EDM4hep output
 
-The [`k4SimDelphes`](https://github.com/key4hep/k4SimDelphes) package provides utilities to convert output from the [Delphes fast simulation framework](https://cp3.irmp.ucl.ac.be/projects/delphes) into the [EDM4hep](https://github.com/key4hep/EDM4hep) format. It offers standalone executables, similar to the ones Delphes offers, as well as integration into the Key4hep framework. Here we will provide examples of how to run the standalone executables as well as the usage in the Key4hep framework.
+The [`k4SimDelphes`](https://github.com/key4hep/k4SimDelphes) package provides utilities to convert output from the [Delphes fast simulation framework](https://delphes.github.io/) into the [EDM4hep](https://github.com/key4hep/EDM4hep) format. It offers standalone executables, similar to the ones Delphes offers, as well as integration into the Key4hep framework. Here we will provide examples of how to run the standalone executables as well as the usage in the Key4hep framework.
 
 ## Setup and prerequisites
 The following examples assume that you have access to an existing installation of the Key4hep software stack. The easiest way to achieve this to use an existing installation on `cvmfs`
