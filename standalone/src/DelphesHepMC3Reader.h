@@ -10,7 +10,7 @@
 
 #include "classes/DelphesClasses.h"
 #include "classes/DelphesFactory.h"
-#include "classes/DelphesHepMC2Reader.h"
+#include "classes/DelphesHepMC3Reader.h"
 #include "classes/DelphesStream.h"
 #include "modules/Delphes.h"
 
@@ -25,7 +25,7 @@
 
 //// TODO: handle case of more than one input file
 
-class DelphesHepMCInputReader : public DelphesInputReader {
+class DelphesHepMC3InputReader : public DelphesInputReader {
 public:
   std::string init(Delphes* modularDelphes, int argc, char* argv[]) override {
     if (argc < 4) {
@@ -35,7 +35,7 @@ public:
 
     int i = 4;
 
-    m_reader = std::make_unique<DelphesHepMC2Reader>();
+    m_reader = std::make_unique<DelphesHepMC3Reader>();
 
     Long64_t length = 0;
     if (i == argc || strncmp(argv[i], "-", 2) == 0) {
@@ -130,7 +130,7 @@ private:
   FILE* m_inputFile = 0;
   TStopwatch m_readStopWatch, m_procStopWatch;
   ExRootTreeBranch *m_branchEvent = 0, *m_branchWeight = 0;
-  std::unique_ptr<DelphesHepMC2Reader> m_reader = 0;
+  std::unique_ptr<DelphesHepMC3Reader> m_reader = 0;
   Long64_t m_eventCounter;
 };
 
