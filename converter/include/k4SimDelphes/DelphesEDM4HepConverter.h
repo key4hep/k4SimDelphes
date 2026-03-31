@@ -30,6 +30,8 @@ class Muon;
 class Electron;
 class Photon;
 
+struct OutputSettings;
+
 namespace k4SimDelphes {
 
 /**
@@ -78,7 +80,6 @@ inline std::vector<BranchSettings> getBranchSettings(ExRootConfParam /*const&*/ 
   return branches;
 }
 
-class OutputSettings;
 
 class DelphesEDM4HepConverter {
 public:
