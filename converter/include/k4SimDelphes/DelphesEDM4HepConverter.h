@@ -30,9 +30,10 @@ class Muon;
 class Electron;
 class Photon;
 
-struct OutputSettings;
 
 namespace k4SimDelphes {
+
+struct OutputSettings;
 
 /**
  * Classes that will be stored as reconstructed particle with an attached track
