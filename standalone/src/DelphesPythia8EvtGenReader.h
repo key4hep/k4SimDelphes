@@ -192,9 +192,6 @@ private:
   Int_t m_spareMode1;
   Double_t m_spareParm1, m_spareParm2;
 
-  TClonesArray* m_branchParticle;
-  TClonesArray* m_branchHepMCEvent;
-
   // for matching
   Pythia8::CombineMatchingInput* combined = 0;
   Pythia8::UserHooks* m_matching = 0;

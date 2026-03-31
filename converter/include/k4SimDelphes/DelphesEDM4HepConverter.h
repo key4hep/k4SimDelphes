@@ -32,6 +32,8 @@ class Photon;
 
 namespace k4SimDelphes {
 
+struct OutputSettings;
+
 /**
  * Classes that will be stored as reconstructed particle with an attached track
  */
@@ -77,8 +79,6 @@ inline std::vector<BranchSettings> getBranchSettings(ExRootConfParam /*const&*/ 
   }
   return branches;
 }
-
-class OutputSettings;
 
 class DelphesEDM4HepConverter {
 public:

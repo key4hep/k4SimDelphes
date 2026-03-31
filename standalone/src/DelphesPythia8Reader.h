@@ -193,9 +193,6 @@ private:
   Int_t m_spareMode1;
   Double_t m_spareParm1, m_spareParm2;
 
-  TClonesArray* m_branchParticle;
-  TClonesArray* m_branchHepMCEvent;
-
   // resonance decayfilter
   Pythia8::ResonanceDecayFilterHook* m_resonanceDecayFilterHook{nullptr};
 };

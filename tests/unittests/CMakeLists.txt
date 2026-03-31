@@ -11,6 +11,7 @@ if(NOT USE_EXTERNAL_CATCH2)
 endif()
 
 add_executable(k4SimDelphesTests   tests.cpp tests_edm4hepdelphesconverter.cpp)
+target_compile_options(k4SimDelphesTests PRIVATE -Wno-c2y-extensions)
 target_link_libraries(k4SimDelphesTests
                         DelphesEDM4HepConverter
                         EDM4HEP::edm4hep
