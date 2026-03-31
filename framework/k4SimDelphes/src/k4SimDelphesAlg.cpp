@@ -36,7 +36,6 @@ StatusCode k4SimDelphesAlg::initialize() {
 
   // data service
   m_eventDataSvc.retrieve().ignore();
-  m_podioDataSvc = dynamic_cast<PodioDataSvc*>(m_eventDataSvc.get());
 
   const auto branches = getBranchSettings(m_confReader->GetParam("TreeWriter::Branch"));
   m_outputConfig = getEDM4hepOutputSettings(m_DelphesOutputSettings.value().c_str());
@@ -74,13 +73,13 @@ StatusCode k4SimDelphesAlg::execute(const EventContext&) const {
       auto new_c = m_edm4hepConverter->createExternalRecoMCLinks(mapSimDelphes);
       DataWrapper<podio::CollectionBase>* wrapper = new DataWrapper<podio::CollectionBase>();
       wrapper->setData(new_c);
-      m_podioDataSvc->registerObject("/Event", "/" + std::string(c.first), wrapper).ignore();
+      m_eventDataSvc->registerObject("/Event", "/" + std::string(c.first), wrapper).ignore();
       continue;
     }
 
     DataWrapper<podio::CollectionBase>* wrapper = new DataWrapper<podio::CollectionBase>();
     wrapper->setData(c.second.release()); // DataWrapper takes ownership
-    m_podioDataSvc->registerObject("/Event", "/" + std::string(c.first), wrapper).ignore();
+    m_eventDataSvc->registerObject("/Event", "/" + std::string(c.first), wrapper).ignore();
   }
   m_Delphes->Clear();
 
