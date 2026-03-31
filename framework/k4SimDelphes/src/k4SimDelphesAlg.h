@@ -9,7 +9,6 @@
 
 #include "k4FWCore/DataHandle.h"
 #include "k4FWCore/DataWrapper.h"
-#include "k4FWCore/PodioDataSvc.h"
 
 #include "Gaudi/Algorithm.h"
 
@@ -60,10 +59,6 @@ private:
   mutable ExRootTreeWriter* m_treeWriter{nullptr};
   TTree* m_converterTree{nullptr};
 
-  // since branch names are taken from delphes config
-  // and not declared as data handles,
-  // need podiodatasvc directly
-  mutable PodioDataSvc* m_podioDataSvc;
   ServiceHandle<IDataProviderSvc> m_eventDataSvc;
 };
 
