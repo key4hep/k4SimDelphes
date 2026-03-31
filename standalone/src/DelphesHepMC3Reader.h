@@ -119,10 +119,6 @@ public:
 private:
   static constexpr const char* m_appName = "DelphesHepMC";
   int m_numberOfEvents;
-  int m_entry = 0;
-  ExRootTreeReader* m_treeReader = nullptr;
-  TClonesArray* m_branchParticle;
-  TClonesArray* m_branchHepMCEvent;
 
   ExRootTreeWriter* m_treeWriter{nullptr};
   std::unique_ptr<TTree> m_converterTree{nullptr};

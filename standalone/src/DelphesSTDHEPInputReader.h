@@ -117,9 +117,7 @@ public:
 private:
   static constexpr const char* m_appName = "DelphesHepMC";
   int m_numberOfEvents;
-  int m_entry = 0;
   bool m_finished = false;
-  ExRootTreeWriter* m_treeReader = nullptr;
 
   FILE* m_inputFile = 0;
   TStopwatch m_readStopWatch, m_procStopWatch;
