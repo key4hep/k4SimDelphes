@@ -132,13 +132,21 @@ void DelphesEDM4HepConverter::process(TTree* delphesTree) {
   // Make sure the shared collections are present
   registerGlobalCollections();
 
-  // filling the event header
+  // Retrieve event header from the "Event" branch
   auto* eventBranch = delphesTree->GetBranch("Event");
-
   if (eventBranch) {
     auto* delphesEvents = *(TClonesArray**)eventBranch->GetAddress();
     auto* delphesEvent = static_cast<HepMCEvent*>(delphesEvents->At(0));
-    createEventHeader(delphesEvent);
+
+    // Retrieve the weights array from the "WeightLHEF" branch
+    auto* weightBranch = delphesTree->GetBranch("WeightLHEF");
+    TClonesArray* lhefWeights = nullptr;
+    if (weightBranch) {
+      lhefWeights = *(TClonesArray**)weightBranch->GetAddress();
+    }
+
+    // call event header fn to store weights, doesn't store (in fn) if lhefweights is empty.
+    createEventHeader(delphesEvent, lhefWeights);
   }
 
   for (const auto& branch : m_branches) {
@@ -165,12 +173,23 @@ void DelphesEDM4HepConverter::process(TTree* delphesTree) {
 }
 
 // convert the eventHeader with metaData
-void DelphesEDM4HepConverter::createEventHeader(const HepMCEvent* delphesEvent) {
+void DelphesEDM4HepConverter::createEventHeader(const HepMCEvent* delphesEvent, TClonesArray* lhefWeights) {
   auto* collection = createCollection<edm4hep::EventHeaderCollection>(EVENTHEADER_NAME);
   auto cand = collection->create();
 
+  // Set basic event properties
   cand.setWeight(delphesEvent->Weight);
   cand.setEventNumber(delphesEvent->Number);
+
+  // if we have weights being read from LHE file, store them in _EventHeader_weights
+  if (lhefWeights) {
+    for (Int_t i = 0; i < lhefWeights->GetEntries(); ++i) {
+      // get entry in vector
+      LHEFWeight* weightEntry = static_cast<LHEFWeight*>(lhefWeights->At(i));
+      // append this weight to the event header
+      cand.addToWeights(weightEntry->Weight);
+    }
+  }
 }
 
 void DelphesEDM4HepConverter::processParticles(const TClonesArray* delphesCollection, std::string const& branch) {
