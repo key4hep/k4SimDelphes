@@ -1,14 +1,12 @@
 from Gaudi.Configuration import *
 from GaudiKernel import SystemOfUnits as units
 
-from Configurables import ApplicationMgr
+from Configurables import EventDataSvc
+from k4FWCore import ApplicationMgr, IOSvc
 app = ApplicationMgr()
 app.EvtMax = 3
 app.EvtSel = "NONE"
-
-from Configurables import k4DataSvc
-podioevent = k4DataSvc("EventDataSvc")
-app.ExtSvc += [podioevent]
+app.ExtSvc += [EventDataSvc("EventDataSvc")]
 
 from Configurables import ConstPtParticleGun
 guntool1 = ConstPtParticleGun(PdgCodes=[-211], PtMin=50*units.GeV, PtMax=50*units.GeV)
@@ -35,9 +33,8 @@ delphesalg.OutputLevel = VERBOSE
 ApplicationMgr().TopAlg += [delphesalg]
 
 
-from Configurables import PodioOutput
-out = PodioOutput("out", filename = "output_k4SimDelphes.root")
-out.outputCommands = ["keep *"]
-ApplicationMgr().TopAlg += [out]
+iosvc = IOSvc()
+iosvc.Output = "output_k4SimDelphes.root"
+iosvc.outputCommands = ["keep *"]
 
 
