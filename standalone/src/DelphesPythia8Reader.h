@@ -133,8 +133,13 @@ public:
     m_treeWriter->Clear();
     auto factory = modularDelphes->GetFactory();
     while (reader &&
+#ifdef DELPHES_HAS_READ_EVENT
+           reader->ReadEvent(factory, m_allParticleOutputArrayLHEF, m_stableParticleOutputArrayLHEF,
+                             m_partonOutputArrayLHEF) &&
+#else
            reader->ReadBlock(factory, m_allParticleOutputArrayLHEF, m_stableParticleOutputArrayLHEF,
                              m_partonOutputArrayLHEF) &&
+#endif
            !reader->EventReady())
       ;
 

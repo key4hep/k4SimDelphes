@@ -98,7 +98,13 @@ public:
     m_treeWriter->Clear();
     m_readStopWatch.Start();
     auto factory = modularDelphes->GetFactory();
-    while (m_reader->ReadBlock(factory, allParticleOutputArray, stableParticleOutputArray, partonOutputArray)) {
+    while (
+#ifdef DELPHES_HAS_READ_EVENT
+        m_reader->ReadEvent(factory, allParticleOutputArray, stableParticleOutputArray, partonOutputArray)
+#else
+        m_reader->ReadBlock(factory, allParticleOutputArray, stableParticleOutputArray, partonOutputArray)
+#endif
+    ) {
       if (m_reader->EventReady()) {
         m_readStopWatch.Stop();
         m_eventCounter++;

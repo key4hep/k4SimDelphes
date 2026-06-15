@@ -98,7 +98,12 @@ public:
     auto factory = modularDelphes->GetFactory();
     bool goodRead = false;
     while ((goodRead =
-                m_reader->ReadBlock(factory, allParticleOutputArray, stableParticleOutputArray, partonOutputArray)) &&
+#ifdef DELPHES_HAS_READ_EVENT
+                m_reader->ReadEvent(factory, allParticleOutputArray, stableParticleOutputArray, partonOutputArray)
+#else
+                m_reader->ReadBlock(factory, allParticleOutputArray, stableParticleOutputArray, partonOutputArray)
+#endif
+                ) &&
            !m_reader->EventReady()) {
     }
     m_readStopWatch.Stop();
