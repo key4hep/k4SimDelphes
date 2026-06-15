@@ -53,6 +53,18 @@ find_package(Delphes REQUIRED)
 find_package(EDM4HEP REQUIRED)
 find_package(ROOT REQUIRED)
 
+# Detect whether Delphes uses ReadEvent (new) or ReadBlock (old)
+# ReadEvent was introduced in Delphes 3.5.2pre01.
+# Delphes doesn't export a version so checking for the existence of ReadEvent is the only way to detect this.
+file(STRINGS "${DELPHES_INCLUDE_DIR}/classes/DelphesHepMC2Reader.h"
+     _delphes_hepmcreader_content REGEX "ReadEvent")
+if(_delphes_hepmcreader_content)
+  message(STATUS "Delphes: using ReadEvent API (new)")
+  add_compile_definitions(DELPHES_HAS_READ_EVENT)
+else()
+  message(STATUS "Delphes: using ReadBlock API (old)")
+endif()
+
 #--- optional dependencies
 if(BUILD_PYTHIA_READER OR BUILD_EVTGEN_READER)
   find_package(Pythia8 REQUIRED)
