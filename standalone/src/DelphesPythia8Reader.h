@@ -36,6 +36,9 @@ public:
       PrintXS(m_pythia.get());
   }
 
+  const std::vector<std::string>& getWeightNames() const {
+    return m_weightNames;
+  }
   std::string init(Delphes* modularDelphes, int argc, char* argv[]) override {
     if (argc != 5) {
       return "";
@@ -105,6 +108,16 @@ public:
         m_brancheEventLHEF = m_treeWriter->NewBranch("EventLHEF", LHEFEvent::Class());
         m_branchWeightLHEF = m_treeWriter->NewBranch("WeightLHEF", LHEFWeight::Class());
 
+        if (!m_branchWeightLHEF) {
+          std::cerr << "Error: m_branchWeightLHEF failed to initialise." << std::endl;
+        } else {
+          m_weightNames = ::getWeightNames(m_pythia->word("Beams:LHEF"));
+          std::cout << "Found " << m_weightNames.size() << " weight names in initrwgt:\n";
+          for (const auto& id : m_weightNames) {
+            std::cout << "  " << id << "\n";
+          }
+        }
+
         m_allParticleOutputArrayLHEF = modularDelphes->ExportArray("allParticlesLHEF");
         m_stableParticleOutputArrayLHEF = modularDelphes->ExportArray("stableParticlesLHEF");
         m_partonOutputArrayLHEF = modularDelphes->ExportArray("partonsLHEF");
@@ -146,6 +159,16 @@ public:
       }
     }
 
+    // reading weights
+    if (reader) {
+      if (m_branchWeightLHEF) {
+        m_branchWeightLHEF->Clear();
+        reader->AnalyzeWeight(m_branchWeightLHEF);
+      } else {
+        std::cerr << "Error: m_branchWeightLHEF is null." << std::endl;
+      }
+    }
+
     if (!m_pythia->next()) {
       // If failure because reached end of file then exit event loop
       if (m_pythia->info.atEndOfFile()) {
@@ -166,6 +189,9 @@ public:
     m_procStopWatch.Start();
     ConvertInput(m_eventCounter, m_pythia.get(), m_branchEvent.get(), factory, allParticleOutputArray,
                  stableParticleOutputArray, partonOutputArray, &m_readStopWatch, &m_procStopWatch);
+
+    // fill branches not read in by pythia (LHEF reweighting branch)
+    m_treeWriter->Fill();
     ++m_eventCounter;
     return true;
   };
@@ -185,6 +211,8 @@ private:
   std::unique_ptr<TTree> m_converterTree{nullptr};
 
   ExRootTreeBranch *m_brancheEventLHEF = 0, *m_branchWeightLHEF = 0;
+  // arrays to store weight names
+  std::vector<std::string> m_weightNames;
   TObjArray *m_stableParticleOutputArrayLHEF = 0, *m_allParticleOutputArrayLHEF = 0, *m_partonOutputArrayLHEF = 0;
   DelphesLHEFReader* reader = 0;
   Long64_t m_eventCounter{0}, m_errorCounter{0};
