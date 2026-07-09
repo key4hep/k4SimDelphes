@@ -181,6 +181,11 @@ public:
 
   TTree* converterTree() override { return m_treeWriter->GetTree(); }
 
+  /// Nominal (index 0) + UncertaintyBands/VariationFrag variation weights.
+  std::vector<double> eventWeights() const override { return m_pythia->info.weightValueVector(); }
+
+  std::vector<std::string> eventWeightNames() const override { return m_pythia->info.weightNameVector(); }
+
 private:
   static constexpr const char* m_appName = "DelphesPythia8";
   std::unique_ptr<Pythia8::Pythia> m_pythia{nullptr};

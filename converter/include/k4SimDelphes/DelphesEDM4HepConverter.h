@@ -94,6 +94,10 @@ public:
    */
   void process(TTree* delphesTree);
 
+  /// Attach generator event weights to the current EventHeader; call after
+  /// process(), before getCollections(). Weight names go in the metadata Frame.
+  void setEventWeights(const std::vector<double>& weights);
+
   /** Get the converted collections and their ownership.
    *
    * NOTE: Since this moves the ownership of the internal collections, this
