@@ -36,17 +36,18 @@ int doit(int argc, char* argv[], DelphesInputReader& inputReader) {
       args.push_back(argv[i]);
     }
   }
-  const int newArgc = static_cast<int>(args.size());
-  char** const newArgv = args.data();
+  const int positionalArgc = static_cast<int>(args.size());
+  char** const positionalArgv = args.data();
 
   // We can't make this a unique_ptr because it interferes with whatever ROOT is
   // doing under the hood to clean up
   auto* modularDelphes = new Delphes("Delphes");
-  const auto outputFile = inputReader.init(modularDelphes, newArgc, newArgv);
+  const auto outputFile = inputReader.init(modularDelphes, positionalArgc, positionalArgv);
   if (outputFile.empty()) {
     // Check if the user requested the help, and print the usage message and
     // return succesfully in that case
-    if (newArgc > 1 && (newArgv[1] == std::string_view("--help") || newArgv[1] == std::string_view("-h"))) {
+    if (positionalArgc > 1 &&
+        (positionalArgv[1] == std::string_view("--help") || positionalArgv[1] == std::string_view("-h"))) {
       std::cout << inputReader.getUsage() << std::endl;
       return 0;
     }
@@ -61,11 +62,11 @@ int doit(int argc, char* argv[], DelphesInputReader& inputReader) {
   signal(SIGINT, SignalHandler);
   try {
     auto confReader = std::make_unique<ExRootConfReader>();
-    confReader->ReadFile(newArgv[1]);
+    confReader->ReadFile(positionalArgv[1]);
     modularDelphes->SetConfReader(confReader.get());
 
     const auto branches = getBranchSettings(confReader->GetParam("TreeWriter::Branch"));
-    const auto edm4hepOutputSettings = getEDM4hepOutputSettings(newArgv[2]);
+    const auto edm4hepOutputSettings = getEDM4hepOutputSettings(positionalArgv[2]);
     DelphesEDM4HepConverter edm4hepConverter(branches, edm4hepOutputSettings,
                                              confReader->GetDouble("ParticlePropagator::Bz", 0));
 
