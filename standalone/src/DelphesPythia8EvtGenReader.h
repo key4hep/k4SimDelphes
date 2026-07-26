@@ -120,7 +120,9 @@ public:
          << "config_file - configuration file in Tcl format,\n"
          << "output_config_file - configuration file steering the content of the edm4hep output in Tcl format,\n"
          << "pythia_card - Pythia8 configuration file,\n"
-         << "output_file - output file in ROOT format,\n"
+         << "output_file - output file in ROOT format (TTree by default; pass "
+         << "--rntuple, or set PODIO_DEFAULT_WRITE_RNTUPLE=1, to write RNTuple\n"
+         << "instead),\n"
          << "DECAY.DEC - EvtGen full decay file,\n"
          << "evt.pdl - EvtGen particle list,\n"
          << "user.dec - EvtGen user decay file.\n";

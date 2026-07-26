@@ -1,28 +1,28 @@
 # build executable and put it into bin/
 add_executable(DelphesROOT_EDM4HEP src/DelphesROOT_EDM4HEP.cpp)
-target_link_libraries(DelphesROOT_EDM4HEP DelphesEDM4HepConverter podio::podioRootIO ROOT::Physics)
+target_link_libraries(DelphesROOT_EDM4HEP DelphesEDM4HepConverter podio::podioIO ROOT::Physics)
 install(TARGETS DelphesROOT_EDM4HEP DESTINATION bin)
 
 if(BUILD_HEPMC_READER)
   # build executable and put it into bin/
   add_executable(DelphesHepMC2_EDM4HEP src/DelphesHepMC2_EDM4HEP.cpp)
-  target_link_libraries(DelphesHepMC2_EDM4HEP DelphesEDM4HepConverter podio::podioRootIO)
+  target_link_libraries(DelphesHepMC2_EDM4HEP DelphesEDM4HepConverter podio::podioIO)
   install(TARGETS DelphesHepMC2_EDM4HEP DESTINATION bin)
 
   add_executable(DelphesHepMC3_EDM4HEP src/DelphesHepMC3_EDM4HEP.cpp)
-  target_link_libraries(DelphesHepMC3_EDM4HEP DelphesEDM4HepConverter podio::podioRootIO)
+  target_link_libraries(DelphesHepMC3_EDM4HEP DelphesEDM4HepConverter podio::podioIO)
   install(TARGETS DelphesHepMC3_EDM4HEP DESTINATION bin)
 endif()
 
 # build executable and put it into bin/
 add_executable(DelphesSTDHEP_EDM4HEP src/DelphesSTDHEP_EDM4HEP.cpp)
-target_link_libraries(DelphesSTDHEP_EDM4HEP DelphesEDM4HepConverter podio::podioRootIO ${DELPHES_LIBRARY})
+target_link_libraries(DelphesSTDHEP_EDM4HEP DelphesEDM4HepConverter podio::podioIO ${DELPHES_LIBRARY})
 install(TARGETS DelphesSTDHEP_EDM4HEP DESTINATION bin)
 
 if(BUILD_PYTHIA_READER)
   add_executable(DelphesPythia8_EDM4HEP src/DelphesPythia8_EDM4HEP.cpp)
   target_include_directories(DelphesPythia8_EDM4HEP PRIVATE ${PYTHIA8_INCLUDE_DIRS})
-  target_link_libraries(DelphesPythia8_EDM4HEP DelphesEDM4HepConverter podio::podioRootIO ${PYTHIA8_LIBRARIES} ${DELPHES_LIBRARY})
+  target_link_libraries(DelphesPythia8_EDM4HEP DelphesEDM4HepConverter podio::podioIO ${PYTHIA8_LIBRARIES} ${DELPHES_LIBRARY})
   install(TARGETS DelphesPythia8_EDM4HEP DESTINATION bin)
 endif()
 
@@ -39,7 +39,7 @@ if(BUILD_EVTGEN_READER)
   target_include_directories(DelphesPythia8EvtGen_EDM4HEP PRIVATE ${PYTHIA8_INCLUDE_DIRS} )
   target_link_libraries(DelphesPythia8EvtGen_EDM4HEP
                         DelphesEDM4HepConverter
-                        podio::podioRootIO
+                        podio::podioIO
                         ${PYTHIA8_LIBRARIES}
                         ${DELPHES_LIBRARY}
                         EvtGen::EvtGen
@@ -51,7 +51,7 @@ if(BUILD_EVTGEN_READER)
   target_link_libraries(DelphesPythia8EvtGen_EDM4HEP_k4Interface
                         PythiaEvtGen_Interface
                         DelphesEDM4HepConverter
-                        podio::podioRootIO
+                        podio::podioIO
                         ${PYTHIA8_LIBRARIES}
                         ${DELPHES_LIBRARY}
                         EvtGen::EvtGen
