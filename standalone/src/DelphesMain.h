@@ -6,7 +6,7 @@
 
 #include "podio/Frame.h"
 #include "podio/FrameCategories.h"
-#include "podio/ROOTWriter.h"
+#include "podio/Writer.h"
 
 #include "ExRootAnalysis/ExRootConfReader.h"
 #include "ExRootAnalysis/ExRootProgressBar.h"
@@ -15,22 +15,42 @@
 #include <iostream>
 #include <memory>
 #include <signal.h>
+#include <string_view>
+#include <vector>
 
 static bool interrupted = false;
 void SignalHandler(int /*si*/) { interrupted = true; }
 
-template <typename WriterT = podio::ROOTWriter>
 int doit(int argc, char* argv[], DelphesInputReader& inputReader) {
   using namespace k4SimDelphes;
+
+  // Look for an optional "--rntuple" flag, which can appear anywhere among the
+  // arguments, to request writing the EDM4hep output with the RNTuple backend
+  // instead of the default TTree based one. It is stripped out before the
+  // purely positional argument parsing done by the reader below.
+  std::string writerType = "default";
+  std::vector<char*> args;
+  args.reserve(argc);
+  args.push_back(argv[0]);
+  for (int i = 1; i < argc; ++i) {
+    if (std::string_view(argv[i]) == "--rntuple") {
+      writerType = "rntuple";
+    } else {
+      args.push_back(argv[i]);
+    }
+  }
+  const int positionalArgc = static_cast<int>(args.size());
+  char** const positionalArgv = args.data();
 
   // We can't make this a unique_ptr because it interferes with whatever ROOT is
   // doing under the hood to clean up
   auto* modularDelphes = new Delphes("Delphes");
-  const auto outputFile = inputReader.init(modularDelphes, argc, argv);
+  const auto outputFile = inputReader.init(modularDelphes, positionalArgc, positionalArgv);
   if (outputFile.empty()) {
     // Check if the user requested the help, and print the usage message and
     // return succesfully in that case
-    if (argc > 1 && (argv[1] == std::string_view("--help") || argv[1] == std::string_view("-h"))) {
+    if (positionalArgc > 1 &&
+        (positionalArgv[1] == std::string_view("--help") || positionalArgv[1] == std::string_view("-h"))) {
       std::cout << inputReader.getUsage() << std::endl;
       return 0;
     }
@@ -38,16 +58,18 @@ int doit(int argc, char* argv[], DelphesInputReader& inputReader) {
     return 1;
   }
 
-  WriterT podioWriter(outputFile);
+  // "default" falls back to the PODIO_DEFAULT_WRITE_RNTUPLE environment
+  // variable (unset/empty -> TTree, anything else -> RNTuple).
+  auto podioWriter = podio::makeWriter(outputFile, writerType);
 
   signal(SIGINT, SignalHandler);
   try {
     auto confReader = std::make_unique<ExRootConfReader>();
-    confReader->ReadFile(argv[1]);
+    confReader->ReadFile(positionalArgv[1]);
     modularDelphes->SetConfReader(confReader.get());
 
     const auto branches = getBranchSettings(confReader->GetParam("TreeWriter::Branch"));
-    const auto edm4hepOutputSettings = getEDM4hepOutputSettings(argv[2]);
+    const auto edm4hepOutputSettings = getEDM4hepOutputSettings(positionalArgv[2]);
     DelphesEDM4HepConverter edm4hepConverter(branches, edm4hepOutputSettings,
                                              confReader->GetDouble("ParticlePropagator::Bz", 0));
 
