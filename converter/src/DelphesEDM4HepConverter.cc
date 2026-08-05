@@ -173,6 +173,18 @@ void DelphesEDM4HepConverter::createEventHeader(const HepMCEvent* delphesEvent) 
   cand.setEventNumber(delphesEvent->Number);
 }
 
+void DelphesEDM4HepConverter::setEventWeights(const std::vector<double>& weights) {
+  auto* collection = getCollection<edm4hep::EventHeaderCollection>(EVENTHEADER_NAME);
+  if (!collection || collection->size() == 0) {
+    std::cerr << "K4SIMDELPHES ERROR: setEventWeights called but no EventHeader exists for this event" << std::endl;
+    return;
+  }
+  auto header = collection->at(0);
+  for (const auto w : weights) {
+    header.addToWeights(w);
+  }
+}
+
 void DelphesEDM4HepConverter::processParticles(const TClonesArray* delphesCollection, std::string const& branch) {
   auto* collection = createCollection<edm4hep::MCParticleCollection>(branch);
 

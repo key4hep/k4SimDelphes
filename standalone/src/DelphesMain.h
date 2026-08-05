@@ -2,7 +2,10 @@
 #include "k4SimDelphes/DelphesEDM4HepConverter.h"
 #include "k4SimDelphes/DelphesEDM4HepOutputConfiguration.h"
 
+#include "edm4hep/Constants.h"
+
 #include "podio/Frame.h"
+#include "podio/FrameCategories.h"
 #include "podio/Writer.h"
 
 #include "ExRootAnalysis/ExRootConfReader.h"
@@ -91,6 +94,13 @@ int doit(int argc, char* argv[], DelphesInputReader& inputReader) {
       modularDelphes->ProcessTask();
       edm4hepConverter.process(inputReader.converterTree());
 
+      // Attach the generator weight vector to the EventHeader (Pythia8 readers).
+      // Size 1 means nominal only (already in EventHeader.weight) -> store nothing.
+      const auto evWeights = inputReader.eventWeights();
+      if (evWeights.size() > 1) {
+        edm4hepConverter.setEventWeights(evWeights);
+      }
+
       // Put everything into a Frame and write it out
       podio::Frame frame;
       for (auto& [name, coll] : edm4hepConverter.getCollections()) {
@@ -105,6 +115,17 @@ int doit(int argc, char* argv[], DelphesInputReader& inputReader) {
 
     progressBar.Update(eventCounter, eventCounter, true);
     progressBar.Finish();
+
+    // Weight names -> file-level metadata Frame (edm4hep convention)
+    const auto weightNames = inputReader.eventWeightNames();
+    if (weightNames.size() > 1) {
+      std::cout << "k4SimDelphes: storing " << weightNames.size()
+                << " generator event weight names in the metadata frame" << std::endl;
+      podio::Frame metadataFrame;
+      metadataFrame.putParameter(edm4hep::labels::EventWeightsNames, weightNames);
+      podioWriter.writeFrame(metadataFrame, podio::Category::Metadata);
+    }
+
     podioWriter.finish();
     modularDelphes->Finish();
     std::cout << "** Exiting ..." << std::endl;
