@@ -35,9 +35,8 @@ if n_events == 0:
     fail("no events in file")
 
 names = []
-for frame in reader.get("metadata"):
-    names = list(frame.get_parameter("EventWeightNames"))
-    break
+frame = reader.get("metadata")[0]
+names = list(frame.get_parameter("EventWeightNames"))
 if len(names) != n_weights:
     fail(f"EventWeightNames has {len(names)} entries but the weights vector has {n_weights}")
 
