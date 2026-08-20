@@ -9,7 +9,7 @@ Usage: check_event_weights.py <edm4hep_file>
 
 import sys
 
-import podio.root_io
+from podio import reading
 
 
 def fail(msg):
@@ -17,7 +17,7 @@ def fail(msg):
     sys.exit(1)
 
 
-reader = podio.root_io.Reader(sys.argv[1])
+reader = reading.get_reader(sys.argv[1])
 
 n_events = 0
 n_weights = 0
