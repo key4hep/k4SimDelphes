@@ -1,3 +1,23 @@
+# v00-08
+
+* 2026-06-15 Juan Miguel Carceller ([PR#157](https://github.com/key4hep/k4SimDelphes/pull/157))
+  - Check if ReadEvent (added in https://github.com/delphes/delphes/commit/93e1a6265184179895389125e7f91ddc18a19496  and deprecated in https://github.com/delphes/delphes/pull/195) exists, in that case use it
+
+* 2026-05-08 Juan Miguel Carceller ([PR#156](https://github.com/key4hep/k4SimDelphes/pull/156))
+  - Remove the remaining `k4DataSvc` and `PodioOutput` following https://github.com/key4hep/k4FWCore/pull/392
+
+* 2026-03-31 Juan Miguel Carceller ([PR#155](https://github.com/key4hep/k4SimDelphes/pull/155))
+  - Fix a few compiler warnings, unused variables, empty body of an if, `__COUNTER__` from Catch2 being a C2y extension and other warnings.
+
+* 2026-03-31 Juan Miguel Carceller ([PR#154](https://github.com/key4hep/k4SimDelphes/pull/154))
+  - Fix deprecation warnings related to PodioDataSvc, by using `m_eventDataSvc` instead, already present in k4SimDelphesAlg.cpp
+
+* 2026-03-30 Jan Eysermans ([PR#152](https://github.com/key4hep/k4SimDelphes/pull/152))
+  - Add support for DelphesHEPMC2 and HEPMC3 readers
+
+* 2026-02-23 Juan Miguel Carceller ([PR#153](https://github.com/key4hep/k4SimDelphes/pull/153))
+  - Fix old link that redirects in the starterkit readme and fails often in the CI in key4hep-doc
+
 # v00-07-06
 
 * 2025-09-23 Juan Miguel Carceller ([PR#150](https://github.com/key4hep/k4SimDelphes/pull/150))
