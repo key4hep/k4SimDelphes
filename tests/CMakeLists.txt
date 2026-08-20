@@ -44,6 +44,15 @@ if(DELPHES_CARD)
     ADD_COMPARISON_TEST(PythiaConverter_ee_Z_bbbar DelphesPythia8_EDM4HEP ${DELPHES_CARD} ${OUTPUT_CONFIG} pythia_converter_output_ee_Z_bbbar.root ${PROJECT_SOURCE_DIR}/examples/data/ee_Z_bbbar_ecm91GeV.cmd)
 
     ADD_COMPARISON_TEST(PythiaResonanceDecayFilter_pp_hhbbyy DelphesPythia8_EDM4HEP ${DELPHES_CARD} ${OUTPUT_CONFIG} pythia_resonance_decay_filter_pp_hhbbyy_output.root ${PROJECT_SOURCE_DIR}/examples/data/tester_pwp8_pp_hh_5f_hhbbyy.cmd --no-delphes)
+
+    # Check that the Pythia8 variation weights reach the EventHeader and their
+    # names the metadata frame: the *_check test inspects the produced file
+    ADD_COMPARISON_TEST(PythiaConverter_ee_Z_bbbar_weights DelphesPythia8_EDM4HEP ${DELPHES_CARD} ${OUTPUT_CONFIG} pythia_converter_output_ee_Z_bbbar_weights.root ${PROJECT_SOURCE_DIR}/examples/data/ee_Z_bbbar_ecm91GeV_weights.cmd --no-delphes)
+
+    set_tests_properties(PythiaConverter_ee_Z_bbbar_weights PROPERTIES FIXTURES_SETUP weights_output_file)
+    add_test(NAME PythiaConverter_ee_Z_bbbar_weights_check
+      COMMAND python3 ${PROJECT_SOURCE_DIR}/tests/scripts/check_event_weights.py pythia_converter_output_ee_Z_bbbar_weights.root)
+    set_tests_properties(PythiaConverter_ee_Z_bbbar_weights_check PROPERTIES FIXTURES_REQUIRED weights_output_file)
   endif()
 
   ADD_COMPARISON_TEST(DelphesRootReader_ee_91gev DelphesROOT_EDM4HEP ${DELPHES_CARD} ${OUTPUT_CONFIG} delphes_root_converter_input_reader_test.root ${PROJECT_SOURCE_DIR}/tests/data/gev91ee_zboson_100events.root )

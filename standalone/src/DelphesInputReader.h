@@ -4,6 +4,7 @@
 #include "TTree.h"
 
 #include <string>
+#include <vector>
 
 class TObjArray;
 class Delphes;
@@ -24,6 +25,13 @@ public:
                          TObjArray* stableParticleOutputArray, TObjArray* partonOutputArray) = 0;
 
   virtual TTree* converterTree() = 0;
+
+  /// Generator event-weight vector of the current event; index 0 is nominal.
+  /// Default empty: no weights beyond EventHeader.weight.
+  virtual std::vector<double> eventWeights() const { return {}; }
+
+  /// Names for eventWeights(), stable across the run (stored once per file).
+  virtual std::vector<std::string> eventWeightNames() const { return {}; }
 };
 
 #endif
