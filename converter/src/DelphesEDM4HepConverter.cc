@@ -5,6 +5,7 @@
 
 #include "edm4hep/CalorimeterHitCollection.h"
 #include "edm4hep/ClusterCollection.h"
+#include "edm4hep/Constants.h"
 #include "edm4hep/EventHeaderCollection.h"
 #include "edm4hep/MCParticleCollection.h"
 #include "edm4hep/ParticleIDCollection.h"
@@ -62,20 +63,22 @@ inline bool contains(Container const& container, typename Container::value_type 
 
 // position covariance of a calo impact point calculated from the angular resolutions of the direction
 edm4hep::CovMatrix3f positionCovFromAngles(const edm4hep::Vector3f& pos, double sTheta, double sPhi) {
+  using edm4hep::Cartesian;
   const double r = std::sqrt(double(pos.x) * pos.x + double(pos.y) * pos.y + double(pos.z) * pos.z);
   const double rt = std::hypot(double(pos.x), double(pos.y));
   const double ct = pos.z / r, st = rt / r;
   const double cp = rt > 0. ? pos.x / rt : 1., sp = rt > 0. ? pos.y / rt : 0.;
-  const double uT[3] = {ct * cp, ct * sp, -st};
-  const double uP[3] = {-sp, cp, 0.};
+  // local unit vectors at the impact point: uT = (tx, ty, tz), uP = (px, py, 0)
+  const double tx = ct * cp, ty = ct * sp, tz = -st;
+  const double px = -sp, py = cp;
   const double a2 = r * sTheta * r * sTheta, b2 = r * st * sPhi * r * st * sPhi;
   edm4hep::CovMatrix3f cov{};
-  int k = 0;
-  for (int i = 0; i < 3; ++i) {
-    for (int j = 0; j <= i; ++j) {
-      cov.values[k++] = a2 * uT[i] * uT[j] + b2 * uP[i] * uP[j];
-    }
-  }
+  cov.setValue(a2 * tx * tx + b2 * px * px, Cartesian::x, Cartesian::x);
+  cov.setValue(a2 * tx * ty + b2 * px * py, Cartesian::x, Cartesian::y);
+  cov.setValue(a2 * ty * ty + b2 * py * py, Cartesian::y, Cartesian::y);
+  cov.setValue(a2 * tx * tz, Cartesian::x, Cartesian::z);
+  cov.setValue(a2 * ty * tz, Cartesian::y, Cartesian::z);
+  cov.setValue(a2 * tz * tz, Cartesian::z, Cartesian::z);
   return cov;
 }
 
