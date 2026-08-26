@@ -19,6 +19,7 @@
 
 #include <TMatrixDSym.h>
 
+#include <cmath>
 #include <iostream>
 
 namespace k4SimDelphes {
@@ -57,6 +58,25 @@ void setMotherDaughterRelations(GenParticle const* delphesCand, edm4hep::Mutable
 template <typename Container>
 inline bool contains(Container const& container, typename Container::value_type const& value) {
   return std::find(container.cbegin(), container.cend(), value) != container.cend();
+}
+
+// position covariance of a calo impact point calculated from the angular resolutions of the direction
+edm4hep::CovMatrix3f positionCovFromAngles(const edm4hep::Vector3f& pos, double sTheta, double sPhi) {
+  const double r = std::sqrt(double(pos.x) * pos.x + double(pos.y) * pos.y + double(pos.z) * pos.z);
+  const double rt = std::hypot(double(pos.x), double(pos.y));
+  const double ct = pos.z / r, st = rt / r;
+  const double cp = rt > 0. ? pos.x / rt : 1., sp = rt > 0. ? pos.y / rt : 0.;
+  const double uT[3] = {ct * cp, ct * sp, -st};
+  const double uP[3] = {-sp, cp, 0.};
+  const double a2 = r * sTheta * r * sTheta, b2 = r * st * sPhi * r * st * sPhi;
+  edm4hep::CovMatrix3f cov{};
+  int k = 0;
+  for (int i = 0; i < 3; ++i) {
+    for (int j = 0; j <= i; ++j) {
+      cov.values[k++] = a2 * uT[i] * uT[j] + b2 * uP[i] * uP[j];
+    }
+  }
+  return cov;
 }
 
 DelphesEDM4HepConverter::DelphesEDM4HepConverter(std::string filename_delphescard) {
@@ -301,15 +321,8 @@ void DelphesEDM4HepConverter::processClusters(const TClonesArray* delphesCollect
 
     auto cluster = clusterCollection->create();
     cluster.setEnergy(delphesCand->E);
-    // TODO: how to determine position from a Tower instead of a Candidate? Does
-    // it make sense to define this for a cluster? Can we get enough info from
-    // Delphes?
-    // cluster.setPosition({(float) delphesCand->Position.X(),
-    //                      (float) delphesCand->Position.Y(),
-    //                      (float) delphesCand->Position.Z()});
-    // TODO: time? (could be stored in a CalorimeterHit)
-    // TODO: mc relations? would definitely need a CalorimeterHit for that
-    //
+    const edm4hep::Vector3f position(delphesCand->X, delphesCand->Y, delphesCand->Z);
+    cluster.setPosition(position);
     // TODO: Potentially every delphes tower could be split into two
     // edm4hep::clusters, with energies split according to Eem and Ehad. But
     // that would probably make the matching that is done below much harder
@@ -326,10 +339,20 @@ void DelphesEDM4HepConverter::processClusters(const TClonesArray* delphesCollect
     auto pid = (delphesCand->Ehad > 0.) ? 130 : 22;
     cand.setPDG(pid); // NOTE: set PID of cluster consistent with mass
 
+    if (pid == 22) {
+      cluster.setEnergyError(delphesCand->ErrorE);
+      cluster.setITheta(delphesCand->ThetaP);
+      cluster.setIPhi(delphesCand->PhiP);
+      // assume no covariance between theta and phi for now
+      cluster.setDirectionError(
+          {delphesCand->ErrorPhiP * delphesCand->ErrorPhiP, 0.f, delphesCand->ErrorThetaP * delphesCand->ErrorThetaP});
+      cluster.setPositionError(positionCovFromAngles(position, delphesCand->ErrorTheta, delphesCand->ErrorPhi));
+      cand.setReferencePoint(position);
+    }
+
     // store position and time of neutral candidate in a CalorimeterHit
     auto calorimeterHit = calorimeterHitColl->create();
     calorimeterHit.setTime(delphesCand->T); // in seconds
-    edm4hep::Vector3f position(delphesCand->X, delphesCand->Y, delphesCand->Z);
     calorimeterHit.setPosition(position);
     cluster.addToHits(calorimeterHit);
     cand.addToClusters(cluster);
