@@ -30,6 +30,10 @@ constexpr double M_PIPLUS = 0.13957039;        // GeV (PDG 2020)
 constexpr double M_MU = 0.1056583745;          // GeV (PDG 2020)
 constexpr double M_ELECTRON = 0.5109989461e-3; // GeV (PDG 2020)
 
+constexpr int PDG_PIPLUS = 211;
+constexpr int PDG_MU = 13;
+constexpr int PDG_ELECTRON = 11;
+
 // TODO: Make configurable?
 constexpr double trackMass = M_PIPLUS;
 
@@ -222,7 +226,6 @@ void DelphesEDM4HepConverter::processParticles(const TClonesArray* delphesCollec
     cand.setTime(delphesCand->T);  // in seconds
     cand.setPDG(delphesCand->PID); // delphes uses whatever hepevt.idhep provides
     cand.setGeneratorStatus(delphesCand->Status);
-
     if (const auto [it, inserted] = m_genParticleIds.emplace(delphesCand->GetUniqueID(), cand); !inserted) {
       std::cerr << "**** WARNING: UniqueID " << delphesCand->GetUniqueID()
                 << " is already used by MCParticle with id: " << it->second.id() << std::endl;
@@ -290,11 +293,12 @@ void DelphesEDM4HepConverter::processTracks(const TClonesArray* delphesCollectio
     auto cand = particleCollection->create();
     cand.setCharge(delphesCand->Charge);
     const auto momentum = delphesCand->P4();
-    cand.setEnergy(momentum.E());
+    cand.setEnergy(std::sqrt(momentum.Perp2() + momentum.Pz()*momentum.Pz() + trackMass*trackMass));
     cand.setMomentum({(float)momentum.Px(), (float)momentum.Py(), (float)momentum.Pz()});
     // At this point indiscriminantly set the mass for each track. If this is a
     // muon or an electron, the mass will be set to the appropriate value later.
     cand.setMass(trackMass);
+    cand.setPDG(delphesCand->Charge > 0 ? PDG_PIPLUS : -PDG_PIPLUS);
 
     cand.addToTracks(track);
 
@@ -440,9 +444,17 @@ void DelphesEDM4HepConverter::fillReferenceCollection(const TClonesArray* delphe
       collection->push_back(*matchedReco);
       // if we have an electron or muon we update the mass as well here
       if constexpr (std::is_same_v<DelphesT, Muon>) {
+        const auto& p = matchedReco->getMomentum();
+        const double p2 = p.x*p.x + p.y*p.y + p.z*p.z;
         matchedReco->setMass(M_MU);
+        matchedReco->setEnergy(std::sqrt(p2 + M_MU*M_MU));
+        matchedReco->setPDG(delphesCand->Charge > 0 ? PDG_MU : -PDG_MU);
       } else if constexpr (std::is_same_v<DelphesT, Electron>) {
+        const auto& p = matchedReco->getMomentum();
+        const double p2 = p.x*p.x + p.y*p.y + p.z*p.z;
         matchedReco->setMass(M_ELECTRON);
+        matchedReco->setEnergy(std::sqrt(p2 + M_ELECTRON*M_ELECTRON));
+        matchedReco->setPDG(delphesCand->Charge > 0 ? PDG_ELECTRON : -PDG_ELECTRON);
       }
 
       // If we have a charge available, also set it
