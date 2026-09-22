@@ -302,7 +302,7 @@ void DelphesEDM4HepConverter::processTracks(const TClonesArray* delphesCollectio
     auto cand = particleCollection->create();
     cand.setCharge(delphesCand->Charge);
     const auto momentum = delphesCand->P4();
-    cand.setEnergy(std::sqrt(momentum.Perp2() + momentum.Pz()*momentum.Pz() + trackMass*trackMass));
+    cand.setEnergy(std::sqrt(momentum.Perp2() + momentum.Pz() * momentum.Pz() + trackMass * trackMass));
     cand.setMomentum({(float)momentum.Px(), (float)momentum.Py(), (float)momentum.Pz()});
     // At this point indiscriminantly set the mass for each track. If this is a
     // muon or an electron, the mass will be set to the appropriate value later.
@@ -431,8 +431,8 @@ void DelphesEDM4HepConverter::finalizeJets(const std::vector<std::string>& jetCo
         jetE += part.getEnergy();
       }
       const auto mom = jet.getMomentum();
-      const double p2 = mom.x*mom.x + mom.y*mom.y + mom.z*mom.z;
-      const double mass2 = jetE*jetE - p2;
+      const double p2 = mom.x * mom.x + mom.y * mom.y + mom.z * mom.z;
+      const double mass2 = jetE * jetE - p2;
       jet.setEnergy(jetE);
       jet.setMass(mass2 > 0 ? std::sqrt(mass2) : 0);
     }
@@ -470,15 +470,15 @@ void DelphesEDM4HepConverter::fillReferenceCollection(const TClonesArray* delphe
       // if we have an electron or muon we update the mass as well here
       if constexpr (std::is_same_v<DelphesT, Muon>) {
         const auto& p = matchedReco->getMomentum();
-        const double p2 = p.x*p.x + p.y*p.y + p.z*p.z;
+        const double p2 = p.x * p.x + p.y * p.y + p.z * p.z;
         matchedReco->setMass(M_MU);
-        matchedReco->setEnergy(std::sqrt(p2 + M_MU*M_MU));
+        matchedReco->setEnergy(std::sqrt(p2 + M_MU * M_MU));
         matchedReco->setPDG(delphesCand->Charge > 0 ? PDG_MU : -PDG_MU);
       } else if constexpr (std::is_same_v<DelphesT, Electron>) {
         const auto& p = matchedReco->getMomentum();
-        const double p2 = p.x*p.x + p.y*p.y + p.z*p.z;
+        const double p2 = p.x * p.x + p.y * p.y + p.z * p.z;
         matchedReco->setMass(M_ELECTRON);
-        matchedReco->setEnergy(std::sqrt(p2 + M_ELECTRON*M_ELECTRON));
+        matchedReco->setEnergy(std::sqrt(p2 + M_ELECTRON * M_ELECTRON));
         matchedReco->setPDG(delphesCand->Charge > 0 ? PDG_ELECTRON : -PDG_ELECTRON);
       }
 
