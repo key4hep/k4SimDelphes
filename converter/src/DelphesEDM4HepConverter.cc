@@ -168,6 +168,7 @@ void DelphesEDM4HepConverter::process(TTree* delphesTree) {
     createEventHeader(delphesEvent);
   }
 
+  std::vector<std::string> jetCollNames;
   for (const auto& branch : m_branches) {
     // at this point it is not guaranteed that all entries in branch (which follow
     // the input from the delphes card) are also present in the processing
@@ -181,8 +182,16 @@ void DelphesEDM4HepConverter::process(TTree* delphesTree) {
     if (processFuncIt != m_processFunctions.end() && rootBranch) {
       auto* delphesCollection = *(TClonesArray**)rootBranch->GetAddress();
       (this->*processFuncIt->second)(delphesCollection, branch.name);
+      if (processFuncIt->second == &DelphesEDM4HepConverter::processJets) {
+        jetCollNames.push_back(branch.name);
+      }
     }
   }
+
+  // Update jet energy and mass from final constituent energies (constituents may
+  // have had their energies updated by muon/electron processing after jets were
+  // first filled)
+  finalizeJets(jetCollNames);
 
   // Clear the internal maps that hold references to entites that have been put
   // into maps here for internal use only (see #89)
@@ -388,12 +397,8 @@ void DelphesEDM4HepConverter::processJets(const TClonesArray* delphesCollection,
     auto id_HF_tag = idCollection_HF_tags->create();
     auto id_tau_tag = idCollection_tau_tags->create();
 
-    // NOTE: Filling the jet with the information delievered by Delphes, which
-    // is not necessarily the same as the sum of its constituents (filled below)
     jet.setCharge(delphesCand->Charge);
-    jet.setMass(delphesCand->Mass);
     const auto momentum = delphesCand->P4();
-    jet.setEnergy(momentum.E());
     jet.setMomentum({(float)momentum.Px(), (float)momentum.Py(), (float)momentum.Pz()});
 
     // id.addToParameters(delphesCand->IsolationVar);
@@ -410,6 +415,26 @@ void DelphesEDM4HepConverter::processJets(const TClonesArray* delphesCollection,
       } else {
         std::cerr << "**** WARNING: No matching ReconstructedParticle was found for a Jet constituent" << std::endl;
       }
+    }
+
+    // Energy and mass are set in finalizeJets() after all constituent energies
+    // have been finalized (muon/electron processing may update them later)
+  }
+}
+
+void DelphesEDM4HepConverter::finalizeJets(const std::vector<std::string>& jetCollNames) {
+  for (const auto& collName : jetCollNames) {
+    auto* jetColl = getCollection<edm4hep::ReconstructedParticleCollection>(collName);
+    for (auto jet : *jetColl) {
+      double jetE = 0;
+      for (const auto& part : jet.getParticles()) {
+        jetE += part.getEnergy();
+      }
+      const auto mom = jet.getMomentum();
+      const double p2 = mom.x*mom.x + mom.y*mom.y + mom.z*mom.z;
+      const double mass2 = jetE*jetE - p2;
+      jet.setEnergy(jetE);
+      jet.setMass(mass2 > 0 ? std::sqrt(mass2) : 0);
     }
   }
 }

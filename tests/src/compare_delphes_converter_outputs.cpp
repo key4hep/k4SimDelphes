@@ -330,6 +330,20 @@ void compareJets(const TClonesArray* delphesColl, const edm4hep::ReconstructedPa
       std::exit(1);
     }
 
+    // Check that the stored jet mass is consistent with energy and momentum.
+    // Compare m^2 relative to E^2: sqrt(E^2-p^2) suffers catastrophic
+    // cancellation for relativistic jets stored as floats, but m^2/E^2 is
+    // stable and can be compared at the float-precision level (~1e-5).
+    const double mass2 = edm4hepJetP4.M2();
+    const double storedMass = edm4hepCand.getMass();
+    const double jetE2 = edm4hepJetP4.E() * edm4hepJetP4.E();
+    if (std::abs(storedMass * storedMass - mass2) > 1e-5 * jetE2) {
+      const double expectedMass = mass2 > 0 ? std::sqrt(mass2) : 0;
+      std::cerr << "EDM4hep jet mass is not consistent with jet energy and momentum for Jet " << i
+                << " (stored mass: " << storedMass << ", sqrt(E^2-p^2): " << expectedMass << ")" << std::endl;
+      std::exit(1);
+    }
+
     // TODO: Check the same for delphes?
   }
 }
