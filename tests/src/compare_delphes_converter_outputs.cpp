@@ -331,6 +331,8 @@ void compareJets(const TClonesArray* delphesColl, const edm4hep::ReconstructedPa
     }
 
     // Check that the stored jet mass is consistent with energy and momentum.
+    // finalizeJets() sets mass and energy consistently (double precision), so
+    // any residual discrepancy is purely from float truncation when stored.
     // Compare m^2 relative to E^2: sqrt(E^2-p^2) suffers catastrophic
     // cancellation for relativistic jets stored as floats, but m^2/E^2 is
     // stable and can be compared at the float-precision level (~1e-5).
