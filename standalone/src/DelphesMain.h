@@ -72,12 +72,12 @@ int doit(int argc, char* argv[], DelphesInputReader& inputReader) {
     DelphesEDM4HepConverter edm4hepConverter(branches, edm4hepOutputSettings,
                                              confReader->GetDouble("ParticlePropagator::Bz", 0));
 
-    // has to happen before InitTask
+    // has to happen before Init
     TObjArray* allParticleOutputArray = modularDelphes->ExportArray("allParticles");
     TObjArray* stableParticleOutputArray = modularDelphes->ExportArray("stableParticles");
     TObjArray* partonOutputArray = modularDelphes->ExportArray("partons");
 
-    modularDelphes->InitTask();
+    modularDelphes->Init();
     modularDelphes->Clear();
 
     const int maxEvents = confReader->GetInt("::MaxEvents", 0);
@@ -90,7 +90,7 @@ int doit(int argc, char* argv[], DelphesInputReader& inputReader) {
         break;
       }
 
-      modularDelphes->ProcessTask();
+      modularDelphes->Process();
       edm4hepConverter.process(inputReader.converterTree());
 
       // Attach the generator weight vector to the EventHeader (Pythia8 readers).
