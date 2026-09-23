@@ -27,11 +27,11 @@ StatusCode k4SimDelphesAlg::initialize() {
   m_converterTree->SetDirectory(nullptr);
   m_treeWriter->SetTree(m_converterTree);
   m_Delphes->SetTreeWriter(m_treeWriter);
-  // ExportArray: has to happen before InitTask
+  // ExportArray: has to happen before Init
   m_allParticleOutputArray = m_Delphes->ExportArray("allParticles");
   m_stableParticleOutputArray = m_Delphes->ExportArray("stableParticles");
   m_partonOutputArray = m_Delphes->ExportArray("partons");
-  m_Delphes->InitTask();
+  m_Delphes->Init();
   m_Delphes->Clear();
 
   // data service
@@ -61,7 +61,7 @@ StatusCode k4SimDelphesAlg::execute(const EventContext&) const {
   auto mapSimDelphes = conv.getGenParticleIdMap();
   ///-- actual simulation --////////////////////////////////////////////////////
   verbose() << "Running delphes simulation" << endmsg;
-  m_Delphes->ProcessTask();
+  m_Delphes->Process();
   ///-- conversion of the output --/////////////////////////////////////////////
   verbose() << "Running converter" << endmsg;
   m_edm4hepConverter->process(m_converterTree);
