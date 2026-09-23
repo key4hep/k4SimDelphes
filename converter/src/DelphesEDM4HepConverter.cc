@@ -400,6 +400,10 @@ void DelphesEDM4HepConverter::processJets(const TClonesArray* delphesCollection,
     jet.setCharge(delphesCand->Charge);
     const auto momentum = delphesCand->P4();
     jet.setMomentum({(float)momentum.Px(), (float)momentum.Py(), (float)momentum.Pz()});
+    // Set energy and mass from Delphes as a fallback; finalizeJets() will
+    // override these from constituent sums when constituents are available.
+    jet.setEnergy(momentum.E());
+    jet.setMass(delphesCand->Mass);
 
     // id.addToParameters(delphesCand->IsolationVar);
     id_HF_tag.addToParameters(delphesCand->BTag);
@@ -416,9 +420,6 @@ void DelphesEDM4HepConverter::processJets(const TClonesArray* delphesCollection,
         std::cerr << "**** WARNING: No matching ReconstructedParticle was found for a Jet constituent" << std::endl;
       }
     }
-
-    // Energy and mass are set in finalizeJets() after all constituent energies
-    // have been finalized (muon/electron processing may update them later)
   }
 }
 
@@ -426,6 +427,9 @@ void DelphesEDM4HepConverter::finalizeJets(const std::vector<std::string>& jetCo
   for (const auto& collName : jetCollNames) {
     auto* jetColl = getCollection<edm4hep::ReconstructedParticleCollection>(collName);
     for (auto jet : *jetColl) {
+      if (jet.getParticles().empty()) {
+        continue; // keep the Delphes energy/mass set in processJets
+      }
       double jetE = 0;
       for (const auto& part : jet.getParticles()) {
         jetE += part.getEnergy();

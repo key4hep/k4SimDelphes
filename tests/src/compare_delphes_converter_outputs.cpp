@@ -241,6 +241,19 @@ void compareCollectionElements(const TClonesArray* delphesColl,
         std::exit(1);
       }
     }
+
+    // For leptons the PDG sign convention is inverted w.r.t. charge:
+    // negative-charge particles (μ⁻, e⁻) have positive PDG codes (13, 11).
+    // This does NOT hold for hadrons (π⁺ = PDG 211, positive charge).
+    if constexpr (std::is_same_v<DelphesT, Muon> || std::is_same_v<DelphesT, Electron>) {
+      const int pdg = edm4hepCand.getPDG();
+      const bool pdgSignCorrect = (delphesCand->Charge < 0) ? (pdg > 0) : (pdg < 0);
+      if (!pdgSignCorrect) {
+        std::cerr << "PDG sign inconsistent with charge for candidate " << i << " in collection \'" << collName
+                  << "\' (PDG: " << pdg << ", charge: " << delphesCand->Charge << ")" << std::endl;
+        std::exit(1);
+      }
+    }
   }
 }
 
