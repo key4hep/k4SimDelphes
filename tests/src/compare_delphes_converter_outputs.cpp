@@ -241,6 +241,19 @@ void compareCollectionElements(const TClonesArray* delphesColl,
         std::exit(1);
       }
     }
+
+    // For leptons the PDG sign convention is inverted w.r.t. charge:
+    // negative-charge particles (μ⁻, e⁻) have positive PDG codes (13, 11).
+    // This does NOT hold for hadrons (π⁺ = PDG 211, positive charge).
+    if constexpr (std::is_same_v<DelphesT, Muon> || std::is_same_v<DelphesT, Electron>) {
+      const int pdg = edm4hepCand.getPDG();
+      const bool pdgSignCorrect = (delphesCand->Charge < 0) ? (pdg > 0) : (pdg < 0);
+      if (!pdgSignCorrect) {
+        std::cerr << "PDG sign inconsistent with charge for candidate " << i << " in collection \'" << collName
+                  << "\' (PDG: " << pdg << ", charge: " << delphesCand->Charge << ")" << std::endl;
+        std::exit(1);
+      }
+    }
   }
 }
 
@@ -327,6 +340,22 @@ void compareJets(const TClonesArray* delphesColl, const edm4hep::ReconstructedPa
     if (!k4SimDelphes::equalP4(edm4hepJetP4, edm4hepConstP4)) {
       std::cerr << "Sum of EDM4hep jet constituents 4-momenta is not Jet momentum for Jet " << i
                 << " (sum(constituents): " << edm4hepConstP4 << ", jet: " << edm4hepJetP4 << ")" << std::endl;
+      std::exit(1);
+    }
+
+    // Check that the stored jet mass is consistent with energy and momentum.
+    // finalizeJets() sets mass and energy consistently (double precision), so
+    // any residual discrepancy is purely from float truncation when stored.
+    // Compare m^2 relative to E^2: sqrt(E^2-p^2) suffers catastrophic
+    // cancellation for relativistic jets stored as floats, but m^2/E^2 is
+    // stable and can be compared at the float-precision level (~1e-5).
+    const double mass2 = edm4hepJetP4.M2();
+    const double storedMass = edm4hepCand.getMass();
+    const double jetE2 = edm4hepJetP4.E() * edm4hepJetP4.E();
+    if (std::abs(storedMass * storedMass - mass2) > 1e-5 * jetE2) {
+      const double expectedMass = mass2 > 0 ? std::sqrt(mass2) : 0;
+      std::cerr << "EDM4hep jet mass is not consistent with jet energy and momentum for Jet " << i
+                << " (stored mass: " << storedMass << ", sqrt(E^2-p^2): " << expectedMass << ")" << std::endl;
       std::exit(1);
     }
 

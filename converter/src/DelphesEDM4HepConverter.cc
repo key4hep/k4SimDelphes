@@ -30,6 +30,10 @@ constexpr double M_PIPLUS = 0.13957039;        // GeV (PDG 2020)
 constexpr double M_MU = 0.1056583745;          // GeV (PDG 2020)
 constexpr double M_ELECTRON = 0.5109989461e-3; // GeV (PDG 2020)
 
+constexpr int PDG_PIPLUS = 211;
+constexpr int PDG_MU = 13;
+constexpr int PDG_ELECTRON = 11;
+
 // TODO: Make configurable?
 constexpr double trackMass = M_PIPLUS;
 
@@ -164,6 +168,7 @@ void DelphesEDM4HepConverter::process(TTree* delphesTree) {
     createEventHeader(delphesEvent);
   }
 
+  std::vector<std::string> jetCollNames;
   for (const auto& branch : m_branches) {
     // at this point it is not guaranteed that all entries in branch (which follow
     // the input from the delphes card) are also present in the processing
@@ -177,8 +182,16 @@ void DelphesEDM4HepConverter::process(TTree* delphesTree) {
     if (processFuncIt != m_processFunctions.end() && rootBranch) {
       auto* delphesCollection = *(TClonesArray**)rootBranch->GetAddress();
       (this->*processFuncIt->second)(delphesCollection, branch.name);
+      if (processFuncIt->second == &DelphesEDM4HepConverter::processJets) {
+        jetCollNames.push_back(branch.name);
+      }
     }
   }
+
+  // Update jet energy and mass from final constituent energies (constituents may
+  // have had their energies updated by muon/electron processing after jets were
+  // first filled)
+  finalizeJets(jetCollNames);
 
   // Clear the internal maps that hold references to entites that have been put
   // into maps here for internal use only (see #89)
@@ -222,7 +235,6 @@ void DelphesEDM4HepConverter::processParticles(const TClonesArray* delphesCollec
     cand.setTime(delphesCand->T);  // in seconds
     cand.setPDG(delphesCand->PID); // delphes uses whatever hepevt.idhep provides
     cand.setGeneratorStatus(delphesCand->Status);
-
     if (const auto [it, inserted] = m_genParticleIds.emplace(delphesCand->GetUniqueID(), cand); !inserted) {
       std::cerr << "**** WARNING: UniqueID " << delphesCand->GetUniqueID()
                 << " is already used by MCParticle with id: " << it->second.id() << std::endl;
@@ -290,11 +302,12 @@ void DelphesEDM4HepConverter::processTracks(const TClonesArray* delphesCollectio
     auto cand = particleCollection->create();
     cand.setCharge(delphesCand->Charge);
     const auto momentum = delphesCand->P4();
-    cand.setEnergy(momentum.E());
+    cand.setEnergy(std::hypot(std::hypot(momentum.Px(), momentum.Py(), momentum.Pz()), trackMass));
     cand.setMomentum({(float)momentum.Px(), (float)momentum.Py(), (float)momentum.Pz()});
     // At this point indiscriminantly set the mass for each track. If this is a
     // muon or an electron, the mass will be set to the appropriate value later.
     cand.setMass(trackMass);
+    cand.setPDG(delphesCand->Charge > 0 ? PDG_PIPLUS : -PDG_PIPLUS);
 
     cand.addToTracks(track);
 
@@ -384,13 +397,13 @@ void DelphesEDM4HepConverter::processJets(const TClonesArray* delphesCollection,
     auto id_HF_tag = idCollection_HF_tags->create();
     auto id_tau_tag = idCollection_tau_tags->create();
 
-    // NOTE: Filling the jet with the information delievered by Delphes, which
-    // is not necessarily the same as the sum of its constituents (filled below)
     jet.setCharge(delphesCand->Charge);
-    jet.setMass(delphesCand->Mass);
     const auto momentum = delphesCand->P4();
-    jet.setEnergy(momentum.E());
     jet.setMomentum({(float)momentum.Px(), (float)momentum.Py(), (float)momentum.Pz()});
+    // Set energy and mass from Delphes as a fallback; finalizeJets() will
+    // override these from constituent sums when constituents are available.
+    jet.setEnergy(momentum.E());
+    jet.setMass(delphesCand->Mass);
 
     // id.addToParameters(delphesCand->IsolationVar);
     id_HF_tag.addToParameters(delphesCand->BTag);
@@ -406,6 +419,26 @@ void DelphesEDM4HepConverter::processJets(const TClonesArray* delphesCollection,
       } else {
         std::cerr << "**** WARNING: No matching ReconstructedParticle was found for a Jet constituent" << std::endl;
       }
+    }
+  }
+}
+
+void DelphesEDM4HepConverter::finalizeJets(const std::vector<std::string>& jetCollNames) {
+  for (const auto& collName : jetCollNames) {
+    auto* jetColl = getCollection<edm4hep::ReconstructedParticleCollection>(collName);
+    for (auto jet : *jetColl) {
+      if (jet.getParticles().empty()) {
+        continue; // keep the Delphes energy/mass set in processJets
+      }
+      double jetE = 0;
+      for (const auto& part : jet.getParticles()) {
+        jetE += part.getEnergy();
+      }
+      const auto mom = jet.getMomentum();
+      const double p2 = mom.x * mom.x + mom.y * mom.y + mom.z * mom.z;
+      const double mass2 = jetE * jetE - p2;
+      jet.setEnergy(jetE);
+      jet.setMass(mass2 > 0 ? std::sqrt(mass2) : 0);
     }
   }
 }
@@ -440,9 +473,15 @@ void DelphesEDM4HepConverter::fillReferenceCollection(const TClonesArray* delphe
       collection->push_back(*matchedReco);
       // if we have an electron or muon we update the mass as well here
       if constexpr (std::is_same_v<DelphesT, Muon>) {
+        const auto& p = matchedReco->getMomentum();
         matchedReco->setMass(M_MU);
+        matchedReco->setEnergy(std::hypot(std::hypot(p.x, p.y, p.z), M_MU));
+        matchedReco->setPDG(delphesCand->Charge < 0 ? PDG_MU : -PDG_MU);
       } else if constexpr (std::is_same_v<DelphesT, Electron>) {
+        const auto& p = matchedReco->getMomentum();
         matchedReco->setMass(M_ELECTRON);
+        matchedReco->setEnergy(std::hypot(std::hypot(p.x, p.y, p.z), M_ELECTRON));
+        matchedReco->setPDG(delphesCand->Charge < 0 ? PDG_ELECTRON : -PDG_ELECTRON);
       }
 
       // If we have a charge available, also set it
