@@ -117,6 +117,7 @@ private:
   void processPFlowCandidates(const TClonesArray* delphesCollection, std::string const& branch);
   void processClusters(const TClonesArray* delphesCollection, std::string const& branch);
   void processJets(const TClonesArray* delphesCollection, std::string const& branch);
+  void finalizeJets(const std::vector<std::string>& jetCollNames);
   void processPhotons(const TClonesArray* delphesCollection, std::string const& branch) {
     fillReferenceCollection<Photon>(delphesCollection, branch, "photon");
   }
