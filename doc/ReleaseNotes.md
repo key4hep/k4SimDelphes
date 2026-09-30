@@ -1,3 +1,16 @@
+# v00-09
+
+* 2026-09-30 David ([PR#162](https://github.com/key4hep/k4SimDelphes/pull/162))
+  - assumes pion mass in energy calculation for all tracks that are not electrons or muons. This ensures all tracks have a consistent mass/energy/momentum
+  - define the pdgid so that analysts do not need to rely on the mass to figure out the ID of a particle (which is apparently current practice)
+
+* 2026-09-23 Juan Miguel Carceller ([PR#163](https://github.com/key4hep/k4SimDelphes/pull/163))
+  - Replace deprecated Delphes initialization and processing calls.
+
+* 2026-09-23 Michele Selvaggi ([PR#161](https://github.com/key4hep/k4SimDelphes/pull/161))
+  - stores photon pointing angles in `ITheta` and `IPhi` and error in `directionError` 
+  - computes and stores hit position error in `positionError` for `errorPhi `and `errorTheta`
+
 # v00-08
 
 * 2026-06-15 Juan Miguel Carceller ([PR#157](https://github.com/key4hep/k4SimDelphes/pull/157))
