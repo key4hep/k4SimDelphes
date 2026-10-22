@@ -5,12 +5,14 @@
 #include "edm4hep/Constants.h"
 
 #include "podio/Frame.h"
+#include "podio/ROOTWriter.h"
 #include "podio/Writer.h"
 
 #include "ExRootAnalysis/ExRootConfReader.h"
 #include "ExRootAnalysis/ExRootProgressBar.h"
 #include "modules/Delphes.h"
 
+#include <cstdlib>
 #include <iostream>
 #include <memory>
 #include <signal.h>
@@ -57,10 +59,6 @@ int doit(int argc, char* argv[], DelphesInputReader& inputReader) {
     return 1;
   }
 
-  // "default" falls back to the PODIO_DEFAULT_WRITE_RNTUPLE environment
-  // variable (unset/empty -> TTree, anything else -> RNTuple).
-  auto podioWriter = podio::makeWriter(outputFile, writerType);
-
   signal(SIGINT, SignalHandler);
   try {
     auto confReader = std::make_unique<ExRootConfReader>();
@@ -69,6 +67,19 @@ int doit(int argc, char* argv[], DelphesInputReader& inputReader) {
 
     const auto branches = getBranchSettings(confReader->GetParam("TreeWriter::Branch"));
     const auto edm4hepOutputSettings = getEDM4hepOutputSettings(positionalArgv[2]);
+
+    // Construct ROOTWriter directly so compression options can be forwarded.
+    // Delegate to makeWriter for any explicitly non-ROOT backend, and also when
+    // writerType is "default" with PODIO_DEFAULT_WRITE_RNTUPLE set (env var
+    // unset/empty -> TTree, anything else -> RNTuple).
+    const char* defaultRNTupleEnv = std::getenv("PODIO_DEFAULT_WRITE_RNTUPLE");
+    const bool defaultIsRNTuple = defaultRNTupleEnv && (defaultRNTupleEnv[0] != '\0');
+    auto podioWriter = (writerType != "default" && writerType != "root") ||
+                               (writerType == "default" && defaultIsRNTuple)
+        ? podio::makeWriter(outputFile, writerType)
+        : podio::Writer{std::make_unique<podio::ROOTWriter>(
+              outputFile,
+              podio::ROOTWriter::Options{edm4hepOutputSettings.CompressionSettings})};
     DelphesEDM4HepConverter edm4hepConverter(branches, edm4hepOutputSettings,
                                              confReader->GetDouble("ParticlePropagator::Bz", 0));
 

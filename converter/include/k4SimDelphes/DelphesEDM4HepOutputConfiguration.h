@@ -82,6 +82,12 @@ struct OutputSettings {
    * generated to reconstructed particles.
    */
   std::string RecoMCParticleLinkCollectionName{"RecoMCLink"};
+
+  /**
+   * ROOT compression setting for the output file: algorithm*100+level.
+   * Examples: 505=ZSTD-5 (default), 101=ZLIB-1, 209=LZMA-9, 404=LZ4-4.
+   */
+  int CompressionSettings{505};
 };
 
 template <typename T>
@@ -110,6 +116,7 @@ std::ostream& operator<<(std::ostream& os, OutputSettings const& settings) {
   os << std::setw(40) << " ScalarHTCollections: " << settings.ScalarHTCollections << "\n";
   os << std::setw(40) << " RecoParticleCollectionName: " << settings.RecoParticleCollectionName << "\n";
   os << std::setw(40) << " RecoMCParticleLinkCollectionName: " << settings.RecoMCParticleLinkCollectionName << "\n";
+  os << std::setw(40) << " CompressionSettings: " << settings.CompressionSettings << "\n";
   os << "------------------------------------------------------------\n";
 
   return os;
@@ -162,6 +169,8 @@ OutputSettings getEDM4hepOutputSettings(ExRootConfReader* confReader) {
 
   settings.RecoMCParticleLinkCollectionName =
       confReader->GetString("EDM4HepOutput::RecoMCParticleLinkCollectionName", "RecoMCLink");
+
+  settings.CompressionSettings = confReader->GetInt("EDM4HepOutput::CompressionSettings", 505);
 
   return settings;
 }
