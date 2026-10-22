@@ -1,6 +1,7 @@
 #ifndef K4SIMDELPHES_DELPHESEDM4HEP_OUTPUTCONFIGURATION_H__
 #define K4SIMDELPHES_DELPHESEDM4HEP_OUTPUTCONFIGURATION_H__
 
+#include "Compression.h"
 #include "ExRootAnalysis/ExRootConfReader.h"
 
 #include <iomanip>
@@ -84,10 +85,12 @@ struct OutputSettings {
   std::string RecoMCParticleLinkCollectionName{"RecoMCLink"};
 
   /**
-   * ROOT compression setting for the output file: algorithm*100+level.
-   * Examples: 505=ZSTD-5 (default), 101=ZLIB-1, 209=LZMA-9, 404=LZ4-4.
+   * ROOT compression setting for the output file.
+   * Use ROOT::RCompressionSetting::EDefaults values, e.g.:
+   *   kUseGeneralPurpose=505 (ZSTD-5, default), kUseCompiledDefault=101 (ZLIB-1),
+   *   kUseAnalysis=404 (LZ4-4), kUseSmallest=207 (LZMA-7).
    */
-  int CompressionSettings{505};
+  int CompressionSettings{ROOT::RCompressionSetting::EDefaults::kUseGeneralPurpose};
 };
 
 template <typename T>
@@ -170,7 +173,8 @@ OutputSettings getEDM4hepOutputSettings(ExRootConfReader* confReader) {
   settings.RecoMCParticleLinkCollectionName =
       confReader->GetString("EDM4HepOutput::RecoMCParticleLinkCollectionName", "RecoMCLink");
 
-  settings.CompressionSettings = confReader->GetInt("EDM4HepOutput::CompressionSettings", 505);
+  settings.CompressionSettings = confReader->GetInt("EDM4HepOutput::CompressionSettings",
+                                                    ROOT::RCompressionSetting::EDefaults::kUseGeneralPurpose);
 
   return settings;
 }
