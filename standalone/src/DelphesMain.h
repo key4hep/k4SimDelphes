@@ -11,14 +11,34 @@
 #include "ExRootAnalysis/ExRootProgressBar.h"
 #include "modules/Delphes.h"
 
+#include <cstdlib>
 #include <iostream>
 #include <memory>
 #include <signal.h>
+#include <string>
 #include <string_view>
 #include <vector>
 
 static bool interrupted = false;
 void SignalHandler(int /*si*/) { interrupted = true; }
+
+// Create the podio writer for the EDM4hep output. For ROOT files the TTree or
+// RNTuple backend is picked here so that the compression settings can be
+// passed on; "default" falls back to the PODIO_DEFAULT_WRITE_RNTUPLE
+// environment variable (unset/empty -> TTree, anything else -> RNTuple). Other
+// file types are left to podio to decide.
+inline podio::Writer makePodioWriter(const std::string& outputFile, const std::string& writerType,
+                                     int compressionSettings) {
+  if (!std::string_view(outputFile).ends_with(".root")) {
+    return podio::makeWriter(outputFile, writerType);
+  }
+  const char* rntupleEnv = std::getenv("PODIO_DEFAULT_WRITE_RNTUPLE");
+  const bool useRNTuple = writerType == "rntuple" || (writerType == "default" && rntupleEnv && *rntupleEnv);
+  if (useRNTuple) {
+    return podio::makeWriter(outputFile, podio::RNTupleWriterOptions{.compressionSettings = compressionSettings});
+  }
+  return podio::makeWriter(outputFile, podio::ROOTWriterOptions{.compressionSettings = compressionSettings});
+}
 
 int doit(int argc, char* argv[], DelphesInputReader& inputReader) {
   using namespace k4SimDelphes;
@@ -66,10 +86,7 @@ int doit(int argc, char* argv[], DelphesInputReader& inputReader) {
     const auto branches = getBranchSettings(confReader->GetParam("TreeWriter::Branch"));
     const auto edm4hepOutputSettings = getEDM4hepOutputSettings(positionalArgv[2]);
 
-    podio::WriterOptions writerOpts;
-    writerOpts.root.compressionSettings    = edm4hepOutputSettings.CompressionSettings;
-    writerOpts.rntuple.compressionSettings = edm4hepOutputSettings.CompressionSettings;
-    auto podioWriter = podio::makeWriter(outputFile, writerType, writerOpts);
+    auto podioWriter = makePodioWriter(outputFile, writerType, edm4hepOutputSettings.CompressionSettings);
     DelphesEDM4HepConverter edm4hepConverter(branches, edm4hepOutputSettings,
                                              confReader->GetDouble("ParticlePropagator::Bz", 0));
 
