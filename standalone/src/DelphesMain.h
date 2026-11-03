@@ -14,6 +14,7 @@
 #include <iostream>
 #include <memory>
 #include <signal.h>
+#include <string>
 #include <string_view>
 #include <vector>
 
@@ -57,10 +58,6 @@ int doit(int argc, char* argv[], DelphesInputReader& inputReader) {
     return 1;
   }
 
-  // "default" falls back to the PODIO_DEFAULT_WRITE_RNTUPLE environment
-  // variable (unset/empty -> TTree, anything else -> RNTuple).
-  auto podioWriter = podio::makeWriter(outputFile, writerType);
-
   signal(SIGINT, SignalHandler);
   try {
     auto confReader = std::make_unique<ExRootConfReader>();
@@ -69,6 +66,12 @@ int doit(int argc, char* argv[], DelphesInputReader& inputReader) {
 
     const auto branches = getBranchSettings(confReader->GetParam("TreeWriter::Branch"));
     const auto edm4hepOutputSettings = getEDM4hepOutputSettings(positionalArgv[2]);
+
+    auto podioWriter =
+        podio::WriterFor{outputFile}
+            .withOptions(podio::ROOTWriteOptions{.compressionSettings = edm4hepOutputSettings.CompressionSettings})
+            .create();
+
     DelphesEDM4HepConverter edm4hepConverter(branches, edm4hepOutputSettings,
                                              confReader->GetDouble("ParticlePropagator::Bz", 0));
 

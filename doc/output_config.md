@@ -26,6 +26,13 @@ module defintion and used in the `EDM4HepOutput`.
 
 [^*]: As long as all collections requested for the conversion to `edm4hep` are defined as output branches in the `TreeWriter` section of the Delphes card. If not, they need to be added there.
 
+## Output compression
+Using the `CompressionSettings` option of the `EDM4HepOutput` module it is
+possible to set the compression setting of the (ROOT based) output writer. The
+values here follow the grammar `<algorithm> * 100 + level`. The `algorithm`
+values can be found, e.g.
+[here](https://root.cern.ch/doc/v640/structROOT_1_1RCompressionSetting_1_1EAlgorithm.html#ad5ed4ef81888f5406ae0f018ff45fd96).
+
 ## Collection conversions
 
 The configuration mainly steers which Delphes collections are still available in
