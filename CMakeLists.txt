@@ -19,10 +19,10 @@ SET( ${PROJECT_NAME}_VERSION_PATCH 0 )
 SET( ${PROJECT_NAME}_VERSION
   "${${PROJECT_NAME}_VERSION_MAJOR}.${${PROJECT_NAME}_VERSION_MINOR}.${${PROJECT_NAME}_VERSION_PATCH}" )
 
-include(cmake/Key4hepConfig.cmake)
-
 #-- Use GNU-style hierarchy for installing build products ----------------------
 include(GNUInstallDirs)
+
+include(cmake/Key4hepConfig.cmake)
 
 #--- add version files ---------------------------------------------------------
 configure_file(${PROJECT_SOURCE_DIR}/k4SimDelphesVersion.h
