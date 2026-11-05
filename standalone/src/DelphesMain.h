@@ -128,6 +128,11 @@ int doit(int argc, char* argv[], DelphesInputReader& inputReader) {
               << ") in the metadata frame" << std::endl;
     metadataFrame.putParameter("GeneratorRandomSeed", inputReader.seed());
 
+    const auto delphesRandomSeed = confReader->GetInt("::RandomSeed", 0);
+    std::cout << "k4SimDelphes: storing Delphes random seed (" << delphesRandomSeed
+              << ") in the metadata frame" << std::endl;
+    metadataFrame.putParameter("DelphesRandomSeed", delphesRandomSeed);
+
     podioWriter.writeFrame(metadataFrame, podio::Category::Metadata);
 
     podioWriter.finish();
