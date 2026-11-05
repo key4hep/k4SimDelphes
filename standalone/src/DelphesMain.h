@@ -127,10 +127,10 @@ int doit(int argc, char* argv[], DelphesInputReader& inputReader) {
       metadataFrame.putParameter(edm4hep::labels::EventWeightsNames, weightNames);
     }
 
-    metadataFrame.putParameter("GeneratorRandomSeed", inputReader.seed());
+    metadataFrame.putParameter(edm4hep::labels::GeneratorRandomSeed, inputReader.seed());
 
     const auto delphesRandomSeed = confReader->GetInt("::RandomSeed", 0);
-    metadataFrame.putParameter("DelphesRandomSeed", delphesRandomSeed);
+    metadataFrame.putParameter(edm4hep::labels::SimulationRandomSeed, delphesRandomSeed);
 
     podioWriter.writeFrame(metadataFrame, podio::Category::Metadata);
 
