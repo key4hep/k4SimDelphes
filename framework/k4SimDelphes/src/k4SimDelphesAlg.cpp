@@ -44,6 +44,7 @@ StatusCode k4SimDelphesAlg::initialize() {
   m_edm4hepConverter = std::make_unique<k4SimDelphes::DelphesEDM4HepConverter>(
       branches, m_outputConfig, m_confReader->GetDouble("ParticlePropagator::Bz", 0));
 
+  // Seed requested via the card (0/unset = random), not necessarily the one used.
   k4FWCore::putParameter(edm4hep::labels::SimulationRandomSeed, m_confReader->GetInt("::RandomSeed", 0), this);
 
   return StatusCode::SUCCESS;
