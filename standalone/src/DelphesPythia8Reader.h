@@ -186,6 +186,8 @@ public:
 
   std::vector<std::string> eventWeightNames() const override { return m_pythia->info.weightNameVector(); }
 
+  int seed() const override { return m_pythia->mode("Random:seed"); }
+
 private:
   static constexpr const char* m_appName = "DelphesPythia8";
   std::unique_ptr<Pythia8::Pythia> m_pythia{nullptr};

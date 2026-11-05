@@ -118,15 +118,20 @@ int doit(int argc, char* argv[], DelphesInputReader& inputReader) {
     progressBar.Update(eventCounter, eventCounter, true);
     progressBar.Finish();
 
-    // Weight names -> file-level metadata Frame (edm4hep convention)
+    podio::Frame metadataFrame;
+
     const auto weightNames = inputReader.eventWeightNames();
     if (weightNames.size() > 1) {
       std::cout << "k4SimDelphes: storing " << weightNames.size()
                 << " generator event weight names in the metadata frame" << std::endl;
-      podio::Frame metadataFrame;
       metadataFrame.putParameter(edm4hep::labels::EventWeightsNames, weightNames);
-      podioWriter.writeFrame(metadataFrame, podio::Category::Metadata);
     }
+
+    std::cout << "k4SimDelphes: storing generator random seed (" << inputReader.seed()
+              << ") in the metadata frame" << std::endl;
+    metadataFrame.putParameter("GeneratorRandomSeed", inputReader.seed());
+
+    podioWriter.writeFrame(metadataFrame, podio::Category::Metadata);
 
     podioWriter.finish();
     modularDelphes->Finish();

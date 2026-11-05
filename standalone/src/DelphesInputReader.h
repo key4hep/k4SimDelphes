@@ -32,6 +32,10 @@ public:
 
   /// Names for eventWeights(), stable across the run (stored once per file).
   virtual std::vector<std::string> eventWeightNames() const { return {}; }
+
+  /// Random seed used by the generator, if this reader has one to report
+  /// (e.g. a Pythia8-based reader). Default: -1, meaning "not applicable".
+  virtual int seed() const { return -1; }
 };
 
 #endif
