@@ -180,6 +180,8 @@ public:
 
   TTree* converterTree() override { return m_treeWriter->GetTree(); }
 
+  int seed() const override { return m_pythia->mode("Random:seed"); }
+
 private:
   static constexpr const char* m_appName = "DelphesPythia8EvtGen";
   std::unique_ptr<Pythia8::Pythia> m_pythia{nullptr};
