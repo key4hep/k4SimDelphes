@@ -126,8 +126,8 @@ int doit(int argc, char* argv[], DelphesInputReader& inputReader) {
 
     metadataFrame.putParameter(edm4hep::labels::GeneratorRandomSeed, inputReader.seed());
 
-    const auto delphesRandomSeed = confReader->GetInt("::RandomSeed", 0);
-    metadataFrame.putParameter(edm4hep::labels::SimulationRandomSeed, delphesRandomSeed);
+    // Seed requested via the card (0/unset = random), not necessarily the one used.
+    metadataFrame.putParameter(edm4hep::labels::SimulationRandomSeed, confReader->GetInt("::RandomSeed", 0));
 
     podioWriter.writeFrame(metadataFrame, podio::Category::Metadata);
 
