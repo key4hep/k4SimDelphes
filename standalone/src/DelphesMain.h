@@ -124,13 +124,9 @@ int doit(int argc, char* argv[], DelphesInputReader& inputReader) {
       metadataFrame.putParameter(edm4hep::labels::EventWeightsNames, weightNames);
     }
 
-    std::cout << "k4SimDelphes: storing generator random seed (" << inputReader.seed()
-              << ") in the metadata frame" << std::endl;
     metadataFrame.putParameter("GeneratorRandomSeed", inputReader.seed());
 
     const auto delphesRandomSeed = confReader->GetInt("::RandomSeed", 0);
-    std::cout << "k4SimDelphes: storing Delphes random seed (" << delphesRandomSeed
-              << ") in the metadata frame" << std::endl;
     metadataFrame.putParameter("DelphesRandomSeed", delphesRandomSeed);
 
     podioWriter.writeFrame(metadataFrame, podio::Category::Metadata);
