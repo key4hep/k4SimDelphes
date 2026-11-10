@@ -1,7 +1,9 @@
 #include "k4SimDelphesAlg.h"
 #include "ExRootAnalysis/ExRootTreeWriter.h"
+#include "edm4hep/Constants.h"
 #include "edm4hep/RecoMCParticleLinkCollection.h"
 #include "edm4hep/ReconstructedParticleCollection.h"
+#include "k4FWCore/MetadataUtils.h"
 #include "k4SimDelphes/DelphesEDM4HepOutputConfiguration.h"
 #include "k4SimDelphes/k4GenParticlesDelphesConverter.h"
 
@@ -41,6 +43,9 @@ StatusCode k4SimDelphesAlg::initialize() {
   m_outputConfig = getEDM4hepOutputSettings(m_DelphesOutputSettings.value().c_str());
   m_edm4hepConverter = std::make_unique<k4SimDelphes::DelphesEDM4HepConverter>(
       branches, m_outputConfig, m_confReader->GetDouble("ParticlePropagator::Bz", 0));
+
+  // Seed requested via the card (0/unset = random), not necessarily the one used.
+  k4FWCore::putParameter(edm4hep::labels::SimulationRandomSeed, m_confReader->GetInt("::RandomSeed", 0), this);
 
   return StatusCode::SUCCESS;
 }
