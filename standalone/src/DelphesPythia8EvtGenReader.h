@@ -74,6 +74,7 @@ public:
     m_converterTree->SetDirectory(nullptr);
     m_treeWriter->SetTree(m_converterTree.get());
     modularDelphes->SetTreeWriter(m_treeWriter);
+    m_branchEvent = m_treeWriter->NewBranch("Event", HepMCEvent::Class());
 
     // Check if particle gun
     if (!m_spareFlag1) {
