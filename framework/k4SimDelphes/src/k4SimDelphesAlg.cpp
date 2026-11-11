@@ -69,19 +69,12 @@ StatusCode k4SimDelphesAlg::execute(const EventContext&) const {
   m_Delphes->Process();
   ///-- conversion of the output --/////////////////////////////////////////////
   verbose() << "Running converter" << endmsg;
-  m_edm4hepConverter->process(m_converterTree);
+  // Pass the input MCParticles so that the reco-MC links point to them
+  m_edm4hepConverter->process(m_converterTree, &mapSimDelphes);
   // setup output collections
 
   auto collections = m_edm4hepConverter->getCollections();
   for (auto& c : collections) {
-    if (c.first == m_outputConfig.RecoMCParticleLinkCollectionName) {
-      auto new_c = m_edm4hepConverter->createExternalRecoMCLinks(mapSimDelphes);
-      DataWrapper<podio::CollectionBase>* wrapper = new DataWrapper<podio::CollectionBase>();
-      wrapper->setData(new_c);
-      m_eventDataSvc->registerObject("/Event", "/" + std::string(c.first), wrapper).ignore();
-      continue;
-    }
-
     DataWrapper<podio::CollectionBase>* wrapper = new DataWrapper<podio::CollectionBase>();
     wrapper->setData(c.second.release()); // DataWrapper takes ownership
     m_eventDataSvc->registerObject("/Event", "/" + std::string(c.first), wrapper).ignore();

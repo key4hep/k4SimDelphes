@@ -42,6 +42,14 @@ if(BUILD_TESTING)
     "PYTHONPATH=$<TARGET_FILE_DIR:k4Gen::k4Gen>/../python:$<TARGET_FILE_DIR:k4FWCore::k4FWCore>/../python:${PROJECT_BINARY_DIR}/framework/k4SimDelphes/${GAUDI_GENCONF_DIR}:$ENV{PYTHONPATH}"
     )
 
+    set_tests_properties(k4SimDelphesAlgPythiaTest PROPERTIES FIXTURES_SETUP k4SimDelphesAlgPythiaOutput)
+
+    # The reco-MC links in the framework output have to be filled and point to the input MCParticles
+    add_test(NAME k4SimDelphesAlgPythiaRecoMCLinkCheck
+             WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/examples/options
+             COMMAND python3 ${PROJECT_SOURCE_DIR}/tests/scripts/check_reco_mc_links.py output_k4SimDelphes_pythia.root GenParticles)
+    set_tests_properties(k4SimDelphesAlgPythiaRecoMCLinkCheck PROPERTIES FIXTURES_REQUIRED k4SimDelphesAlgPythiaOutput)
+
   else()
     message(WARNING "k4Gen not found, disabling some test!")
   endif()
