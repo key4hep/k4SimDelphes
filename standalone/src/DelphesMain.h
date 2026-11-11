@@ -69,6 +69,7 @@ int doit(int argc, char* argv[], DelphesInputReader& inputReader) {
 
     auto podioWriter =
         podio::WriterFor{outputFile}
+            .withType(writerType)
             .withOptions(podio::ROOTWriteOptions{.compressionSettings = edm4hepOutputSettings.CompressionSettings})
             .create();
 
