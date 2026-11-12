@@ -69,6 +69,10 @@ inline bool contains(Container const& container, typename Container::value_type 
 edm4hep::CovMatrix3f positionCovFromAngles(const edm4hep::Vector3f& pos, double sTheta, double sPhi) {
   using edm4hep::Cartesian;
   const double r = std::sqrt(double(pos.x) * pos.x + double(pos.y) * pos.y + double(pos.z) * pos.z);
+  if (r == 0.) {
+    // no impact point (e.g. Delphes towers that only have track hits): the error is undefined
+    return edm4hep::CovMatrix3f{};
+  }
   const double rt = std::hypot(double(pos.x), double(pos.y));
   const double ct = pos.z / r, st = rt / r;
   const double cp = rt > 0. ? pos.x / rt : 1., sp = rt > 0. ? pos.y / rt : 0.;
