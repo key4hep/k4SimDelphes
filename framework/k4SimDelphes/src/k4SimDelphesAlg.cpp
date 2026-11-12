@@ -60,10 +60,8 @@ StatusCode k4SimDelphesAlg::execute(const EventContext&) const {
   verbose() << " ... Setup Input Collections " << endmsg;
   auto genparticles = m_InputMCParticles.get();
   // input
-  auto conv = k4GenParticlesDelphesConverter();
-  conv.convertToDelphesArrays(genparticles, *m_Delphes->GetFactory(), *m_allParticleOutputArray,
-                              *m_stableParticleOutputArray, *m_partonOutputArray);
-  auto mapSimDelphes = conv.getGenParticleIdMap();
+  const auto mapSimDelphes = convertToDelphesArrays(*genparticles, *m_Delphes->GetFactory(), *m_allParticleOutputArray,
+                                                    *m_stableParticleOutputArray, *m_partonOutputArray);
   ///-- actual simulation --////////////////////////////////////////////////////
   verbose() << "Running delphes simulation" << endmsg;
   m_Delphes->Process();
