@@ -152,7 +152,8 @@ DelphesEDM4HepConverter::DelphesEDM4HepConverter(const std::vector<BranchSetting
   }
 }
 
-void DelphesEDM4HepConverter::process(TTree* delphesTree) {
+void DelphesEDM4HepConverter::process(TTree* delphesTree,
+                                      const std::unordered_map<UInt_t, edm4hep::MCParticle>* externalMCParticles) {
   // beginning of processing: clear previous event from containers
   m_collections.clear();
 
@@ -192,6 +193,12 @@ void DelphesEDM4HepConverter::process(TTree* delphesTree) {
   // have had their energies updated by muon/electron processing after jets were
   // first filled)
   finalizeJets(jetCollNames);
+
+  // Links to external MCParticles (e.g. the Delphes input in the framework
+  // case) have to be created before the internal ID maps are cleared below
+  if (externalMCParticles) {
+    m_collections[m_recoMCLinkCollName] = createExternalRecoMCLinks(*externalMCParticles);
+  }
 
   // Clear the internal maps that hold references to entites that have been put
   // into maps here for internal use only (see #89)
@@ -556,9 +563,9 @@ DelphesEDM4HepConverter::getMatchingReco(DelphesT* delphesCand) const {
   return {};
 }
 
-edm4hep::RecoMCParticleLinkCollection*
-DelphesEDM4HepConverter::createExternalRecoMCLinks(const std::unordered_map<UInt_t, edm4hep::MCParticle>& mc_map) {
-  auto mcRecoRelations = new edm4hep::RecoMCParticleLinkCollection();
+std::unique_ptr<edm4hep::RecoMCParticleLinkCollection> DelphesEDM4HepConverter::createExternalRecoMCLinks(
+    const std::unordered_map<UInt_t, edm4hep::MCParticle>& mc_map) const {
+  auto mcRecoRelations = std::make_unique<edm4hep::RecoMCParticleLinkCollection>();
   for (const auto& particleID : mc_map) {
     const auto [recoBegin, recoEnd] = m_recoParticleGenIds.equal_range(particleID.first);
     for (auto it = recoBegin; it != recoEnd; ++it) {

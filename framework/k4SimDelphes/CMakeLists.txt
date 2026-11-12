@@ -29,18 +29,28 @@ if(BUILD_TESTING)
     add_test(NAME k4SimDelphesAlgBasicTest
              WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/examples/options
              COMMAND  k4run k4simdelphesalg.py)
-    # set up gaudi environment for tests
-    set_property(TEST k4SimDelphesAlgBasicTest APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=${PROJECT_BINARY_DIR}:${PROJECT_BINARY_DIR}/framework/k4SimDelphes:$<TARGET_FILE_DIR:k4Gen::k4Gen>:$<TARGET_FILE_DIR:k4FWCore::k4FWCore>:$ENV{LD_LIBRARY_PATH}"
-    "PYTHONPATH=$<TARGET_FILE_DIR:k4Gen::k4Gen>/../python:$<TARGET_FILE_DIR:k4FWCore::k4FWCore>/../python:${PROJECT_BINARY_DIR}/framework/k4SimDelphes/${GAUDI_GENCONF_DIR}:$ENV{PYTHONPATH}"
-    )
 
     add_test(NAME k4SimDelphesAlgPythiaTest
              WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/examples/options
              COMMAND  k4run k4simdelphesalg_pythia.py)
-    # set up gaudi environment for tests
-    set_property(TEST k4SimDelphesAlgPythiaTest APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=${PROJECT_BINARY_DIR}:${PROJECT_BINARY_DIR}/framework/k4SimDelphes:$<TARGET_FILE_DIR:k4Gen::k4Gen>:$<TARGET_FILE_DIR:k4FWCore::k4FWCore>:$ENV{LD_LIBRARY_PATH}"
-    "PYTHONPATH=$<TARGET_FILE_DIR:k4Gen::k4Gen>/../python:$<TARGET_FILE_DIR:k4FWCore::k4FWCore>/../python:${PROJECT_BINARY_DIR}/framework/k4SimDelphes/${GAUDI_GENCONF_DIR}:$ENV{PYTHONPATH}"
+    set_tests_properties(k4SimDelphesAlgPythiaTest PROPERTIES FIXTURES_SETUP k4SimDelphesAlgPythiaOutput)
+
+    # The reco-MC links in the framework output have to be filled and point to the input MCParticles
+    add_test(NAME k4SimDelphesAlgPythiaRecoMCLinkCheck
+             WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/examples/options
+             COMMAND python3 ${PROJECT_SOURCE_DIR}/tests/scripts/check_reco_mc_links.py output_k4SimDelphes_pythia.root)
+    set_tests_properties(k4SimDelphesAlgPythiaRecoMCLinkCheck PROPERTIES FIXTURES_REQUIRED k4SimDelphesAlgPythiaOutput)
+
+    # Set up the Gaudi environment for the tests. The local build has to come first in all paths, otherwise
+    # a k4SimDelphes that is already in the stack (e.g. in the nightlies) is picked up instead
+    set(_local_lib_dirs "$<TARGET_FILE_DIR:k4SimDelphesPlugins>:$<TARGET_FILE_DIR:DelphesEDM4HepConverter>")
+    set(_test_environment
+      "LD_LIBRARY_PATH=${_local_lib_dirs}:$<TARGET_FILE_DIR:k4Gen::k4Gen>:$<TARGET_FILE_DIR:k4FWCore::k4FWCore>:$ENV{LD_LIBRARY_PATH}"
+      "GAUDI_PLUGIN_PATH=${_local_lib_dirs}:$ENV{GAUDI_PLUGIN_PATH}"
+      "PYTHONPATH=${CMAKE_CURRENT_BINARY_DIR}/${GAUDI_GENCONF_DIR}:$<TARGET_FILE_DIR:k4Gen::k4Gen>/../python:$<TARGET_FILE_DIR:k4FWCore::k4FWCore>/../python:$ENV{PYTHONPATH}"
     )
+    set_tests_properties(k4SimDelphesAlgBasicTest k4SimDelphesAlgPythiaTest k4SimDelphesAlgPythiaRecoMCLinkCheck
+                         PROPERTIES ENVIRONMENT "${_test_environment}")
 
   else()
     message(WARNING "k4Gen not found, disabling some test!")

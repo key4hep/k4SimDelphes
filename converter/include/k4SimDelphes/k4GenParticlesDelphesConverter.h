@@ -1,6 +1,8 @@
 #ifndef K4GENPARTICLESDELPHESCONVERTER_H
 #define K4GENPARTICLESDELPHESCONVERTER_H
 
+#include <cmath>
+#include <cstdlib>
 #include <unordered_map>
 
 #include "edm4hep/MCParticleCollection.h"
@@ -10,55 +12,58 @@
 
 #include "TObjArray.h"
 
-// todo: move to converter and test
-
 namespace k4SimDelphes {
 
-class k4GenParticlesDelphesConverter {
-public:
-  void convertToDelphesArrays(const edm4hep::MCParticleCollection* edm_coll, DelphesFactory& factory,
-                              TObjArray& allParticleOutputArray, TObjArray& stableParticleOutputArray,
-                              TObjArray& partonOutputArray) {
-    m_genParticleIds.clear();
-    // loop over all input edm4hep particles
-    for (auto&& edm_part : *edm_coll) {
-      // create the delphes particle to be filled from edm4hep
-      auto candidate = factory.NewCandidate();
-      // Setting Momentum with the help of some auxiliary variables
-      auto _M = edm_part.getMass();
-      candidate->Mass = _M;
-      auto edm_mom = edm_part.getMomentum();
-      auto _P2 = edm_mom.x * edm_mom.x + edm_mom.y * edm_mom.y + edm_mom.z * edm_mom.z;
-      auto _M2 = (_M >= 0) ? _M * _M : -_M * _M;
-      candidate->Momentum.SetPxPyPzE(edm_mom.x, edm_mom.y, edm_mom.z, std::sqrt(_P2 + _M2));
-      // Setting Position
-      auto edm_pos = edm_part.getVertex();
-      candidate->Position.SetXYZT(edm_pos.x, edm_pos.y, edm_pos.z, edm_part.getTime());
-      // Setting other members with a one-to-one correspondence
-      candidate->Charge = edm_part.getCharge();
-      candidate->PID = edm_part.getPDG();
-      candidate->Status = edm_part.getGeneratorStatus();
-      m_genParticleIds.emplace(candidate->GetUniqueID(), edm_part);
+/// Map from the UniqueID of the Delphes input candidates to the MCParticles
+/// they were created from
+using GenParticleIdMap = std::unordered_map<UInt_t, edm4hep::MCParticle>;
 
-      // candidate has all necessary infos, add it to delphes arrays
-      allParticleOutputArray.Add(candidate);
-      int pdgCode = TMath::Abs(candidate->PID);
-      if (candidate->Status == 1) {
-        stableParticleOutputArray.Add(candidate);
-      } else if (pdgCode <= 5 || pdgCode == 21 || pdgCode == 15) {
-        partonOutputArray.Add(candidate);
-      }
+/**
+ * Convert the passed MCParticles into Delphes input candidates and add them to
+ * the Delphes input arrays. Returns the map from the UniqueID of each created
+ * candidate to the MCParticle it was created from, which can be passed to
+ * DelphesEDM4HepConverter::process() to link the reconstructed particles to
+ * the input MCParticles.
+ *
+ * No mother / daughter information is set on the Delphes candidates, as it is
+ * not needed for running Delphes and is still present in the MCParticles.
+ */
+inline GenParticleIdMap convertToDelphesArrays(const edm4hep::MCParticleCollection& edmColl, DelphesFactory& factory,
+                                               TObjArray& allParticleOutputArray, TObjArray& stableParticleOutputArray,
+                                               TObjArray& partonOutputArray) {
+  GenParticleIdMap genParticleIds;
+  genParticleIds.reserve(edmColl.size());
+
+  for (const auto edmPart : edmColl) {
+    auto* candidate = factory.NewCandidate();
+
+    const auto mass = edmPart.getMass();
+    candidate->Mass = mass;
+    const auto mom = edmPart.getMomentum();
+    const auto p2 = mom.x * mom.x + mom.y * mom.y + mom.z * mom.z;
+    const auto m2 = (mass >= 0) ? mass * mass : -mass * mass;
+    candidate->Momentum.SetPxPyPzE(mom.x, mom.y, mom.z, std::sqrt(p2 + m2));
+
+    const auto pos = edmPart.getVertex();
+    candidate->Position.SetXYZT(pos.x, pos.y, pos.z, edmPart.getTime());
+
+    candidate->Charge = edmPart.getCharge();
+    candidate->PID = edmPart.getPDG();
+    candidate->Status = edmPart.getGeneratorStatus();
+
+    genParticleIds.emplace(candidate->GetUniqueID(), edmPart);
+
+    allParticleOutputArray.Add(candidate);
+    const int pdgCode = std::abs(candidate->PID);
+    if (candidate->Status == 1) {
+      stableParticleOutputArray.Add(candidate);
+    } else if (pdgCode <= 5 || pdgCode == 21 || pdgCode == 15) {
+      partonOutputArray.Add(candidate);
     }
-    // no mother / daughter information is set in the Delphes GenParticles
-    // as it is not needed for running delphes, and still present in edm4hep.
-    //
   }
 
-  std::unordered_map<UInt_t, edm4hep::MCParticle> getGenParticleIdMap() { return m_genParticleIds; }
-
-private:
-  std::unordered_map<UInt_t, edm4hep::MCParticle> m_genParticleIds;
-};
+  return genParticleIds;
+}
 
 } // namespace k4SimDelphes
 

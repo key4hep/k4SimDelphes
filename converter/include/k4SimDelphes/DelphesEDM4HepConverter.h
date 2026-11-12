@@ -91,8 +91,15 @@ public:
 
   /**
    * Process the passed delphesTree and convert the particles contained in it.
+   *
+   * If externalMCParticles is passed (a map from Delphes candidate unique IDs
+   * to the MCParticles that were used as Delphes input), the reco-MC link
+   * collection is filled with links to these external MCParticles instead of
+   * the internally converted ones. This has to happen during process(), since
+   * the internal ID maps are cleared at its end.
    */
-  void process(TTree* delphesTree);
+  void process(TTree* delphesTree,
+               const std::unordered_map<UInt_t, edm4hep::MCParticle>* externalMCParticles = nullptr);
 
   /// Attach generator event weights to the current EventHeader; call after
   /// process(), before getCollections(). Weight names go in the metadata Frame.
@@ -106,10 +113,12 @@ public:
    */
   CollectionMapT getCollections() { return std::move(m_collections); }
 
-  edm4hep::RecoMCParticleLinkCollection*
-  createExternalRecoMCLinks(const std::unordered_map<UInt_t, edm4hep::MCParticle>& mc_map);
-
 private:
+  /// Create reco-MC links pointing to externally provided MCParticles. Only
+  /// valid during process(), while the internal ID maps are still filled.
+  std::unique_ptr<edm4hep::RecoMCParticleLinkCollection>
+  createExternalRecoMCLinks(const std::unordered_map<UInt_t, edm4hep::MCParticle>& mc_map) const;
+
   void createEventHeader(const HepMCEvent* delphesEvent);
 
   void processParticles(const TClonesArray* delphesCollection, std::string const& branch);
