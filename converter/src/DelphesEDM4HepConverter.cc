@@ -54,9 +54,6 @@ void sortBranchesProcessingOrder(std::vector<BranchSettings>& branches,
 
 edm4hep::MutableTrack convertTrack(Track const* cand);
 
-void setMotherDaughterRelations(GenParticle const* delphesCand, edm4hep::MutableMCParticle particle,
-                                edm4hep::MCParticleCollection& mcParticles);
-
 /**
  * Simple helper function to make it easier to refactor later
  */
