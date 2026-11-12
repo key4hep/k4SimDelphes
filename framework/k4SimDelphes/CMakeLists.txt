@@ -47,7 +47,7 @@ if(BUILD_TESTING)
     # The reco-MC links in the framework output have to be filled and point to the input MCParticles
     add_test(NAME k4SimDelphesAlgPythiaRecoMCLinkCheck
              WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/examples/options
-             COMMAND python3 ${PROJECT_SOURCE_DIR}/tests/scripts/check_reco_mc_links.py output_k4SimDelphes_pythia.root GenParticles)
+             COMMAND python3 ${PROJECT_SOURCE_DIR}/tests/scripts/check_reco_mc_links.py output_k4SimDelphes_pythia.root)
     set_tests_properties(k4SimDelphesAlgPythiaRecoMCLinkCheck PROPERTIES FIXTURES_REQUIRED k4SimDelphesAlgPythiaOutput)
 
   else()
