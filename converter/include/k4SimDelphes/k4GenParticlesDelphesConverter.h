@@ -14,6 +14,10 @@
 
 namespace k4SimDelphes {
 
+/// Speed of light in mm/ns. EDM4hep MCParticle times are in ns, while Delphes expects the
+/// time component of Candidate::Position in mm/c (as produced e.g. by Pythia's tProd()).
+constexpr double c_light_mm_per_ns = 299.792458;
+
 /// Map from the UniqueID of the Delphes input candidates to the MCParticles
 /// they were created from
 using GenParticleIdMap = std::unordered_map<UInt_t, edm4hep::MCParticle>;
@@ -45,7 +49,7 @@ inline GenParticleIdMap convertToDelphesArrays(const edm4hep::MCParticleCollecti
     candidate->Momentum.SetPxPyPzE(mom.x, mom.y, mom.z, std::sqrt(p2 + m2));
 
     const auto pos = edmPart.getVertex();
-    candidate->Position.SetXYZT(pos.x, pos.y, pos.z, edmPart.getTime());
+    candidate->Position.SetXYZT(pos.x, pos.y, pos.z, edmPart.getTime() * c_light_mm_per_ns);
 
     candidate->Charge = edmPart.getCharge();
     candidate->PID = edmPart.getPDG();
