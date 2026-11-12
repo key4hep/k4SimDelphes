@@ -70,6 +70,6 @@ TEST_CASE("convertToDelphesArrays converts the production time from ns to mm/c",
   REQUIRE(cand->Position.X() == Catch::Approx(1.0));
   REQUIRE(cand->Position.Y() == Catch::Approx(2.0));
   REQUIRE(cand->Position.Z() == Catch::Approx(3.0));
-  // Delphes uses mm/c for the time component: 0.5 ns * 299.792458 mm/ns
-  REQUIRE(cand->Position.T() == Catch::Approx(0.5 * 299.792458));
+  // Delphes uses mm/c for the time component: t [mm/c] = t [ns] * c [mm/ns]
+  REQUIRE(cand->Position.T() == Catch::Approx(0.5 * c_light_mm_per_ns));
 }
