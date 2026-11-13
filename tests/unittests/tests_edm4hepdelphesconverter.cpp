@@ -51,3 +51,25 @@ TEST_CASE("convertToDelphesArrays returns the UniqueID -> MCParticle map", "[con
   }
   REQUIRE(idMap.at(static_cast<const Candidate*>(partons.At(0))->GetUniqueID()).getPDG() == 5);
 }
+
+TEST_CASE("convertToDelphesArrays converts the production time from ns to mm/c", "[converter]") {
+  edm4hep::MCParticleCollection mcParticles;
+  auto p = mcParticles.create();
+  p.setPDG(211);
+  p.setGeneratorStatus(1);
+  p.setMomentum({1.f, 0.f, 0.f});
+  p.setVertex({1.0, 2.0, 3.0});
+  p.setTime(0.5f); // ns
+
+  DelphesFactory factory;
+  TObjArray allParticles, stableParticles, partons;
+  convertToDelphesArrays(mcParticles, factory, allParticles, stableParticles, partons);
+
+  REQUIRE(allParticles.GetEntries() == 1);
+  const auto* cand = static_cast<const Candidate*>(allParticles.At(0));
+  REQUIRE(cand->Position.X() == Catch::Approx(1.0));
+  REQUIRE(cand->Position.Y() == Catch::Approx(2.0));
+  REQUIRE(cand->Position.Z() == Catch::Approx(3.0));
+  // Delphes uses mm/c for the time component: t [mm/c] = t [ns] * c [mm/ns]
+  REQUIRE(cand->Position.T() == Catch::Approx(0.5 * c_light_mm_per_ns));
+}
