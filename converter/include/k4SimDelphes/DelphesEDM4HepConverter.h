@@ -3,6 +3,7 @@
 
 // edm4hep
 #include "edm4hep/MCParticle.h"
+#include "edm4hep/MCParticleCollection.h"
 #include "edm4hep/MutableReconstructedParticle.h"
 #include "edm4hep/RecoMCParticleLinkCollection.h"
 
@@ -33,6 +34,20 @@ class Photon;
 namespace k4SimDelphes {
 
 struct OutputSettings;
+
+/**
+ * Set the parents and daughters of the mcParticles from the mother (M1, M2)
+ * and daughter (D1, D2) indices of the corresponding delphesCands, which index
+ * into mcParticles. The indices are interpreted following the Pythia
+ * conventions. Since the readers cannot always represent the relations
+ * exactly, the mother and daughter indices can contradict each other. A
+ * relation is only set if mother and daughter reference each other, if the
+ * daughter references the mother explicitly (i.e. not only as the inside of a
+ * range), or if the mother references a daughter without any mothers. Parents
+ * and daughters are hence always consistent.
+ */
+void setMotherDaughterRelations(const std::vector<const GenParticle*>& delphesCands,
+                                edm4hep::MCParticleCollection& mcParticles);
 
 /**
  * Classes that will be stored as reconstructed particle with an attached track
