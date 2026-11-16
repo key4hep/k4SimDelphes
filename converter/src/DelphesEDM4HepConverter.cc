@@ -48,14 +48,16 @@ constexpr std::array<std::string_view, 10> PROCESSING_ORDER = {
     "GenParticle", "Track",     "Tower",   "ParticleFlowCandidate", "Muon", "Electron", "Photon",
     "Jet",         "MissingET", "ScalarHT"};
 
+namespace {
 template <size_t N>
-static void sortBranchesProcessingOrder(std::vector<BranchSettings>& branches,
-                                        std::array<std::string_view, N> const& processingOrder);
+void sortBranchesProcessingOrder(std::vector<BranchSettings>& branches,
+                                 std::array<std::string_view, N> const& processingOrder);
 
-static edm4hep::MutableTrack convertTrack(Track const* cand);
+edm4hep::MutableTrack convertTrack(Track const* cand);
 
-static void setMotherDaughterRelations(GenParticle const* delphesCand, edm4hep::MutableMCParticle particle,
-                                       edm4hep::MCParticleCollection& mcParticles);
+void setMotherDaughterRelations(GenParticle const* delphesCand, edm4hep::MutableMCParticle particle,
+                                edm4hep::MCParticleCollection& mcParticles);
+} // namespace
 
 /**
  * Simple helper function to make it easier to refactor later
@@ -65,8 +67,9 @@ inline bool contains(Container const& container, typename Container::value_type 
   return std::find(container.cbegin(), container.cend(), value) != container.cend();
 }
 
+namespace {
 // position covariance of a calo impact point calculated from the angular resolutions of the direction
-static edm4hep::CovMatrix3f positionCovFromAngles(const edm4hep::Vector3f& pos, double sTheta, double sPhi) {
+edm4hep::CovMatrix3f positionCovFromAngles(const edm4hep::Vector3f& pos, double sTheta, double sPhi) {
   using edm4hep::Cartesian;
   const double r = std::sqrt(double(pos.x) * pos.x + double(pos.y) * pos.y + double(pos.z) * pos.z);
   if (r == 0.) {
@@ -89,6 +92,7 @@ static edm4hep::CovMatrix3f positionCovFromAngles(const edm4hep::Vector3f& pos, 
   cov.setValue(a2 * tz * tz, Cartesian::z, Cartesian::z);
   return cov;
 }
+} // namespace
 
 DelphesEDM4HepConverter::DelphesEDM4HepConverter(std::string filename_delphescard) {
   auto confReader = std::make_unique<ExRootConfReader>();
@@ -597,9 +601,10 @@ void DelphesEDM4HepConverter::registerGlobalCollections() {
   }
 }
 
+namespace {
 template <size_t N>
-static void sortBranchesProcessingOrder(std::vector<BranchSettings>& branches,
-                                        std::array<std::string_view, N> const& processingOrder) {
+void sortBranchesProcessingOrder(std::vector<BranchSettings>& branches,
+                                 std::array<std::string_view, N> const& processingOrder) {
   std::unordered_map<std::string_view, size_t> classSortIndices;
   for (size_t i = 0; i < processingOrder.size(); ++i) {
     classSortIndices.emplace(processingOrder[i], i);
@@ -617,7 +622,7 @@ static void sortBranchesProcessingOrder(std::vector<BranchSettings>& branches,
   });
 }
 
-static edm4hep::MutableTrack convertTrack(Track const* cand) {
+edm4hep::MutableTrack convertTrack(Track const* cand) {
   edm4hep::MutableTrack track;
   // Delphes does not really provide any information that would go into the
   // track itself. But some information can be used to at least partially
@@ -672,8 +677,8 @@ static edm4hep::MutableTrack convertTrack(Track const* cand) {
   return track;
 }
 
-static void setMotherDaughterRelations(GenParticle const* delphesCand, edm4hep::MutableMCParticle particle,
-                                       edm4hep::MCParticleCollection& mcParticles) {
+void setMotherDaughterRelations(GenParticle const* delphesCand, edm4hep::MutableMCParticle particle,
+                                edm4hep::MCParticleCollection& mcParticles) {
   // NOTE: it is in general probably not possible to handle all the different
   // possibilities that are present in the different readers. So, for now we are
   // going to follow the pythia documentation (with some additional sanity
@@ -738,5 +743,6 @@ static void setMotherDaughterRelations(GenParticle const* delphesCand, edm4hep::
     }
   }
 }
+} // namespace
 
 } // namespace k4SimDelphes
