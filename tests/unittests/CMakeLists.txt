@@ -26,4 +26,6 @@ include(CTest)
 include(Catch)
 catch_discover_tests(k4SimDelphesTests
                      WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+                     DISCOVERY_MODE PRE_TEST
+                     DL_PATHS ${PROJECT_BINARY_DIR}/converter
                      PROPERTIES ENVIRONMENT DELPHES_CARDS_DIR=${DELPHES_CARDS_DIR})
