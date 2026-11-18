@@ -23,6 +23,8 @@
 #include <numeric>
 #include <vector>
 
+namespace {
+
 /**
  * Compare the 4-vectors of the delphes and the edm4hep candidate
  */
@@ -368,6 +370,8 @@ void compareMET(const TClonesArray* delphesColl, const edm4hep::ReconstructedPar
   const auto edm4hepMET = edm4hepColl[0];
   assertSameKinematics(delphesMET, edm4hepMET, []() { return "MET differs between delphes and edm4hep output"; });
 }
+
+} // namespace
 
 int main(int, char* argv[]) {
   // do the necessary setup work for podio and delphes first

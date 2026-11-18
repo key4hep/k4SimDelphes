@@ -48,47 +48,49 @@ constexpr std::array<std::string_view, 10> PROCESSING_ORDER = {
     "GenParticle", "Track",     "Tower",   "ParticleFlowCandidate", "Muon", "Electron", "Photon",
     "Jet",         "MissingET", "ScalarHT"};
 
-template <size_t N>
-void sortBranchesProcessingOrder(std::vector<BranchSettings>& branches,
-                                 std::array<std::string_view, N> const& processingOrder);
+namespace {
+  template <size_t N>
+  void sortBranchesProcessingOrder(std::vector<BranchSettings>& branches,
+                                   std::array<std::string_view, N> const& processingOrder);
 
-edm4hep::MutableTrack convertTrack(Track const* cand);
+  edm4hep::MutableTrack convertTrack(Track const* cand);
 
-void setMotherDaughterRelations(GenParticle const* delphesCand, edm4hep::MutableMCParticle particle,
-                                edm4hep::MCParticleCollection& mcParticles);
+  void setMotherDaughterRelations(GenParticle const* delphesCand, edm4hep::MutableMCParticle particle,
+                                  edm4hep::MCParticleCollection& mcParticles);
 
-/**
- * Simple helper function to make it easier to refactor later
- */
-template <typename Container>
-inline bool contains(Container const& container, typename Container::value_type const& value) {
-  return std::find(container.cbegin(), container.cend(), value) != container.cend();
-}
-
-// position covariance of a calo impact point calculated from the angular resolutions of the direction
-edm4hep::CovMatrix3f positionCovFromAngles(const edm4hep::Vector3f& pos, double sTheta, double sPhi) {
-  using edm4hep::Cartesian;
-  const double r = std::sqrt(double(pos.x) * pos.x + double(pos.y) * pos.y + double(pos.z) * pos.z);
-  if (r == 0.) {
-    // no impact point (e.g. Delphes towers that only have track hits): the error is undefined
-    return edm4hep::CovMatrix3f{};
+  /**
+   * Simple helper function to make it easier to refactor later
+   */
+  template <typename Container>
+  inline bool contains(Container const& container, typename Container::value_type const& value) {
+    return std::find(container.cbegin(), container.cend(), value) != container.cend();
   }
-  const double rt = std::hypot(double(pos.x), double(pos.y));
-  const double ct = pos.z / r, st = rt / r;
-  const double cp = rt > 0. ? pos.x / rt : 1., sp = rt > 0. ? pos.y / rt : 0.;
-  // local unit vectors at the impact point: uT = (tx, ty, tz), uP = (px, py, 0)
-  const double tx = ct * cp, ty = ct * sp, tz = -st;
-  const double px = -sp, py = cp;
-  const double a2 = r * sTheta * r * sTheta, b2 = r * st * sPhi * r * st * sPhi;
-  edm4hep::CovMatrix3f cov{};
-  cov.setValue(a2 * tx * tx + b2 * px * px, Cartesian::x, Cartesian::x);
-  cov.setValue(a2 * tx * ty + b2 * px * py, Cartesian::x, Cartesian::y);
-  cov.setValue(a2 * ty * ty + b2 * py * py, Cartesian::y, Cartesian::y);
-  cov.setValue(a2 * tx * tz, Cartesian::x, Cartesian::z);
-  cov.setValue(a2 * ty * tz, Cartesian::y, Cartesian::z);
-  cov.setValue(a2 * tz * tz, Cartesian::z, Cartesian::z);
-  return cov;
-}
+
+  // position covariance of a calo impact point calculated from the angular resolutions of the direction
+  edm4hep::CovMatrix3f positionCovFromAngles(const edm4hep::Vector3f& pos, double sTheta, double sPhi) {
+    using edm4hep::Cartesian;
+    const double r = std::sqrt(double(pos.x) * pos.x + double(pos.y) * pos.y + double(pos.z) * pos.z);
+    if (r == 0.) {
+      // no impact point (e.g. Delphes towers that only have track hits): the error is undefined
+      return edm4hep::CovMatrix3f{};
+    }
+    const double rt = std::hypot(double(pos.x), double(pos.y));
+    const double ct = pos.z / r, st = rt / r;
+    const double cp = rt > 0. ? pos.x / rt : 1., sp = rt > 0. ? pos.y / rt : 0.;
+    // local unit vectors at the impact point: uT = (tx, ty, tz), uP = (px, py, 0)
+    const double tx = ct * cp, ty = ct * sp, tz = -st;
+    const double px = -sp, py = cp;
+    const double a2 = r * sTheta * r * sTheta, b2 = r * st * sPhi * r * st * sPhi;
+    edm4hep::CovMatrix3f cov{};
+    cov.setValue(a2 * tx * tx + b2 * px * px, Cartesian::x, Cartesian::x);
+    cov.setValue(a2 * tx * ty + b2 * px * py, Cartesian::x, Cartesian::y);
+    cov.setValue(a2 * ty * ty + b2 * py * py, Cartesian::y, Cartesian::y);
+    cov.setValue(a2 * tx * tz, Cartesian::x, Cartesian::z);
+    cov.setValue(a2 * ty * tz, Cartesian::y, Cartesian::z);
+    cov.setValue(a2 * tz * tz, Cartesian::z, Cartesian::z);
+    return cov;
+  }
+} // namespace
 
 DelphesEDM4HepConverter::DelphesEDM4HepConverter(std::string filename_delphescard) {
   auto confReader = std::make_unique<ExRootConfReader>();
@@ -597,146 +599,148 @@ void DelphesEDM4HepConverter::registerGlobalCollections() {
   }
 }
 
-template <size_t N>
-void sortBranchesProcessingOrder(std::vector<BranchSettings>& branches,
-                                 std::array<std::string_view, N> const& processingOrder) {
-  std::unordered_map<std::string_view, size_t> classSortIndices;
-  for (size_t i = 0; i < processingOrder.size(); ++i) {
-    classSortIndices.emplace(processingOrder[i], i);
+namespace {
+  template <size_t N>
+  void sortBranchesProcessingOrder(std::vector<BranchSettings>& branches,
+                                   std::array<std::string_view, N> const& processingOrder) {
+    std::unordered_map<std::string_view, size_t> classSortIndices;
+    for (size_t i = 0; i < processingOrder.size(); ++i) {
+      classSortIndices.emplace(processingOrder[i], i);
+    }
+
+    const auto endIt = classSortIndices.end();
+    std::sort(branches.begin(), branches.end(), [&classSortIndices, endIt](const auto& left, const auto& right) {
+      const auto leftIt = classSortIndices.find(left.className);
+      const auto rightIt = classSortIndices.find(right.className);
+
+      // if we have the class defined in the processing order use the
+      // corresponding index, otherwise use one definitely not inside
+      // the processing order
+      return (leftIt != endIt ? leftIt->second : N + 1) < (rightIt != endIt ? rightIt->second : N + 1);
+    });
   }
 
-  const auto endIt = classSortIndices.end();
-  std::sort(branches.begin(), branches.end(), [&classSortIndices, endIt](const auto& left, const auto& right) {
-    const auto leftIt = classSortIndices.find(left.className);
-    const auto rightIt = classSortIndices.find(right.className);
+  edm4hep::MutableTrack convertTrack(Track const* cand) {
+    edm4hep::MutableTrack track;
+    // Delphes does not really provide any information that would go into the
+    // track itself. But some information can be used to at least partially
+    // populate a TrackState
+    edm4hep::TrackState trackState{};
+    trackState.D0 = cand->D0;
+    trackState.Z0 = cand->DZ;
 
-    // if we have the class defined in the processing order use the
-    // corresponding index, otherwise use one definitely not inside
-    // the processing order
-    return (leftIt != endIt ? leftIt->second : N + 1) < (rightIt != endIt ? rightIt->second : N + 1);
-  });
-}
+    // Delphes calculates this from the momentum 4-vector at the track
+    // perigee so this should be what we want. Note that this value
+    // only undergoes smearing in the TrackSmearing module but e.g.
+    // not in the MomentumSmearing module
+    trackState.phi = cand->Phi;
+    // Same thing under different name in Delphes
+    trackState.tanLambda = cand->CtgTheta;
 
-edm4hep::MutableTrack convertTrack(Track const* cand) {
-  edm4hep::MutableTrack track;
-  // Delphes does not really provide any information that would go into the
-  // track itself. But some information can be used to at least partially
-  // populate a TrackState
-  edm4hep::TrackState trackState{};
-  trackState.D0 = cand->D0;
-  trackState.Z0 = cand->DZ;
+    // fill the covariance matrix. There is a conversion of units
+    // because the covariance matrix in delphes is with the original units
+    // from Franco Bedeschi's code so meter and GeV
+    auto& covMatrix = trackState.covMatrix;
 
-  // Delphes calculates this from the momentum 4-vector at the track
-  // perigee so this should be what we want. Note that this value
-  // only undergoes smearing in the TrackSmearing module but e.g.
-  // not in the MomentumSmearing module
-  trackState.phi = cand->Phi;
-  // Same thing under different name in Delphes
-  trackState.tanLambda = cand->CtgTheta;
+    TMatrixDSym covaFB = cand->CovarianceMatrix();
 
-  // fill the covariance matrix. There is a conversion of units
-  // because the covariance matrix in delphes is with the original units
-  // from Franco Bedeschi's code so meter and GeV
-  auto& covMatrix = trackState.covMatrix;
+    // needs to be applied to any covariance matrix element
+    // relating to curvature (index 2)
+    double scale2 = -2.; // CAREFUL: DELPHES USES THE HALF-CURVATURE
 
-  TMatrixDSym covaFB = cand->CovarianceMatrix();
+    trackState.omega = cand->C * scale2;
 
-  // needs to be applied to any covariance matrix element
-  // relating to curvature (index 2)
-  double scale2 = -2.; // CAREFUL: DELPHES USES THE HALF-CURVATURE
+    covMatrix[0] = covaFB(0, 0);
 
-  trackState.omega = cand->C * scale2;
+    covMatrix[1] = covaFB(1, 0);
+    covMatrix[2] = covaFB(1, 1);
 
-  covMatrix[0] = covaFB(0, 0);
+    covMatrix[3] = covaFB(2, 0) * scale2;
+    covMatrix[4] = covaFB(2, 1) * scale2;
+    covMatrix[5] = covaFB(2, 2) * scale2 * scale2;
 
-  covMatrix[1] = covaFB(1, 0);
-  covMatrix[2] = covaFB(1, 1);
+    covMatrix[6] = covaFB(3, 0);
+    covMatrix[7] = covaFB(3, 1);
+    covMatrix[8] = covaFB(3, 2) * scale2;
+    covMatrix[9] = covaFB(3, 3);
 
-  covMatrix[3] = covaFB(2, 0) * scale2;
-  covMatrix[4] = covaFB(2, 1) * scale2;
-  covMatrix[5] = covaFB(2, 2) * scale2 * scale2;
+    covMatrix[10] = covaFB(4, 0);
+    covMatrix[11] = covaFB(4, 1);
+    covMatrix[12] = covaFB(4, 2) * scale2;
+    covMatrix[13] = covaFB(4, 3);
+    covMatrix[14] = covaFB(4, 4);
 
-  covMatrix[6] = covaFB(3, 0);
-  covMatrix[7] = covaFB(3, 1);
-  covMatrix[8] = covaFB(3, 2) * scale2;
-  covMatrix[9] = covaFB(3, 3);
+    track.addToTrackStates(trackState);
 
-  covMatrix[10] = covaFB(4, 0);
-  covMatrix[11] = covaFB(4, 1);
-  covMatrix[12] = covaFB(4, 2) * scale2;
-  covMatrix[13] = covaFB(4, 3);
-  covMatrix[14] = covaFB(4, 4);
+    return track;
+  }
 
-  track.addToTrackStates(trackState);
+  void setMotherDaughterRelations(GenParticle const* delphesCand, edm4hep::MutableMCParticle particle,
+                                  edm4hep::MCParticleCollection& mcParticles) {
+    // NOTE: it is in general probably not possible to handle all the different
+    // possibilities that are present in the different readers. So, for now we are
+    // going to follow the pythia documentation (with some additional sanity
+    // checks, to avoid some crashs, in case the input is buggy) in the hope that
+    // it will work for most inputs
+    // Pythia documentation: http://home.thep.lu.se/~torbjorn/pythia81html/ParticleProperties.html
 
-  return track;
-}
+    // Mothers
+    // Only set parents if not accessing out of bounds
+    const auto safeSetParent = [&mcParticles, &particle](size_t index) {
+      if (index < mcParticles.size()) {
+        particle.addToParents(mcParticles[index]);
+      }
+    };
 
-void setMotherDaughterRelations(GenParticle const* delphesCand, edm4hep::MutableMCParticle particle,
-                                edm4hep::MCParticleCollection& mcParticles) {
-  // NOTE: it is in general probably not possible to handle all the different
-  // possibilities that are present in the different readers. So, for now we are
-  // going to follow the pythia documentation (with some additional sanity
-  // checks, to avoid some crashs, in case the input is buggy) in the hope that
-  // it will work for most inputs
-  // Pythia documentation: http://home.thep.lu.se/~torbjorn/pythia81html/ParticleProperties.html
-
-  // Mothers
-  // Only set parents if not accessing out of bounds
-  const auto safeSetParent = [&mcParticles, &particle](size_t index) {
-    if (index < mcParticles.size()) {
-      particle.addToParents(mcParticles[index]);
-    }
-  };
-
-  // If M1 == -1, then this particle has no mother, so we only handle cases
-  // where there is at least one
-  if (delphesCand->M1 > -1) {
-    // case 3, only one mother
-    if (delphesCand->M2 == -1) {
-      safeSetParent(delphesCand->M1);
-    }
-    if (delphesCand->M2 > -1) {
-      // case 6, two mothers
-      if (delphesCand->M2 < delphesCand->M1) {
+    // If M1 == -1, then this particle has no mother, so we only handle cases
+    // where there is at least one
+    if (delphesCand->M1 > -1) {
+      // case 3, only one mother
+      if (delphesCand->M2 == -1) {
         safeSetParent(delphesCand->M1);
-        safeSetParent(delphesCand->M2);
+      }
+      if (delphesCand->M2 > -1) {
+        // case 6, two mothers
+        if (delphesCand->M2 < delphesCand->M1) {
+          safeSetParent(delphesCand->M1);
+          safeSetParent(delphesCand->M2);
 
-      } else {
-        //  cases 2, 5 (and 4 without checking the status), mothers in a range
-        for (auto iMother = delphesCand->M1; iMother <= delphesCand->M2; ++iMother) {
-          safeSetParent(iMother);
+        } else {
+          //  cases 2, 5 (and 4 without checking the status), mothers in a range
+          for (auto iMother = delphesCand->M1; iMother <= delphesCand->M2; ++iMother) {
+            safeSetParent(iMother);
+          }
         }
       }
     }
-  }
 
-  // Daughters
-  const auto safeSetDaughter = [&mcParticles, &particle](size_t index) {
-    if (index < mcParticles.size()) {
-      particle.addToDaughters(mcParticles[index]);
-    }
-  };
+    // Daughters
+    const auto safeSetDaughter = [&mcParticles, &particle](size_t index) {
+      if (index < mcParticles.size()) {
+        particle.addToDaughters(mcParticles[index]);
+      }
+    };
 
-  // again handle only the cases where there is at least one daughter
-  if (delphesCand->D1 > -1) {
-    // case 3
-    if (delphesCand->D2 == -1) {
-      safeSetDaughter(delphesCand->D1);
-    }
-    if (delphesCand->D2 > -1) {
-      // case 5
-      if (delphesCand->D2 < delphesCand->D1) {
+    // again handle only the cases where there is at least one daughter
+    if (delphesCand->D1 > -1) {
+      // case 3
+      if (delphesCand->D2 == -1) {
         safeSetDaughter(delphesCand->D1);
-        safeSetDaughter(delphesCand->D2);
-      } else {
-        // cases 2 and 4
-        for (auto iDaughter = delphesCand->D1; iDaughter <= delphesCand->D2; ++iDaughter) {
-          safeSetDaughter(iDaughter);
+      }
+      if (delphesCand->D2 > -1) {
+        // case 5
+        if (delphesCand->D2 < delphesCand->D1) {
+          safeSetDaughter(delphesCand->D1);
+          safeSetDaughter(delphesCand->D2);
+        } else {
+          // cases 2 and 4
+          for (auto iDaughter = delphesCand->D1; iDaughter <= delphesCand->D2; ++iDaughter) {
+            safeSetDaughter(iDaughter);
+          }
         }
       }
     }
   }
-}
+} // namespace
 
 } // namespace k4SimDelphes
