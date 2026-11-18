@@ -44,10 +44,22 @@ struct OutputSettings;
  * relation is only set if mother and daughter reference each other, if the
  * daughter references the mother explicitly (i.e. not only as the inside of a
  * range), or if the mother references a daughter without any mothers. Parents
- * and daughters are hence always consistent.
+ * and daughters are hence always consistent. Parents (daughters) are stored in
+ * the order of the mother (daughter) indices, i.e. (M1, M2) for two separately
+ * stored mothers.
  */
 void setMotherDaughterRelations(const std::vector<const GenParticle*>& delphesCands,
                                 edm4hep::MCParticleCollection& mcParticles);
+
+/**
+ * Set the parents and daughters of the mcParticles from the relations of the
+ * inputParticles, where mcParticles[i] corresponds to inputParticles[i].
+ * Relations to particles that are not in inputParticles are dropped. This is
+ * used if the MCParticles that were used as Delphes input are available, in
+ * which case the relations can be reproduced exactly.
+ */
+void copyMotherDaughterRelations(const std::vector<edm4hep::MCParticle>& inputParticles,
+                                 edm4hep::MCParticleCollection& mcParticles);
 
 /**
  * Classes that will be stored as reconstructed particle with an attached track
@@ -111,7 +123,9 @@ public:
    * to the MCParticles that were used as Delphes input), the reco-MC link
    * collection is filled with links to these external MCParticles instead of
    * the internally converted ones. This has to happen during process(), since
-   * the internal ID maps are cleared at its end.
+   * the internal ID maps are cleared at its end. In this case the MCParticle
+   * output collection also follows the order of the external MCParticles and
+   * takes its parent / daughter relations from them.
    */
   void process(TTree* delphesTree,
                const std::unordered_map<UInt_t, edm4hep::MCParticle>* externalMCParticles = nullptr);
@@ -193,6 +207,9 @@ private:
 
   // map from UniqueIDs (delphes generated particles) to MCParticles
   std::unordered_map<UInt_t, edm4hep::MCParticle> m_genParticleIds;
+  // the MCParticles that were the Delphes input (if passed to process()), only
+  // valid during process()
+  const std::unordered_map<UInt_t, edm4hep::MCParticle>* m_externalMCParticles{nullptr};
   // map from UniqueIDs (delphes generated particles) to (possibly multiple)
   // ReconstructedParticles. This map is necessary because Muon, Electron and
   // Photon can only be reliably matched via their gen particles

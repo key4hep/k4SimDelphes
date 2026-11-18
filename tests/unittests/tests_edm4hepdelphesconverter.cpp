@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <array>
+#include <climits>
 #include <set>
 #include <string>
 #include <tuple>
@@ -166,6 +167,27 @@ TEST_CASE("HepMC: two mothers stored as a range do not include the particles in 
   requireConsistent(coll);
 }
 
+TEST_CASE("Two separately stored mothers keep the (M1, M2) order", "[converter]") {
+  // 3 has the mothers (2, 0), i.e. M1 > M2
+  const auto coll = fromIndices({{-1, -1, 3, 3}, {-1, -1, -1, -1}, {-1, -1, 3, 3}, {2, 0, -1, -1}});
+  REQUIRE(coll[3].getParents().size() == 2);
+  REQUIRE(coll[3].getParents(0).getObjectID().index == 2);
+  REQUIRE(coll[3].getParents(1).getObjectID().index == 0);
+  requireConsistent(coll);
+}
+
+TEST_CASE("Out of bounds and self-referencing indices are ignored", "[converter]") {
+  // 0 -> (1, INT_MAX) is clamped to the existing particles, 2 references
+  // itself, 3 has the mother 1 and two out of bounds daughters
+  const auto coll = fromIndices({{-1, -1, 1, INT_MAX}, {0, -1, -1, -1}, {0, 2, 2, 2}, {1, -1, 100, 50}});
+  REQUIRE(indexSet(coll[0].getDaughters()) == IndexSet{1, 2});
+  REQUIRE(indexSet(coll[1].getDaughters()) == IndexSet{3});
+  REQUIRE(indexSet(coll[2].getParents()) == IndexSet{0});
+  REQUIRE(coll[2].getDaughters().empty());
+  REQUIRE(coll[3].getDaughters().empty());
+  requireConsistent(coll);
+}
+
 TEST_CASE("A daughter without mothers is taken from the mother", "[converter]") {
   const auto coll = fromIndices({{-1, -1, 1, 2}, {-1, -1, -1, -1}, {0, -1, -1, -1}});
   REQUIRE(indexSet(coll[0].getDaughters()) == IndexSet{1, 2});
@@ -288,7 +310,8 @@ TEST_CASE("daughterContiguousOrder stores the daughters of each particle contigu
     link(p[4], p[d]);
   }
 
-  REQUIRE(daughterContiguousOrder(mcParticles) == std::vector<size_t>{0, 1, 2, 3, 5, 4, 6, 7, 8, 9, 10, 11, 12});
+  REQUIRE(daughterContiguousOrder(collectionRelations(mcParticles)) ==
+          std::vector<size_t>{0, 1, 2, 3, 5, 4, 6, 7, 8, 9, 10, 11, 12});
 }
 
 TEST_CASE("Mother / daughter relations survive the roundtrip through the Delphes indices", "[converter]") {
@@ -373,5 +396,99 @@ TEST_CASE("Hadron parents that are not daughters of the same particle are recove
   }
   for (int i : {1, 3}) {
     REQUIRE(rt.daughters_(i).empty());
+  }
+}
+
+TEST_CASE("Self-references and cycles are not passed on to the Delphes indices", "[converter]") {
+  edm4hep::MCParticleCollection mcParticles;
+  auto p0 = make(mcParticles, 23, 2);
+  auto p1 = make(mcParticles, 5, 2);
+  auto p2 = make(mcParticles, -5, 2);
+  link(p0, p1);
+  link(p1, p1); // self-reference
+  link(p1, p2);
+  p0.addToParents(p2); // 2-cycle 0 -> 1 -> 2 -> 0, only on the parent side
+
+  DelphesFactory factory;
+  TObjArray allParticles, stableParticles, partons;
+  convertToDelphesArrays(mcParticles, factory, allParticles, stableParticles, partons);
+  // the indices must not form a cycle, i.e. walking the M1 chain (as LLPFilter
+  // does) has to terminate
+  for (int j = 0; j < allParticles.GetEntriesFast(); ++j) {
+    const auto* cand = static_cast<const Candidate*>(allParticles.At(j));
+    REQUIRE(cand->M1 != j);
+    REQUIRE(cand->D1 != j);
+    int steps = 0;
+    for (const auto* c = cand; c->M1 >= 0; c = static_cast<const Candidate*>(allParticles.At(c->M1))) {
+      REQUIRE(++steps <= allParticles.GetEntriesFast());
+    }
+  }
+}
+
+TEST_CASE("convertToDelphesArrays requires an empty particle array", "[converter]") {
+  edm4hep::MCParticleCollection mcParticles;
+  make(mcParticles, 22, 1);
+  DelphesFactory factory;
+  TObjArray allParticles, stableParticles, partons;
+  allParticles.Add(factory.NewCandidate());
+  REQUIRE_THROWS_AS(convertToDelphesArrays(mcParticles, factory, allParticles, stableParticles, partons),
+                    std::invalid_argument);
+}
+
+TEST_CASE("The input order is kept if all relations can be encoded exactly", "[converter]") {
+  // Pythia-like record: 0 -> 1 2, 1 -> 3 4, 2 -> 5, the string 3 4 -> 6 7
+  edm4hep::MCParticleCollection mcParticles;
+  std::vector<edm4hep::MutableMCParticle> p;
+  for (int i = 0; i < 8; ++i) {
+    p.push_back(make(mcParticles, 1, 2));
+  }
+  link(p[0], p[1]);
+  link(p[0], p[2]);
+  link(p[1], p[3]);
+  link(p[1], p[4]);
+  link(p[2], p[5]);
+  for (int m : {3, 4}) {
+    for (int d : {6, 7}) {
+      link(p[m], p[d]);
+    }
+  }
+  REQUIRE(daughterContiguousOrder(collectionRelations(mcParticles)) == std::vector<size_t>{0, 1, 2, 3, 4, 5, 6, 7});
+
+  const auto rt = roundtrip(mcParticles);
+  for (int i = 0; i < 8; ++i) {
+    REQUIRE(rt.arrayIndex[i] == i);
+  }
+  requireExactRoundtrip(mcParticles, rt);
+}
+
+TEST_CASE("Enclosing ranges that cover each other can add relations, copying from the input does not", "[converter]") {
+  // Relations 0->3, 0->6, 1->3, 1->4, 1->5, 2->6, 5->6: the daughters of 1 and
+  // the parents of 6 cannot both be stored contiguously, and their enclosing
+  // ranges cover each other
+  edm4hep::MCParticleCollection mcParticles;
+  std::vector<edm4hep::MutableMCParticle> p;
+  for (int i = 0; i < 7; ++i) {
+    p.push_back(make(mcParticles, 1, 2));
+  }
+  for (const auto [m, d] : std::vector<std::pair<int, int>>{{0, 3}, {0, 6}, {1, 3}, {1, 4}, {1, 5}, {2, 6}, {5, 6}}) {
+    link(p[m], p[d]);
+  }
+
+  // Through the Delphes indices the relations stay consistent, but are not
+  // necessarily exact
+  const auto rt = roundtrip(mcParticles);
+  requireConsistent(rt.output);
+
+  // In the framework the output takes the relations from the input
+  edm4hep::MCParticleCollection output;
+  std::vector<edm4hep::MCParticle> inputs;
+  for (const auto& mcp : mcParticles) {
+    output.create();
+    inputs.push_back(mcp);
+  }
+  copyMotherDaughterRelations(inputs, output);
+  for (size_t i = 0; i < mcParticles.size(); ++i) {
+    REQUIRE(indexSet(output[i].getParents()) == indexSet(mcParticles[i].getParents()));
+    REQUIRE(indexSet(output[i].getDaughters()) == indexSet(mcParticles[i].getDaughters()));
   }
 }

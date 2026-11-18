@@ -202,26 +202,39 @@ expectedRelations(const TClonesArray* delphesColl) {
     }
   }
 
-  std::vector<std::vector<int>> parentsOf(n), daughtersOf(n);
-  const auto addIfRelated = [&](int m, int d) {
-    const bool related = contains(explicitMothers[d], m) ||
-                         (contains(daughters[m], d) && (contains(mothers[d], m) || mothers[d].empty()));
-    if (related && !contains(parentsOf[d], m)) {
-      parentsOf[d].push_back(m);
-      daughtersOf[m].push_back(d);
-    }
+  const auto isRelated = [&](int m, int d) {
+    return m != d && (contains(explicitMothers[d], m) ||
+                      (contains(daughters[m], d) && (contains(mothers[d], m) || mothers[d].empty())));
   };
+
+  // Parents in the order of the mother indices, or, for particles without
+  // mother indices, the particles referencing them as daughter in ascending
+  // order. Daughters in the order of the daughter indices, followed by the ones
+  // only referencing the mother.
+  std::vector<std::vector<int>> parentsOf(n), daughtersOf(n);
   for (int i = 0; i < n; ++i) {
     for (const auto m : mothers[i]) {
-      addIfRelated(m, i);
+      if (isRelated(m, i)) {
+        parentsOf[i].push_back(m);
+      }
     }
-    for (const auto d : daughters[i]) {
-      addIfRelated(i, d);
+  }
+  for (int m = 0; m < n; ++m) {
+    for (const auto d : daughters[m]) {
+      if (mothers[d].empty() && d != m) {
+        parentsOf[d].push_back(m);
+      }
+      if (isRelated(m, d)) {
+        daughtersOf[m].push_back(d);
+      }
     }
   }
   for (int i = 0; i < n; ++i) {
-    std::sort(parentsOf[i].begin(), parentsOf[i].end());
-    std::sort(daughtersOf[i].begin(), daughtersOf[i].end());
+    for (const auto m : parentsOf[i]) {
+      if (!contains(daughters[m], i)) {
+        daughtersOf[m].push_back(i);
+      }
+    }
   }
   return {parentsOf, daughtersOf};
 }

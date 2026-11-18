@@ -23,6 +23,8 @@
 #include <algorithm>
 #include <cmath>
 #include <iostream>
+#include <numeric>
+#include <unordered_map>
 
 namespace k4SimDelphes {
 
@@ -160,6 +162,7 @@ void DelphesEDM4HepConverter::process(TTree* delphesTree,
                                       const std::unordered_map<UInt_t, edm4hep::MCParticle>* externalMCParticles) {
   // beginning of processing: clear previous event from containers
   m_collections.clear();
+  m_externalMCParticles = externalMCParticles;
 
   // Make sure the shared collections are present
   registerGlobalCollections();
@@ -207,6 +210,7 @@ void DelphesEDM4HepConverter::process(TTree* delphesTree,
   // Clear the internal maps that hold references to entites that have been put
   // into maps here for internal use only (see #89)
   m_genParticleIds.clear();
+  m_externalMCParticles = nullptr;
   m_recoParticleGenIds.clear();
   m_recoParticleIds.clear();
 }
@@ -235,9 +239,51 @@ void DelphesEDM4HepConverter::setEventWeights(const std::vector<double>& weights
 void DelphesEDM4HepConverter::processParticles(const TClonesArray* delphesCollection, std::string const& branch) {
   auto* collection = createCollection<edm4hep::MCParticleCollection>(branch);
 
-  for (int iCand = 0; iCand < delphesCollection->GetEntries(); ++iCand) {
-    auto* delphesCand = static_cast<GenParticle*>(delphesCollection->At(iCand));
+  const int nCands = delphesCollection->GetEntriesFast();
+  std::vector<const GenParticle*> delphesCands;
+  delphesCands.reserve(nCands);
+  for (int iCand = 0; iCand < nCands; ++iCand) {
+    delphesCands.push_back(static_cast<const GenParticle*>(delphesCollection->At(iCand)));
+  }
 
+  // If the MCParticles that were the Delphes input are available (framework
+  // case), the output follows their order and takes the relations from them,
+  // since the Delphes mother / daughter indices cannot represent all relations
+  // exactly and the Delphes input array can be in a different order (see
+  // k4SimDelphes::convertToDelphesArrays). This is only done if all candidates
+  // can be matched to an input MCParticle.
+  std::vector<edm4hep::MCParticle> inputParticles;
+  if (m_externalMCParticles) {
+    inputParticles.reserve(nCands);
+    for (const auto* delphesCand : delphesCands) {
+      const auto it = m_externalMCParticles->find(delphesCand->GetUniqueID());
+      if (it == m_externalMCParticles->end()) {
+        inputParticles.clear();
+        break;
+      }
+      inputParticles.push_back(it->second);
+    }
+  }
+  const bool useInput = !delphesCands.empty() && inputParticles.size() == delphesCands.size();
+  if (useInput) {
+    std::vector<size_t> order(nCands);
+    std::iota(order.begin(), order.end(), 0);
+    std::stable_sort(order.begin(), order.end(), [&inputParticles](size_t a, size_t b) {
+      return inputParticles[a].getObjectID() < inputParticles[b].getObjectID();
+    });
+    std::vector<const GenParticle*> sortedCands;
+    std::vector<edm4hep::MCParticle> sortedInput;
+    sortedCands.reserve(nCands);
+    sortedInput.reserve(nCands);
+    for (const auto i : order) {
+      sortedCands.push_back(delphesCands[i]);
+      sortedInput.push_back(inputParticles[i]);
+    }
+    delphesCands = std::move(sortedCands);
+    inputParticles = std::move(sortedInput);
+  }
+
+  for (const auto* delphesCand : delphesCands) {
     auto cand = collection->create();
     cand.setCharge(delphesCand->Charge);
     cand.setMass(delphesCand->Mass);
@@ -253,12 +299,11 @@ void DelphesEDM4HepConverter::processParticles(const TClonesArray* delphesCollec
   }
 
   // mother-daughter relations
-  std::vector<const GenParticle*> delphesCands;
-  delphesCands.reserve(delphesCollection->GetEntries());
-  for (int iCand = 0; iCand < delphesCollection->GetEntries(); ++iCand) {
-    delphesCands.push_back(static_cast<const GenParticle*>(delphesCollection->At(iCand)));
+  if (useInput) {
+    copyMotherDaughterRelations(inputParticles, *collection);
+  } else {
+    setMotherDaughterRelations(delphesCands, *collection);
   }
-  setMotherDaughterRelations(delphesCands, *collection);
 }
 
 void DelphesEDM4HepConverter::processTracks(const TClonesArray* delphesCollection, std::string const& branch) {
@@ -676,47 +721,60 @@ namespace {
 
 namespace {
   /// The particles referenced by a (first, second) pair of mother or daughter
-  /// indices, following the Pythia conventions. explicitRef marks the entries
-  /// that are referenced directly (a single entry, two separate entries, or the
-  /// ends of a range), as opposed to the inside of a range.
-  struct IndexRefs {
-    std::vector<int> indices{};
-    std::vector<bool> explicitRef{};
+  /// indices, following the Pythia conventions, restricted to [0, size).
+  /// Entries are explicitly referenced if they are a single entry, one of two
+  /// separate entries, or one of the ends of a range, as opposed to the inside
+  /// of a range.
+  class IndexRefs {
+  public:
+    IndexRefs() = default;
+    IndexRefs(int first, int second, int size) {
+      const auto valid = [size](int i) { return i >= 0 && i < size ? i : -1; };
+      if (first < 0) {
+        return; // none
+      }
+      if (second < 0) {
+        m_e1 = valid(first); // only one
+      } else if (second < first) {
+        m_e1 = valid(first); // two separate ones
+        m_e2 = valid(second);
+      } else {
+        // a range, clamped to the valid indices
+        m_isRange = true;
+        m_lo = first;
+        m_hi = std::min(second, size - 1);
+        m_e1 = valid(first);
+        m_e2 = valid(second);
+      }
+    }
 
-    bool contains(int i) const { return std::find(indices.begin(), indices.end(), i) != indices.end(); }
-    bool containsExplicit(int i) const {
-      for (size_t k = 0; k < indices.size(); ++k) {
-        if (indices[k] == i) {
-          return explicitRef[k];
+    bool empty() const { return m_isRange ? m_hi < m_lo : (m_e1 < 0 && m_e2 < 0); }
+    bool contains(int i) const { return m_isRange ? (i >= m_lo && i <= m_hi) : containsExplicit(i); }
+    bool containsExplicit(int i) const { return i >= 0 && (i == m_e1 || i == m_e2); }
+
+    /// Call f for all referenced entries, in the order (M1, M2) or (D1, D2)
+    /// for separate entries, and in ascending order for a range
+    template <typename F>
+    void forEach(F&& f) const {
+      if (m_isRange) {
+        for (int i = m_lo; i <= m_hi; ++i) {
+          f(i);
         }
+        return;
       }
-      return false;
+      if (m_e1 >= 0) {
+        f(m_e1);
+      }
+      if (m_e2 >= 0 && m_e2 != m_e1) {
+        f(m_e2);
+      }
     }
-  };
 
-  IndexRefs decodeIndexPair(int first, int second, int size) {
-    IndexRefs refs;
-    const auto add = [&refs, size](int i, bool isExplicit) {
-      if (i >= 0 && i < size) {
-        refs.indices.push_back(i);
-        refs.explicitRef.push_back(isExplicit);
-      }
-    };
-    if (first < 0) {
-      return refs;
-    }
-    if (second < 0) {
-      add(first, true); // only one
-    } else if (second < first) {
-      add(first, true); // two separate ones
-      add(second, true);
-    } else {
-      for (int i = first; i <= second; ++i) { // a range
-        add(i, i == first || i == second);
-      }
-    }
-    return refs;
-  }
+  private:
+    int m_lo{0}, m_hi{-1};
+    int m_e1{-1}, m_e2{-1};
+    bool m_isRange{false};
+  };
 } // namespace
 
 void setMotherDaughterRelations(const std::vector<const GenParticle*>& delphesCands,
@@ -736,53 +794,94 @@ void setMotherDaughterRelations(const std::vector<const GenParticle*>& delphesCa
   //  - the daughter references the mother explicitly, i.e. not only as part of
   //    the inside of a range, or
   //  - the mother references the daughter and the daughter has no mothers
-  // This ensures that parents and daughters are always consistent.
+  // This ensures that parents and daughters are always consistent. If both
+  // sides are only the inside of ranges that happen to cover each other this
+  // can still add a relation that was not in the original record, which cannot
+  // be detected from the indices alone. Self-references are always dropped.
   const auto size = std::min(static_cast<int>(delphesCands.size()), static_cast<int>(mcParticles.size()));
   std::vector<IndexRefs> mothers(size), daughters(size);
   for (int i = 0; i < size; ++i) {
-    mothers[i] = decodeIndexPair(delphesCands[i]->M1, delphesCands[i]->M2, size);
-    daughters[i] = decodeIndexPair(delphesCands[i]->D1, delphesCands[i]->D2, size);
+    mothers[i] = IndexRefs(delphesCands[i]->M1, delphesCands[i]->M2, size);
+    daughters[i] = IndexRefs(delphesCands[i]->D1, delphesCands[i]->D2, size);
   }
 
   const auto isRelated = [&mothers, &daughters](int iMother, int iDaughter) {
+    if (iMother == iDaughter) {
+      return false;
+    }
     const auto& motherRefs = mothers[iDaughter];
     if (motherRefs.containsExplicit(iMother)) {
       return true;
     }
-    const bool daughterRefd = daughters[iMother].contains(iDaughter);
-    return daughterRefd && (motherRefs.contains(iMother) || motherRefs.indices.empty());
+    return daughters[iMother].contains(iDaughter) && (motherRefs.contains(iMother) || motherRefs.empty());
   };
 
+  // Parents in the order of the mother indices, i.e. (M1, M2) for two separate
+  // mothers. Every related mother is referenced by the daughter, unless the
+  // daughter has no mothers at all, in which case they are taken (in ascending
+  // order) from the daughter indices of the mothers.
   std::vector<std::vector<int>> parentsOf(size), daughtersOf(size);
-  const auto addRelation = [&parentsOf, &daughtersOf](int iMother, int iDaughter) {
-    auto& parents = parentsOf[iDaughter];
-    if (std::find(parents.begin(), parents.end(), iMother) == parents.end()) {
-      parents.push_back(iMother);
-      daughtersOf[iMother].push_back(iDaughter);
-    }
-  };
   for (int i = 0; i < size; ++i) {
-    for (const auto iMother : mothers[i].indices) {
+    mothers[i].forEach([&](int iMother) {
       if (isRelated(iMother, i)) {
-        addRelation(iMother, i);
+        parentsOf[i].push_back(iMother);
       }
-    }
-    for (const auto iDaughter : daughters[i].indices) {
-      if (isRelated(i, iDaughter)) {
-        addRelation(i, iDaughter);
+    });
+  }
+  for (int iMother = 0; iMother < size; ++iMother) {
+    daughters[iMother].forEach([&](int iDaughter) {
+      if (mothers[iDaughter].empty() && iDaughter != iMother) {
+        parentsOf[iDaughter].push_back(iMother);
+      }
+    });
+  }
+  // Daughters in the order of the daughter indices, followed by the ones that
+  // only reference the mother (in ascending order)
+  for (int iMother = 0; iMother < size; ++iMother) {
+    daughters[iMother].forEach([&](int iDaughter) {
+      if (isRelated(iMother, iDaughter)) {
+        daughtersOf[iMother].push_back(iDaughter);
+      }
+    });
+  }
+  for (int i = 0; i < size; ++i) {
+    for (const auto iMother : parentsOf[i]) {
+      if (!daughters[iMother].contains(i)) {
+        daughtersOf[iMother].push_back(i);
       }
     }
   }
 
   for (int i = 0; i < size; ++i) {
     auto particle = mcParticles[i];
-    std::sort(parentsOf[i].begin(), parentsOf[i].end());
-    std::sort(daughtersOf[i].begin(), daughtersOf[i].end());
     for (const auto iMother : parentsOf[i]) {
       particle.addToParents(mcParticles[iMother]);
     }
     for (const auto iDaughter : daughtersOf[i]) {
       particle.addToDaughters(mcParticles[iDaughter]);
+    }
+  }
+}
+
+void copyMotherDaughterRelations(const std::vector<edm4hep::MCParticle>& inputParticles,
+                                 edm4hep::MCParticleCollection& mcParticles) {
+  const auto size = std::min(inputParticles.size(), mcParticles.size());
+  std::unordered_map<edm4hep::MCParticle, size_t> outputIndex;
+  outputIndex.reserve(size);
+  for (size_t i = 0; i < size; ++i) {
+    outputIndex.emplace(inputParticles[i], i);
+  }
+  for (size_t i = 0; i < size; ++i) {
+    auto particle = mcParticles[i];
+    for (const auto& parent : inputParticles[i].getParents()) {
+      if (const auto it = outputIndex.find(parent); it != outputIndex.end()) {
+        particle.addToParents(mcParticles[it->second]);
+      }
+    }
+    for (const auto& daughter : inputParticles[i].getDaughters()) {
+      if (const auto it = outputIndex.find(daughter); it != outputIndex.end()) {
+        particle.addToDaughters(mcParticles[it->second]);
+      }
     }
   }
 }
