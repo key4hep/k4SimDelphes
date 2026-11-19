@@ -82,7 +82,8 @@ public:
     // Register the resonance decay filter settings before reading the card.
 #if PYTHIA_VERSION_INTEGER >= 8318
     Pythia8::resonanceSettings(&m_pythia->settings);
-    m_pythia->addUserHooksPtr(std::make_shared<Pythia8::ResonanceDecayFilterHooks>(nullptr, nullptr, nullptr));
+    m_pythia->addUserHooksPtr(std::make_shared<Pythia8::ResonanceDecayFilterHooks>(
+        m_pythia.get(), &m_pythia->settings, &m_pythia->logger));
 #else
     m_pythia->addUserHooksPtr(std::make_shared<Pythia8::ResonanceDecayFilterHook>(m_pythia->settings));
 #endif
