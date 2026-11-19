@@ -21,7 +21,11 @@
 
 #include "Pythia.h"
 #include "Pythia8Plugins/CombineMatchingInput.h"
+#if PYTHIA_VERSION_INTEGER >= 8318
+#include "Pythia8Plugins/ResonanceDecayFilterHooks.h"
+#else
 #include "Pythia8Plugins/ResonanceDecayFilterHook.h"
+#endif
 
 #include <iostream>
 #include <memory>
@@ -75,9 +79,13 @@ public:
       throw std::runtime_error("can't create Pythia instance");
     }
 
-    // load and initialize the ResonanceDecayFilterUserhook
-    m_resonanceDecayFilterHook = new Pythia8::ResonanceDecayFilterHook(m_pythia->settings);
-    m_pythia->addUserHooksPtr((Pythia8::UserHooksPtr)m_resonanceDecayFilterHook);
+    // Register the resonance decay filter settings before reading the card.
+#if PYTHIA_VERSION_INTEGER >= 8318
+    Pythia8::resonanceSettings(&m_pythia->settings);
+    m_pythia->addUserHooksPtr(std::make_shared<Pythia8::ResonanceDecayFilterHooks>(nullptr, nullptr, nullptr));
+#else
+    m_pythia->addUserHooksPtr(std::make_shared<Pythia8::ResonanceDecayFilterHook>(m_pythia->settings));
+#endif
 
     // Read in commands from configuration file
     const std::string pythia8configname(argv[3]);
@@ -206,9 +214,6 @@ private:
   Bool_t m_spareFlag1;
   Int_t m_spareMode1;
   Double_t m_spareParm1, m_spareParm2;
-
-  // resonance decayfilter
-  Pythia8::ResonanceDecayFilterHook* m_resonanceDecayFilterHook{nullptr};
 };
 
 #endif
