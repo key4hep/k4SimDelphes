@@ -63,7 +63,7 @@ if(DELPHES_CARD)
 
   set_tests_properties(DelphesPythiaJetMatching
     PROPERTIES
-      PASS_REGULAR_EXPRESSION "JetMatching Error and Warning Messages Statistics"
+      PASS_REGULAR_EXPRESSION "JetMatching Error and Warning Messages Statistics;JetMatchingHooks Error/Warning Messages Statistics"
   )
 
 else()
