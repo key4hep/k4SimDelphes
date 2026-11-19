@@ -17,10 +17,12 @@
 #include "TClonesArray.h"
 #include "TLorentzVector.h"
 
+#include <algorithm>
 #include <cstdlib>
 #include <iostream>
 #include <memory>
 #include <numeric>
+#include <utility>
 #include <vector>
 
 namespace {
@@ -173,16 +175,82 @@ std::vector<int> expectedDaughtersParents(int index1, int index2) {
 }
 
 /**
+ * Get the expected parents and daughters of all particles. The mother and
+ * daughter indices can contradict each other (e.g. HEPEVT daughter ranges of
+ * interleaved showers, or two mothers stored as a range), so a relation is only
+ * expected if both sides reference each other, if the daughter references the
+ * mother explicitly (i.e. as M1 or M2, not only as the inside of a range), or
+ * if the mother references a daughter without any mothers.
+ */
+std::pair<std::vector<std::vector<int>>, std::vector<std::vector<int>>>
+expectedRelations(const TClonesArray* delphesColl) {
+  const int n = delphesColl->GetEntries();
+  const auto inRange = [n](std::vector<int> indices) {
+    indices.erase(std::remove_if(indices.begin(), indices.end(), [n](int i) { return i < 0 || i >= n; }),
+                  indices.end());
+    return indices;
+  };
+  const auto contains = [](const std::vector<int>& v, int i) { return std::find(v.begin(), v.end(), i) != v.end(); };
+
+  std::vector<std::vector<int>> mothers(n), daughters(n), explicitMothers(n);
+  for (int i = 0; i < n; ++i) {
+    const auto* cand = static_cast<GenParticle*>(delphesColl->At(i));
+    mothers[i] = inRange(expectedDaughtersParents(cand->M1, cand->M2));
+    daughters[i] = inRange(expectedDaughtersParents(cand->D1, cand->D2));
+    if (cand->M1 > -1) {
+      explicitMothers[i] = inRange({cand->M1, cand->M2});
+    }
+  }
+
+  const auto isRelated = [&](int m, int d) {
+    return m != d && (contains(explicitMothers[d], m) ||
+                      (contains(daughters[m], d) && (contains(mothers[d], m) || mothers[d].empty())));
+  };
+
+  // Parents in the order of the mother indices, or, for particles without
+  // mother indices, the particles referencing them as daughter in ascending
+  // order. Daughters in the order of the daughter indices, followed by the ones
+  // only referencing the mother.
+  std::vector<std::vector<int>> parentsOf(n), daughtersOf(n);
+  for (int i = 0; i < n; ++i) {
+    for (const auto m : mothers[i]) {
+      if (isRelated(m, i)) {
+        parentsOf[i].push_back(m);
+      }
+    }
+  }
+  for (int m = 0; m < n; ++m) {
+    for (const auto d : daughters[m]) {
+      if (mothers[d].empty() && d != m) {
+        parentsOf[d].push_back(m);
+      }
+      if (isRelated(m, d)) {
+        daughtersOf[m].push_back(d);
+      }
+    }
+  }
+  for (int i = 0; i < n; ++i) {
+    for (const auto m : parentsOf[i]) {
+      if (!contains(daughters[m], i)) {
+        daughtersOf[m].push_back(i);
+      }
+    }
+  }
+  return {parentsOf, daughtersOf};
+}
+
+/**
  * Compare the elements of the MCParticle collections element-wise
  */
 void compareCollectionElements(const TClonesArray* delphesColl, const edm4hep::MCParticleCollection& edm4hepColl,
                                const std::string& collName) {
+  const auto [expParentsOf, expDaughtersOf] = expectedRelations(delphesColl);
   for (int i = 0; i < delphesColl->GetEntries(); ++i) {
     const auto* delphesCand = static_cast<GenParticle*>(delphesColl->At(i));
     const auto edm4hepCand = edm4hepColl[i];
     assertSameKinematics(delphesCand, edm4hepCand, stdErrorMessage, collName, i);
 
-    const auto expParents = expectedDaughtersParents(delphesCand->M1, delphesCand->M2);
+    const auto& expParents = expParentsOf[i];
 
     if (expParents.size() != edm4hepCand.getParents().size()) {
       std::cerr << "Number of parents differs for particle " << i << " in collection \'" << collName
@@ -190,7 +258,7 @@ void compareCollectionElements(const TClonesArray* delphesColl, const edm4hep::M
       std::exit(1);
     }
 
-    const auto expDaughters = expectedDaughtersParents(delphesCand->D1, delphesCand->D2);
+    const auto& expDaughters = expDaughtersOf[i];
 
     if (expDaughters.size() != edm4hepCand.getDaughters().size()) {
       std::cerr << "Number of daughters differs for particle " << i << " in collection \'" << collName
