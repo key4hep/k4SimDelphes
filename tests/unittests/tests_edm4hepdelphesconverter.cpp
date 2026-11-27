@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <array>
 #include <climits>
+#include <ranges>
 #include <set>
 #include <string>
 #include <tuple>
@@ -53,11 +54,41 @@ TEST_CASE("convertToDelphesArrays returns the UniqueID -> MCParticle map", "[con
     const auto* cand = static_cast<const Candidate*>(allParticles.At(i));
     const auto it = idMap.find(cand->GetUniqueID());
     REQUIRE(it != idMap.end());
-    REQUIRE(it->second == mcParticles[i]);
+    REQUIRE(it->second.particle == mcParticles[i]);
+    REQUIRE(it->second.index == static_cast<size_t>(i));
     REQUIRE(cand->PID == mcParticles[i].getPDG());
     REQUIRE(cand->Momentum.Px() == Catch::Approx(mcParticles[i].getMomentum().x));
   }
-  REQUIRE(idMap.at(static_cast<const Candidate*>(partons.At(0))->GetUniqueID()).getPDG() == 5);
+  REQUIRE(idMap.at(static_cast<const Candidate*>(partons.At(0))->GetUniqueID()).particle.getPDG() == 5);
+}
+
+TEST_CASE("convertToDelphesArrays stores the index in the passed collection", "[converter]") {
+  // A reordered subset collection: the ObjectIDs of the particles do not
+  // follow their order in the collection that is passed to Delphes
+  edm4hep::MCParticleCollection mcParticles;
+  for (const int pdg : std::views::iota(211, 215)) {
+    auto p = mcParticles.create();
+    p.setPDG(pdg);
+    p.setGeneratorStatus(1);
+  }
+  edm4hep::MCParticleCollection subset;
+  subset.setSubsetCollection();
+  for (const auto& p : mcParticles | std::views::reverse) {
+    subset.push_back(p);
+  }
+
+  DelphesFactory factory;
+  TObjArray allParticles, stableParticles, partons;
+  const auto idMap = convertToDelphesArrays(subset, factory, allParticles, stableParticles, partons);
+
+  REQUIRE(idMap.size() == subset.size());
+  for (int j = 0; j < allParticles.GetEntries(); ++j) {
+    const auto* cand = static_cast<const Candidate*>(allParticles.At(j));
+    const auto& input = idMap.at(cand->GetUniqueID());
+    REQUIRE(input.index < subset.size());
+    REQUIRE(input.particle == subset[input.index]);
+    REQUIRE(cand->PID == subset[input.index].getPDG());
+  }
 }
 
 TEST_CASE("convertToDelphesArrays converts the production time from ns to mm/c", "[converter]") {
@@ -243,7 +274,7 @@ Roundtrip roundtrip(const edm4hep::MCParticleCollection& mcParticles) {
   for (int j = 0; j < allParticles.GetEntries(); ++j) {
     result.output.create();
     const auto* cand = static_cast<const Candidate*>(allParticles.At(j));
-    const auto i = idMap.at(cand->GetUniqueID()).getObjectID().index;
+    const auto i = idMap.at(cand->GetUniqueID()).index;
     result.arrayIndex[i] = j;
     result.mothers[i] = {cand->M1, cand->M2};
     result.daughters[i] = {cand->D1, cand->D2};

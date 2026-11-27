@@ -275,14 +275,22 @@ inline void setMotherDaughterIndices(const CollectionRelations& rels, const std:
   }
 }
 
+/// The MCParticle a Delphes input candidate was created from
+struct GenParticleInput {
+  edm4hep::MCParticle particle;
+  /// Index of the particle in the collection passed to convertToDelphesArrays
+  size_t index;
+};
+
 /// Map from the UniqueID of the Delphes input candidates to the MCParticles
 /// they were created from
-using GenParticleIdMap = std::unordered_map<UInt_t, edm4hep::MCParticle>;
+using GenParticleIdMap = std::unordered_map<UInt_t, GenParticleInput>;
 
 /**
  * Convert the passed MCParticles into Delphes input candidates and add them to
  * the Delphes input arrays. Returns the map from the UniqueID of each created
- * candidate to the MCParticle it was created from, which can be passed to
+ * candidate to the MCParticle it was created from (and its index in edmColl),
+ * which can be passed to
  * DelphesEDM4HepConverter::process() to link the reconstructed particles to
  * the input MCParticles.
  *
@@ -324,7 +332,7 @@ inline GenParticleIdMap convertToDelphesArrays(const edm4hep::MCParticleCollecti
     candidate->PID = edmPart.getPDG();
     candidate->Status = edmPart.getGeneratorStatus();
 
-    genParticleIds.emplace(candidate->GetUniqueID(), edmPart);
+    genParticleIds.emplace(candidate->GetUniqueID(), GenParticleInput{edmPart, iEdm});
 
     allParticleOutputArray.Add(candidate);
     const int pdgCode = std::abs(candidate->PID);

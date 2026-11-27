@@ -23,7 +23,7 @@
 #include <algorithm>
 #include <cmath>
 #include <iostream>
-#include <numeric>
+#include <iterator>
 #include <unordered_map>
 
 namespace k4SimDelphes {
@@ -158,8 +158,7 @@ DelphesEDM4HepConverter::DelphesEDM4HepConverter(const std::vector<BranchSetting
   }
 }
 
-void DelphesEDM4HepConverter::process(TTree* delphesTree,
-                                      const std::unordered_map<UInt_t, edm4hep::MCParticle>* externalMCParticles) {
+void DelphesEDM4HepConverter::process(TTree* delphesTree, const GenParticleIdMap* externalMCParticles) {
   // beginning of processing: clear previous event from containers
   m_collections.clear();
   m_externalMCParticles = externalMCParticles;
@@ -252,35 +251,28 @@ void DelphesEDM4HepConverter::processParticles(const TClonesArray* delphesCollec
   // exactly and the Delphes input array can be in a different order (see
   // k4SimDelphes::convertToDelphesArrays). This is only done if all candidates
   // can be matched to an input MCParticle.
-  std::vector<edm4hep::MCParticle> inputParticles;
+  using MatchedCand = std::pair<const GenParticle*, const GenParticleInput*>;
+  std::vector<MatchedCand> matched;
   if (m_externalMCParticles) {
-    inputParticles.reserve(nCands);
+    matched.reserve(nCands);
     for (const auto* delphesCand : delphesCands) {
       const auto it = m_externalMCParticles->find(delphesCand->GetUniqueID());
       if (it == m_externalMCParticles->end()) {
-        inputParticles.clear();
+        matched.clear();
         break;
       }
-      inputParticles.push_back(it->second);
+      matched.emplace_back(delphesCand, &it->second);
     }
   }
-  const bool useInput = !delphesCands.empty() && inputParticles.size() == delphesCands.size();
+  const bool useInput = !delphesCands.empty() && matched.size() == delphesCands.size();
+  std::vector<edm4hep::MCParticle> inputParticles;
   if (useInput) {
-    std::vector<size_t> order(nCands);
-    std::iota(order.begin(), order.end(), 0);
-    std::stable_sort(order.begin(), order.end(), [&inputParticles](size_t a, size_t b) {
-      return inputParticles[a].getObjectID() < inputParticles[b].getObjectID();
-    });
-    std::vector<const GenParticle*> sortedCands;
-    std::vector<edm4hep::MCParticle> sortedInput;
-    sortedCands.reserve(nCands);
-    sortedInput.reserve(nCands);
-    for (const auto i : order) {
-      sortedCands.push_back(delphesCands[i]);
-      sortedInput.push_back(inputParticles[i]);
-    }
-    delphesCands = std::move(sortedCands);
-    inputParticles = std::move(sortedInput);
+    // Follow the order of the input collection
+    std::ranges::stable_sort(matched, {}, [](const MatchedCand& m) { return m.second->index; });
+    std::ranges::transform(matched, delphesCands.begin(), &MatchedCand::first);
+    inputParticles.reserve(nCands);
+    std::ranges::transform(matched, std::back_inserter(inputParticles),
+                           [](const MatchedCand& m) { return m.second->particle; });
   }
 
   for (const auto* delphesCand : delphesCands) {
@@ -612,14 +604,14 @@ DelphesEDM4HepConverter::getMatchingReco(DelphesT* delphesCand) const {
   return {};
 }
 
-std::unique_ptr<edm4hep::RecoMCParticleLinkCollection> DelphesEDM4HepConverter::createExternalRecoMCLinks(
-    const std::unordered_map<UInt_t, edm4hep::MCParticle>& mc_map) const {
+std::unique_ptr<edm4hep::RecoMCParticleLinkCollection>
+DelphesEDM4HepConverter::createExternalRecoMCLinks(const GenParticleIdMap& mc_map) const {
   auto mcRecoRelations = std::make_unique<edm4hep::RecoMCParticleLinkCollection>();
   for (const auto& particleID : mc_map) {
     const auto [recoBegin, recoEnd] = m_recoParticleGenIds.equal_range(particleID.first);
     for (auto it = recoBegin; it != recoEnd; ++it) {
       auto relation = mcRecoRelations->create();
-      relation.setTo(particleID.second);
+      relation.setTo(particleID.second.particle);
       relation.setFrom(it->second);
     }
   }

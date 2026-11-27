@@ -1,6 +1,8 @@
 #ifndef DELPHESEDM4HEP_DELPHESEDM4HEP_CONVERTER_H__
 #define DELPHESEDM4HEP_DELPHESEDM4HEP_CONVERTER_H__
 
+#include "k4SimDelphes/k4GenParticlesDelphesConverter.h" // GenParticleIdMap
+
 // edm4hep
 #include "edm4hep/MCParticle.h"
 #include "edm4hep/MCParticleCollection.h"
@@ -119,16 +121,16 @@ public:
   /**
    * Process the passed delphesTree and convert the particles contained in it.
    *
-   * If externalMCParticles is passed (a map from Delphes candidate unique IDs
-   * to the MCParticles that were used as Delphes input), the reco-MC link
-   * collection is filled with links to these external MCParticles instead of
-   * the internally converted ones. This has to happen during process(), since
-   * the internal ID maps are cleared at its end. In this case the MCParticle
-   * output collection also follows the order of the external MCParticles and
-   * takes its parent / daughter relations from them.
+   * If externalMCParticles is passed (the map from Delphes candidate unique IDs
+   * to the MCParticles that were used as Delphes input, as returned by
+   * convertToDelphesArrays), the reco-MC link collection is filled with links
+   * to these external MCParticles instead of the internally converted ones.
+   * This has to happen during process(), since the internal ID maps are
+   * cleared at its end. In this case the MCParticle output collection also
+   * follows the order of the input MCParticle collection and takes its parent /
+   * daughter relations from it.
    */
-  void process(TTree* delphesTree,
-               const std::unordered_map<UInt_t, edm4hep::MCParticle>* externalMCParticles = nullptr);
+  void process(TTree* delphesTree, const GenParticleIdMap* externalMCParticles = nullptr);
 
   /// Attach generator event weights to the current EventHeader; call after
   /// process(), before getCollections(). Weight names go in the metadata Frame.
@@ -146,7 +148,7 @@ private:
   /// Create reco-MC links pointing to externally provided MCParticles. Only
   /// valid during process(), while the internal ID maps are still filled.
   std::unique_ptr<edm4hep::RecoMCParticleLinkCollection>
-  createExternalRecoMCLinks(const std::unordered_map<UInt_t, edm4hep::MCParticle>& mc_map) const;
+  createExternalRecoMCLinks(const GenParticleIdMap& mc_map) const;
 
   void createEventHeader(const HepMCEvent* delphesEvent);
 
@@ -209,7 +211,7 @@ private:
   std::unordered_map<UInt_t, edm4hep::MCParticle> m_genParticleIds;
   // the MCParticles that were the Delphes input (if passed to process()), only
   // valid during process()
-  const std::unordered_map<UInt_t, edm4hep::MCParticle>* m_externalMCParticles{nullptr};
+  const GenParticleIdMap* m_externalMCParticles{nullptr};
   // map from UniqueIDs (delphes generated particles) to (possibly multiple)
   // ReconstructedParticles. This map is necessary because Muon, Electron and
   // Photon can only be reliably matched via their gen particles
