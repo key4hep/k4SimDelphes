@@ -50,7 +50,7 @@ endif()
 
 #--- Non-optional Dependencies ------------------------------------------------
 find_package(Delphes REQUIRED)
-find_package(podio REQUIRED 1.10)
+find_package(podio 1.10 REQUIRED)
 find_package(EDM4HEP REQUIRED)
 find_package(ROOT REQUIRED)
 
