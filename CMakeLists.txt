@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.22)
 
 project(k4SimDelphes LANGUAGES CXX)
 
@@ -99,7 +99,7 @@ if(BUILD_TESTING)
   option(BUILD_UNITTESTS "Build the unittest for k4SimDelphes" ON)
   if(BUILD_UNITTESTS)
     if(USE_EXTERNAL_CATCH2)
-      find_package(Catch2 REQUIRED)
+      find_package(Catch2 3.5.0 REQUIRED)
     endif()
   endif()
 
