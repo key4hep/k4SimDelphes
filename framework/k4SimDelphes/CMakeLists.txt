@@ -41,6 +41,18 @@ if(BUILD_TESTING)
              COMMAND python3 ${PROJECT_SOURCE_DIR}/tests/scripts/check_reco_mc_links.py output_k4SimDelphes_pythia.root)
     set_tests_properties(k4SimDelphesAlgPythiaRecoMCLinkCheck PROPERTIES FIXTURES_REQUIRED k4SimDelphesAlgPythiaOutput)
 
+    # The generator event weights have to be propagated through the framework chain
+    add_test(NAME k4SimDelphesAlgPythiaWeightsTest
+             WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/examples/options
+             COMMAND  k4run k4simdelphesalg_pythia.py -n 10
+                      --GenAlg.PythiaInterface.pythiacard ${PROJECT_SOURCE_DIR}/examples/data/ee_Z_bbbar_ecm91GeV_weights.cmd
+                      --IOSvc.Output output_k4SimDelphes_pythia_weights.root)
+    set_tests_properties(k4SimDelphesAlgPythiaWeightsTest PROPERTIES FIXTURES_SETUP k4SimDelphesAlgPythiaWeightsOutput)
+    add_test(NAME k4SimDelphesAlgPythiaWeightsCheck
+             WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/examples/options
+             COMMAND python3 ${PROJECT_SOURCE_DIR}/tests/scripts/check_event_weights.py output_k4SimDelphes_pythia_weights.root)
+    set_tests_properties(k4SimDelphesAlgPythiaWeightsCheck PROPERTIES FIXTURES_REQUIRED k4SimDelphesAlgPythiaWeightsOutput)
+
     # Set up the Gaudi environment for the tests. The local build has to come first in all paths, otherwise
     # a k4SimDelphes that is already in the stack (e.g. in the nightlies) is picked up instead
     set(_local_lib_dirs "$<TARGET_FILE_DIR:k4SimDelphesPlugins>:$<TARGET_FILE_DIR:DelphesEDM4HepConverter>")
@@ -50,6 +62,7 @@ if(BUILD_TESTING)
       "PYTHONPATH=${CMAKE_CURRENT_BINARY_DIR}/${GAUDI_GENCONF_DIR}:$<TARGET_FILE_DIR:k4Gen::k4Gen>/../python:$<TARGET_FILE_DIR:k4FWCore::k4FWCore>/../python:$ENV{PYTHONPATH}"
     )
     set_tests_properties(k4SimDelphesAlgBasicTest k4SimDelphesAlgPythiaTest k4SimDelphesAlgPythiaRecoMCLinkCheck
+                         k4SimDelphesAlgPythiaWeightsTest k4SimDelphesAlgPythiaWeightsCheck
                          PROPERTIES ENVIRONMENT "${_test_environment}")
 
   else()

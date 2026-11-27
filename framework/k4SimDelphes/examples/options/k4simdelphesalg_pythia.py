@@ -33,6 +33,8 @@ from Configurables import HepMCToEDMConverter
 hepmc_converter = HepMCToEDMConverter()
 hepmc_converter.hepmc.Path="hepmc"
 hepmc_converter.GenParticles.Path = "GenParticles"
+# EventHeader with the generator event weights
+hepmc_converter.EventHeader.Path = "EventHeader"
 ApplicationMgr().TopAlg += [hepmc_converter]
 
 from Configurables import k4SimDelphesAlg
